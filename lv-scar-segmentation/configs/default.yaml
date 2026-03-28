@@ -1,0 +1,48 @@
+# Configuration Example
+
+Replace with your project settings.
+
+```yaml
+# configs/default.yaml
+
+project:
+  name: "research-project"
+  description: "My research analysis"
+
+paths:
+  data_raw: "data/raw/"
+  data_processed: "data/processed/"
+  results: "results/"
+
+preprocessing:
+  normalize: true
+  method: "minmax"  # Options: minmax, zscore
+
+analysis:
+  sample_size: 100
+  test_type: "ttest"
+  significance: 0.05
+
+output:
+  format: "csv"
+  save_plots: true
+```
+
+Load in code:
+
+```python
+import yaml
+
+with open("configs/default.yaml") as f:
+    config = yaml.safe_load(f)
+
+raw_path = config["paths"]["data_raw"]
+```
+
+Create experiment-specific overrides:
+
+```bash
+cp configs/default.yaml configs/experiment_01.yaml
+# Edit experiment_01.yaml with different parameters
+python script.py --config configs/experiment_01.yaml
+```

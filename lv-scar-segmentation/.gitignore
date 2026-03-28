@@ -1,0 +1,246 @@
+# ============================================================================
+# ⚠️  DATA PROTECTION - CRITICAL ⚠️
+# ============================================================================
+# This repository MUST NEVER contain sensitive or personal data
+# These rules enforce strict data protection
+# ============================================================================
+
+# DATA FOLDERS - ALL GITIGNORED (sensitive research data)
+data/
+data/**
+data/raw/*
+data/processed/*
+data/interim/*
+
+# EXCEPTION: Keep README files to document structure
+!data/README.md
+!data/raw/.gitkeep
+!data/processed/.gitkeep
+!data/interim/.gitkeep
+
+# ============================================================================
+# RESULTS & OUTPUTS - Large files, may contain sensitive derivatives
+# ============================================================================
+results/
+results/**
+*.csv
+*.tsv
+*.xlsx
+*.xls
+!results/README.md
+!results/.gitkeep
+
+# ============================================================================
+# SENSITIVE DATA FORMATS (Block if accidentally added)
+# ============================================================================
+
+# Medical Imaging
+*.nii
+*.nii.gz
+*.dcm
+*.dicom
+*.nrrd
+*.mha
+*.mhd
+*.hdr
+*.img
+
+# Mesh & 3D formats
+*.vtp
+*.vtk
+*.obj
+*.stl
+*.ply
+
+# Numerical data
+*.npy
+*.npz
+*.h5
+*.hdf5
+*.dat
+
+# Databases
+*.db
+*.sqlite
+*.sqlite3
+
+# Archives (may contain sensitive data)
+*.tar.gz
+*.tar.bz2
+*.zip
+*.7z
+*.rar
+
+# ============================================================================
+# JUPYTER & NOTEBOOKS
+# ============================================================================
+.ipynb_checkpoints/
+*/.ipynb_checkpoints/*
+*.nb.html
+.ipynb_checkpoints
+
+# ============================================================================
+# PYTHON - Standard ignores
+# ============================================================================
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+pip-wheel-metadata/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# Pytest
+.pytest_cache/
+.coverage
+.coverage.*
+htmlcov/
+.tox/
+.hypothesis/
+
+# Virtual environments
+venv/
+ENV/
+env/
+.venv
+virtualenv/
+
+# mypy
+.mypy_cache/
+.dmypy.json
+dmypy.json
+
+# Pyre type checker
+.pyre/
+
+# ============================================================================
+# IDEs & EDITORS
+# ============================================================================
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+*.sublime-project
+*.sublime-workspace
+.vscode/settings.json
+.vscode/launch.json
+
+# VS Code
+.vscode/*
+!.vscode/extensions.json
+
+# PyCharm
+.idea/
+*.iml
+
+# Vim
+[._]*.s[a-v][a-z]
+[._]*.sw[a-p]
+[._]s[a-rt][a-z]
+*.[._]s[a-rt][a-z]
+
+# ============================================================================
+# OS-SPECIFIC
+# ============================================================================
+.DS_Store                  # macOS
+.DS_Store?                 # macOS
+._*                        # macOS
+.Spotlight-V100            # macOS
+.Trashes                   # macOS
+ehthumbs.db                # Windows
+Thumbs.db                  # Windows
+Desktop.ini                # Windows
+
+# ============================================================================
+# BUILD & COMPILATION
+# ============================================================================
+*.o
+*.a
+*.so
+*.dylib
+*.exe
+*.out
+*.app
+*.dll
+*.lib
+
+# ============================================================================
+# TEMPORARY & LOG FILES
+# ============================================================================
+*.log
+*.tmp
+*.bak
+*.swp
+*~
+temp/
+tmp/
+.cache/
+
+# ============================================================================
+# CONFIGURATION WITH SECRETS (if accidentally created)
+# ============================================================================
+.env
+.env.local
+.env.*.local
+secrets.yaml
+secrets.yml
+credentials.txt
+apikey.txt
+password.txt
+
+# ============================================================================
+# DOCUMENTATION BUILD ARTIFACTS
+# ============================================================================
+site/
+docs/_build/
+
+# ============================================================================
+# PROJECT-SPECIFIC (large outputs, experiments)
+# ============================================================================
+wandb/
+mlruns/
+lightning_logs/
+outputs/
+experiments/
+
+# ============================================================================
+# Debug & IDE memory
+# ============================================================================
+.vscode/.history
+.vscode/.project
+.vscode/jsconfig.json
+
+# ============================================================================
+# STATISTICS & METRICS (if very large)
+# ============================================================================
+*.pkl
+*.pickle
+*.joblib
+
+# ============================================================================
+# OPTIONAL: Uncomment if needed
+# ============================================================================
+# Large video/audio files
+# *.mp4
+# *.avi
+# *.mov
+# *.wav
+# *.mp3
