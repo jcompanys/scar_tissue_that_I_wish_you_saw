@@ -1,56 +1,46 @@
-# Research Project Template
+# LV Scar Segmentation
 
-**A minimal, scalable repository structure for research with strict data protection.**
+Minimal, scalable repository for loading and processing LV scar study exports.
 
-> ⚠️ **CRITICAL**: This repo contains sensitive data protection measures. See [data/README.md](data/README.md) for details.
+This first implementation step focuses on dataset discovery and structure validation
+for a root layout like:
+
+F:/RM_TEKNON_DEVELOP/<YEAR>/<PATIENT_ID>/Basal/Data/DE-MRI/LV/...
 
 ## Quick Start
 
-```bash
-# Clone and setup
-git clone <your-repo-url>
-cd research-template
+1) Install package in editable mode
 
-# View structure
-tree -L 2
+pip install -e .
 
-# Check data protection
-cat .gitignore
-```
+2) Run dataset scan
 
-## Directory Structure
+lv-scar-scan --dataset-root F:/RM_TEKNON_DEVELOP --out results/dataset_manifest.json
 
-```
-research-template/
-├── data/                 # ⚠️  SENSITIVE - GITIGNORED
-│   ├── raw/             # Original data (never committed)
-│   ├── processed/       # Cleaned data (never committed)
-│   └── interim/         # Working files (never committed)
-│
-├── src/                 # Source code modules
-├── notebooks/           # Jupyter exploratory analysis
-├── tests/               # Test files
-├── configs/             # Configuration files
-├── results/             # Output & results (gitignored)
-├── docs/                # Documentation
-│
-├── .gitignore           # Data protection rules
-├── README.md            # This file
-├── LICENSE              # License
-└── .gitkeep files       # Keep empty folders in git
-```
+3) Review report
 
-### Folder Purposes
+results/dataset_manifest.json contains all discovered year/patient cases and
+whether each case passes minimum structure checks.
 
-| Folder | Purpose | Committed? |
-|--------|---------|-----------|
-| `data/` | Raw & processed sensitive data | ❌ NO (gitignored) |
-| `src/` | Production code & modules | ✅ YES |
-| `notebooks/` | Jupyter exploration | ✅ YES (outputs cleared) |
-| `tests/` | Unit & integration tests | ✅ YES |
-| `configs/` | YAML/JSON configs, hyperparams | ✅ YES |
-| `results/` | Pipeline outputs, metrics | ❌ NO (gitignored) |
-| `docs/` | Project documentation | ✅ YES |
+## What The Loader Checks
+
+For each patient case, the loader validates:
+
+- Required directories under Basal/Data/DE-MRI/LV
+- Required key VTK files
+- Presence of TISSUE statistics CSV files
+- TRANSMURALITY or TRANSMURABILITY directory naming mismatch
+
+Primary module:
+
+src/lv_scar_segmentation/data_loading.py
+
+## Current Source Files
+
+- src/lv_scar_segmentation/data_loading.py
+- src/lv_scar_segmentation/cli.py
+- configs/default.yaml
+- tests/test_data_loading.py
 
 ## Data Protection
 
@@ -76,99 +66,16 @@ echo "data/raw/*.nii.gz" >> .gitignore
 git commit "Remove sensitive data file"
 ```
 
-## Setup Instructions
+## Next Data Loading Steps
 
-### 1. Initialize Git
+Planned next increments after structure scan:
 
-```bash
-cd research-template
-git init
-git add .
-git commit -m "initial: scalable research template"
-git branch -M main
-git remote add origin <github-url>
-git push -u origin main
-```
+- Parse selected metadata from .lmi/.lses files
+- Index TISSUE surfaces and layer files
+- Add a normalized internal manifest schema
+- Add optional copy/link step into local data/raw staging
 
-### 2. Add Your Data
+## Sensitive Data Reminder
 
-```bash
-# Copy raw data locally (not tracked)
-cp /path/to/data/* data/raw/
-
-# Verify it's ignored
-git status  # Should NOT show data/ files
-```
-
-### 3. Create Project Config
-
-```bash
-# Create configs for your project
-cp configs/README.md configs/default.yaml
-vim configs/default.yaml
-```
-
-### 4. Start Analysis
-
-```bash
-# Add your code to src/
-# Use notebooks/ for exploration
-# Run tests with: pytest tests/
-```
-
-## Workflow
-
-```
-raw data (local)
-    ↓
-notebooks/ (exploratory)
-    ↓
-src/ (modularize good code)
-    ↓
-tests/ (validate)
-    ↓
-results/ (output, gitignored)
-```
-
-## Key Files
-
-- **[.gitignore](.gitignore)** - Strict data protection rules
-- **[data/README.md](data/README.md)** - Data governance guidelines
-- **[CONTRIBUTING.md](CONTRIBUTING.md)** - How to contribute
-
-## Best Practices
-
-✅ **DO**
-- Keep data local: `data/` folders are gitignored
-- Version code: All `src/` changes go to git
-- Document: Use `docs/` and comments
-- Test: Run `pytest` before pushing
-- Config externalize: Store settings in `configs/`
-
-❌ **DON'T**
-- Commit data files (`.nii.gz`, `.csv`, `.h5`, `.db`)
-- Hard-code paths (use config files)
-- Skip tests before push
-- Commit API keys / passwords (.env in `.gitignore`)
-- Push large outputs to git (use results/ which is gitignored)
-
-## Scaling Up
-
-As your project grows, add:
-
-- **Continuous Integration**: `.github/workflows/` for testing
-- **Pre-commit hooks**: `.pre-commit-config.yaml` to prevent data commits
-- **Docker**: `Dockerfile` for reproducible environments
-- **Package management**: `requirements.txt` or `pyproject.toml`
-- **Docs build**: `docs/` → Sphinx documentation
-
-## Support Files
-
-- Read full data policy: [data/README.md](data/README.md)
-- See contributing guide: [CONTRIBUTING.md](CONTRIBUTING.md)
-- Check license: [LICENSE](LICENSE)
-
----
-
-**Template Version**: 1.0  
-**Last Updated**: March 2025
+Keep all source patient files outside git tracking. Current .gitignore already
+blocks medical and derived formats such as .vtk, .nii.gz, .dcm, .csv.
