@@ -3,3 +3,4 @@ pandas>=2.0         # CSV statistics tables
 numpy>=1.26         # numerical arrays
 matplotlib>=3.8     # plotting
 tqdm>=4.66          # progress bars when scanning large datasets
+scipy>=1.12         # spatial utilities (e.g. convex hull for polar map)
