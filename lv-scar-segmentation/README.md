@@ -1,81 +1,31 @@
 # LV Scar Segmentation
 
-Minimal, scalable repository for loading and processing LV scar study exports.
+Research code for LV scar characterisation from ADAS3D exports.
 
-This first implementation step focuses on dataset discovery and structure validation
-for a root layout like:
+Data lives on an external hard drive and is **never** committed to this repo.
 
-F:/RM_TEKNON_DEVELOP/<YEAR>/<PATIENT_ID>/Basal/Data/DE-MRI/LV/...
-
-## Quick Start
-
-1) Install package in editable mode
-
-pip install -e .
-
-2) Run dataset scan
-
-lv-scar-scan --dataset-root F:/RM_TEKNON_DEVELOP --out results/dataset_manifest.json
-
-3) Review report
-
-results/dataset_manifest.json contains all discovered year/patient cases and
-whether each case passes minimum structure checks.
-
-## What The Loader Checks
-
-For each patient case, the loader validates:
-
-- Required directories under Basal/Data/DE-MRI/LV
-- Required key VTK files
-- Presence of TISSUE statistics CSV files
-- TRANSMURALITY or TRANSMURABILITY directory naming mismatch
-
-Primary module:
-
-src/lv_scar_segmentation/data_loading.py
-
-## Current Source Files
-
-- src/lv_scar_segmentation/data_loading.py
-- src/lv_scar_segmentation/cli.py
-- configs/default.yaml
-- tests/test_data_loading.py
-
-## Data Protection
-
-### ⚠️ Critical Rules
-
-1. **NEVER** commit to `data/` folders
-2. **NEVER** push sensitive formats (`.nii.gz`, `.dcm`, `.h5`, etc.)
-3. **ALWAYS** verify with `.gitignore` before `git add`
-4. **ALWAYS** use `.gitkeep` placeholder files
-
-### Check Before Committing
+## Setup
 
 ```bash
-# See what's staged
-git diff --cached
-
-# See all untracked files in data/
-git clean -n data/
-
-# Remove accidentally added data file
-git rm --cached data/raw/patient_01.nii.gz
-echo "data/raw/*.nii.gz" >> .gitignore
-git commit "Remove sensitive data file"
+pip install -r requirements.txt
 ```
 
-## Next Data Loading Steps
+## Usage
 
-Planned next increments after structure scan:
+```python
+import data_loading
 
-- Parse selected metadata from .lmi/.lses files
-- Index TISSUE surfaces and layer files
-- Add a normalized internal manifest schema
-- Add optional copy/link step into local data/raw staging
+cases = data_loading.scan(r"F:/RM_TEKNON_DEVELOP")
+for c in cases:
+    print(c.patient_id, len(c.vtk_files), "VTK |", len(c.csv_files), "CSV")
+```
 
-## Sensitive Data Reminder
+## Structure
 
-Keep all source patient files outside git tracking. Current .gitignore already
-blocks medical and derived formats such as .vtk, .nii.gz, .dcm, .csv.
+```
+lv-scar-segmentation/
+├── data_loading.py   # scan ADAS3D export root → list of PatientCase
+├── notebooks/        # exploration notebooks (outputs gitignored)
+├── results/          # outputs: manifests, figures (gitignored)
+└── requirements.txt
+```

@@ -27,6 +27,8 @@ results/**
 *.tsv
 *.xlsx
 *.xls
+*.png
+*.pdf
 !results/README.md
 !results/.gitkeep
 
