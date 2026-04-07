@@ -1,2 +1,5 @@
-# Add dependencies as needed
-# e.g. numpy, pandas, vtk, matplotlib, ...
+pyvista>=0.43       # VTK mesh loading and 3D visualisation
+pandas>=2.0         # CSV statistics tables
+numpy>=1.26         # numerical arrays
+matplotlib>=3.8     # plotting
+tqdm>=4.66          # progress bars when scanning large datasets
