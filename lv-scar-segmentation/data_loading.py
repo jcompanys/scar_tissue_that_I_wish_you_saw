@@ -7,12 +7,12 @@ Dataset layout on the external HD:
         Left Ventricle.vtk
         Myocardium.vtk
         TISSUE/
-            Core Surface.vtk          (or variant names — matched by glob)
-            Border Zone Surface.vtk
+            Core Surface.vtk          (exact name varies across ADAS3D versions)
+            Border Zone Surface.vtk   (matched via rglob + ordered patterns)
             Healthy Surface.vtk
             Scar Surface.vtk
             Layer_10.vtk ... Layer_90.vtk
-            *.csv  (quantitative statistics)
+            *.csv
         EAM/
         THICKNESS/
         TISSUE_CE/
@@ -25,7 +25,7 @@ Usage:
     for c in cases:
         print(c)
 
-    # inspect what files are actually present for one case:
+    # inspect actual files for one case:
     diagnose(cases[0])
 """
 
@@ -36,7 +36,7 @@ from pathlib import Path
 from typing import Dict, List, Optional, Tuple
 
 
-# ── Anatomy: exact filenames (stable across ADAS3D versions) ──────────────────
+# -- Anatomy: exact filenames (stable across ADAS3D versions) -----------------
 
 _ANATOMY_FILES: Dict[str, str] = {
     "endo":       "Endo Layer.vtk",
@@ -45,11 +45,10 @@ _ANATOMY_FILES: Dict[str, str] = {
     "myocardium": "Myocardium.vtk",
 }
 
-# ── Tissue surfaces: glob patterns (filenames vary across ADAS3D exports) ──────
+# -- Tissue surfaces: glob patterns tried in order, searched recursively -------
 #
-# Each key maps to a tuple of glob patterns tried in order.
-# The first file that matches wins.  Patterns are case-insensitive on Windows
-# (the default NTFS filesystem ignores case).
+# rglob is used so files inside sub-folders (e.g. TISSUE/Core Surface/*.vtk)
+# are found as well as files directly in TISSUE/.
 
 _TISSUE_SURFACE_GLOBS: Dict[str, Tuple[str, ...]] = {
     "core": (
@@ -77,16 +76,16 @@ _TISSUE_SURFACE_GLOBS: Dict[str, Tuple[str, ...]] = {
 }
 
 
-# ── Data model ─────────────────────────────────────────────────────────────────
+# -- Data model ----------------------------------------------------------------
 
 @dataclass
 class PatientCase:
     year: str
     patient_id: str
-    root: Path                             # <root>/<year>/<patient_id>/
-    lv_dir: Optional[Path]                 # .../Basal/Data/DE-MRI/LV/
+    root: Path
+    lv_dir: Optional[Path]
 
-    anatomy: Dict[str, Optional[Path]]        = field(default_factory=dict)
+    anatomy: Dict[str, Optional[Path]]         = field(default_factory=dict)
     tissue_surfaces: Dict[str, Optional[Path]] = field(default_factory=dict)
     tissue_layers: List[Path]                  = field(default_factory=list)
     stats_csv: List[Path]                      = field(default_factory=list)
@@ -103,21 +102,10 @@ class PatientCase:
         )
 
 
-# ── Public API ─────────────────────────────────────────────────────────────────
+# -- Public API ----------------------------------------------------------------
 
 def scan(dataset_root: str | Path) -> List[PatientCase]:
-    """Scan the full dataset and return one PatientCase per patient.
-
-    Parameters
-    ----------
-    dataset_root:
-        Root of the external HD, e.g. ``r"F:/RM_TEKNON_DEVELOP"``.
-
-    Returns
-    -------
-    List[PatientCase]
-        Sorted by year then patient ID.
-    """
+    """Scan the full dataset and return one PatientCase per patient."""
     root = Path(dataset_root)
     if not root.exists():
         raise FileNotFoundError(f"Dataset root not found: {root}")
@@ -130,39 +118,39 @@ def scan(dataset_root: str | Path) -> List[PatientCase]:
 
 
 def diagnose(case: PatientCase) -> None:
-    """Print all files found inside this patient's TISSUE folder.
+    """Print all VTK files found inside this patient's TISSUE folder.
 
-    Call this when the scan finds fewer cases than expected — it reveals
-    the actual filenames on disk so you can adjust the glob patterns.
+    Call this when the scan finds fewer cases than expected.
+    It reveals the actual filenames on disk so glob patterns can be adjusted.
     """
-    print(f"\n{'─'*60}")
+    sep = "-" * 60
+    print(f"\n{sep}")
     print(f"Patient : {case.year}/{case.patient_id}")
     print(f"LV dir  : {case.lv_dir}")
 
     if case.lv_dir is None:
-        print("  ⚠  LV directory not found — check Basal/Data/DE-MRI/LV path")
+        print("  WARNING: LV directory not found (Basal/Data/DE-MRI/LV/)")
         return
 
     tissue_dir = case.lv_dir / "TISSUE"
     if not tissue_dir.is_dir():
-        print(f"  ⚠  TISSUE folder not found at {tissue_dir}")
+        print(f"  WARNING: TISSUE folder not found at {tissue_dir}")
         return
 
-    vtk_files = sorted(tissue_dir.glob("*.vtk"))
-    print(f"\n  TISSUE/ contains {len(vtk_files)} VTK files:")
+    vtk_files = sorted(tissue_dir.rglob("*.vtk"))
+    print(f"\n  TISSUE/ contains {len(vtk_files)} VTK files (recursive):")
     for f in vtk_files:
-        matched_as = _which_key(f.name)
-        tag = f"  ← matched as '{matched_as}'" if matched_as else ""
-        print(f"    {f.name}{tag}")
+        rel = f.relative_to(tissue_dir)
+        print(f"    {rel}")
 
     print(f"\n  Resolved tissue_surfaces:")
     for key, path in case.tissue_surfaces.items():
-        status = str(path.name) if path else "NOT FOUND"
-        print(f"    {key:12s} → {status}")
-    print(f"{'─'*60}\n")
+        status = str(path.relative_to(tissue_dir)) if path else "NOT FOUND"
+        print(f"    {key:<12} -> {status}")
+    print(f"{sep}\n")
 
 
-# ── Internal helpers ───────────────────────────────────────────────────────────
+# -- Internal helpers ----------------------------------------------------------
 
 def _year_dirs(root: Path) -> List[Path]:
     return sorted(
@@ -173,22 +161,11 @@ def _year_dirs(root: Path) -> List[Path]:
 
 def _find_tissue_surface(tissue_dir: Path,
                           globs: Tuple[str, ...]) -> Optional[Path]:
-    """Return the first file in tissue_dir that matches any of the glob patterns."""
+    """Search tissue_dir recursively for the first file matching any pattern."""
     for pattern in globs:
-        matches = sorted(tissue_dir.glob(pattern))
+        matches = sorted(tissue_dir.rglob(pattern))
         if matches:
             return matches[0]
-    return None
-
-
-def _which_key(filename: str) -> Optional[str]:
-    """Reverse-lookup: which tissue key would this filename match?"""
-    for key, globs in _TISSUE_SURFACE_GLOBS.items():
-        for pattern in globs:
-            # simple substring check for the diagnosis display
-            stem = pattern.replace("*", "").replace(".vtk", "").lower()
-            if stem and stem in filename.lower():
-                return key
     return None
 
 
@@ -201,19 +178,17 @@ def _load_case(year: str, patient_dir: Path) -> PatientCase:
     stats_csv: List[Path] = []
 
     if lv_dir is not None:
-        # anatomy — exact names (stable)
         for key, filename in _ANATOMY_FILES.items():
             p = lv_dir / filename
             anatomy[key] = p if p.exists() else None
 
-        # tissue surfaces — flexible glob matching
         tissue_dir = lv_dir / "TISSUE"
         if tissue_dir.is_dir():
             for key, globs in _TISSUE_SURFACE_GLOBS.items():
                 tissue_surfaces[key] = _find_tissue_surface(tissue_dir, globs)
 
             tissue_layers = sorted(tissue_dir.glob("Layer_*.vtk"))
-            stats_csv     = sorted(tissue_dir.glob("*.csv"))
+            stats_csv     = sorted(tissue_dir.rglob("*.csv"))
 
     return PatientCase(
         year=year,
@@ -228,6 +203,5 @@ def _load_case(year: str, patient_dir: Path) -> PatientCase:
 
 
 def _find_lv_dir(patient_dir: Path) -> Optional[Path]:
-    """Resolve .../Basal/Data/DE-MRI/LV/ for a patient folder."""
     lv = patient_dir / "Basal" / "Data" / "DE-MRI" / "LV"
     return lv if lv.is_dir() else None
