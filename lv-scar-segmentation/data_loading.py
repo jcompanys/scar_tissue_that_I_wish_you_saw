@@ -202,6 +202,12 @@ def _load_case(year: str, patient_dir: Path) -> PatientCase:
     )
 
 
+_DE_MRI_VARIANTS = ("DE-MRI", "DE-MRI 3D")
+
 def _find_lv_dir(patient_dir: Path) -> Optional[Path]:
-    lv = patient_dir / "Basal" / "Data" / "DE-MRI" / "LV"
-    return lv if lv.is_dir() else None
+    base = patient_dir / "Basal" / "Data"
+    for variant in _DE_MRI_VARIANTS:
+        lv = base / variant / "LV"
+        if lv.is_dir():
+            return lv
+    return None
