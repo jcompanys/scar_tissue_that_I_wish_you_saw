@@ -1,7 +1,7 @@
 """ADAS3D dataset loader for RM_TEKNON_DEVELOP.
 
 Dataset layout on the external HD:
-    <root>/<year>/<patient_id>/Basal/Data/DE-MRI/LV/
+    <root>/<year>/<patient_id>/Basal/Data/<de_mri_variant>/LV/
         Endo Layer.vtk
         Epi Layer.vtk
         Left Ventricle.vtk
@@ -11,12 +11,16 @@ Dataset layout on the external HD:
             Border Zone Surface.vtk   (matched via rglob + ordered patterns)
             Healthy Surface.vtk
             Scar Surface.vtk
+            Power Paths.vtk           (newer exports: critical corridor isthmuses)
             Layer_10.vtk ... Layer_90.vtk
             *.csv
         EAM/
         THICKNESS/
         TISSUE_CE/
         TRANSMURALITY/   (or TRANSMURABILITY/ in some exports)
+
+    <de_mri_variant> is one of: "DE-MRI", "DE-MRI 3D", "DE-MRI 2D"
+    (tried in that order; first match wins)
 
 Usage:
     from data_loading import scan, diagnose
@@ -73,7 +77,16 @@ _TISSUE_SURFACE_GLOBS: Dict[str, Tuple[str, ...]] = {
         "*Scar*Surface*.vtk",
         "*Scar*.vtk",
     ),
+    "power_paths": (
+        "Power Paths.vtk",
+        "*Power*Path*.vtk",
+        "*PowerPath*.vtk",
+    ),
 }
+
+# -- DE-MRI folder name variants (tried in order, first match wins) -----------
+
+_DE_MRI_VARIANTS = ("DE-MRI", "DE-MRI 3D", "DE-MRI 2D")
 
 
 # -- Data model ----------------------------------------------------------------
@@ -129,7 +142,8 @@ def diagnose(case: PatientCase) -> None:
     print(f"LV dir  : {case.lv_dir}")
 
     if case.lv_dir is None:
-        print("  WARNING: LV directory not found (Basal/Data/DE-MRI/LV/)")
+        print("  WARNING: LV directory not found")
+        print(f"  Tried: Basal/Data/<variant>/LV  where variant in {_DE_MRI_VARIANTS}")
         return
 
     tissue_dir = case.lv_dir / "TISSUE"
@@ -201,8 +215,6 @@ def _load_case(year: str, patient_dir: Path) -> PatientCase:
         stats_csv=stats_csv,
     )
 
-
-_DE_MRI_VARIANTS = ("DE-MRI", "DE-MRI 3D")
 
 def _find_lv_dir(patient_dir: Path) -> Optional[Path]:
     base = patient_dir / "Basal" / "Data"
