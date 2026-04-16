@@ -5,3 +5,5 @@ matplotlib>=3.8     # plotting
 tqdm>=4.66          # progress bars when scanning large datasets
 scipy>=1.12         # spatial utilities
 scikit-learn>=1.4   # ISOMAP shape analysis
+jupyterlab>=4.0     # notebook/lab interface for exploration
+ipykernel>=6.29     # project kernel for running the notebook
