@@ -7,9 +7,31 @@ pandas DataFrame with:
   - Correct dtypes: datetime64, float64, Int64 (nullable integer), object
   - Grouped column sets via COLUMN_GROUPS for structured EDA / correlation
 
-The source file is an Excel-exported CSV with Spanish column headers,
-comma decimal separators, and DD/MM/YYYY dates.  The loader handles
-encoding detection, separator inference, and all known naming quirks.
+The source file is a patient-level clinical registry exported from Excel,
+with Spanish column headers, comma decimal separators, and DD/MM/YYYY
+dates. The columns are organized around:
+
+  - identification and inclusion
+  - MRI scar geometry
+  - demographics and risk factors
+  - infarction and revascularization history
+  - echocardiography
+  - devices
+  - ventricular arrhythmias
+  - ICD therapies / ablation
+  - 6-month follow-up outcomes
+  - medication
+
+Most yes/no registry fields appear to use binary 0/1 coding. The main
+known exception is ``sex`` where the local study notes indicate
+``1 = male`` and ``2 = female``.
+
+The loader handles encoding detection, separator inference, duplicate
+headers, and the naming quirks observed in the local registry export.
+Some fields remain provisional until checked directly against the local
+CSV, especially ``revasc_type``, ``enhancement_distribution``,
+``enhancement_grade``, ``soo_clinical_va``, ``soo_inducible_va``, and
+``notes_misc`` (raw ``@`` column).
 
 Typical usage::
 
@@ -40,6 +62,8 @@ import pandas as pd
 #   first occurrence  → date_mi          (date of the index MI)
 #   second occurrence → date_mi_history  (date in the clinical-history block)
 
+# The mapping below reflects the current local understanding of the CSV.
+# A few semantic interpretations remain provisional and are documented above.
 _COLUMN_MAP: Dict[str, str] = {
     # --- Admin / identification ------------------------------------------------
     "INCLUSION":                        "inclusion",
@@ -68,7 +92,7 @@ _COLUMN_MAP: Dict[str, str] = {
     # --- Demographics ---------------------------------------------------------
     "FECHA NAC":                        "date_birth",
     "EDAD":                             "age",
-    "SEXO":                             "sex",           # 1 = male, 0 = female (verify with source)
+    "SEXO":                             "sex",           # local study notes: 1 = male, 2 = female
 
     # --- Cardiovascular risk factors ------------------------------------------
     "HTA":                              "hta",
@@ -84,7 +108,7 @@ _COLUMN_MAP: Dict[str, str] = {
     "FECHA IAM":                        "date_mi",
     "FECHA IAM.1":                      "date_mi_history",
     "FECHA REVASC":                     "date_revasc",
-    "TIPO REVASC":                      "revasc_type",
+    "TIPO REVASC":                      "revasc_type",   # provisional meaning until rechecked in CSV
     "NOTAS REVASC":                     "revasc_notes",
 
     # --- Echocardiography -----------------------------------------------------
