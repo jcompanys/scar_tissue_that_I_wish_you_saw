@@ -1,15 +1,29 @@
     \documentclass[11pt,a4paper]{article}
 
-\usepackage[margin=2.5cm]{geometry}
+\usepackage[margin=2.0cm]{geometry}
 \usepackage{graphicx}
 \usepackage{float}
 \usepackage{caption}
+\usepackage{enumitem}
+\usepackage{titlesec}
 
-\title{Brief Results Report\\LV Scar Segmentation Project}
+\setlength{\textfloatsep}{7pt plus 1pt minus 1pt}
+\setlength{\floatsep}{6pt plus 1pt minus 1pt}
+\setlength{\intextsep}{6pt plus 1pt minus 1pt}
+\setlength{\abovecaptionskip}{4pt}
+\setlength{\belowcaptionskip}{0pt}
+\setlist{nosep,leftmargin=*}
+\titlespacing*{\section}{0pt}{1.2ex plus .2ex minus .2ex}{0.6ex}
+\titlespacing*{\subsection}{0pt}{0.9ex plus .2ex minus .2ex}{0.4ex}
+\linespread{0.98}
+
+\graphicspath{{results/01_scar_exploration/}{results/02_clinical_eda/}}
+
+\title{Scar Cohort Visualization and EDA\\Scar Characterization Project}
 \author{}
 \date{\today}
 
-\newcommand{\imgpath}[1]{\caption*{\small Image path: \texttt{#1}}}
+\newcommand{\imgpath}[1]{}
 
 \begin{document}
 
@@ -18,39 +32,35 @@
     \section{Objective}
     This report briefly summarizes the main findings from the notebooks \texttt{01\_scar\_exploration.ipynb} and \texttt{02\_clinical\_eda.ipynb}. The goal is to present the main visual results in a brief and clear way, while leaving space for final interpretation.
 
+    A total of \textbf{168} cases were scanned in the dataset. Among them, \textbf{105} had a real core zone (CZ) segmentation available and were included in the scar exploration analysis. These 105 cases were split into \textbf{84 known cases} (80\%) and \textbf{21 held-out cases} (20\%).
+
     \section{Scar Exploration}
 
 \subsection{3D overview of scar distribution}
-The 3D analysis was performed on the known subset, which corresponds to 80\% of the valid cases. Figure \ref{fig:3d-grid} shows the scar together with the left ventricular anatomy for individual cases. Figure \ref{fig:3d-overlay} shows the aligned superposition of all cases, which helps visualize whether there is a recurrent anatomical location of scar across patients.
+The 3D analysis was performed on the known subset, which corresponds to 80\% of the valid cases. Figure \ref{fig:3d-grid} shows the scar together with the left ventricular anatomy for individual cases.
 
 \begin{figure}[H]
 \centering
-\includegraphics[width=0.48\textwidth]{C:/Users/joan/Desktop/FEINA/UPF/TFG/repo/scar-char-v0.1/lv-scar-segmentation/results/3d_grid_known.png}
-\hfill
-\includegraphics[width=0.42\textwidth]{C:/Users/joan/Desktop/FEINA/UPF/TFG/repo/scar-char-v0.1/lv-scar-segmentation/results/3d_overlay_known.png}
-\caption{Left: individual LV anatomy and scar across cases. Right: aligned superposition of all known scars.}
+\includegraphics[width=0.74\textwidth]{3d_grid_known.png}
+\caption{Individual LV anatomy and scar across cases.}
 \label{fig:3d-grid}
-\imgpath{C:/Users/joan/Desktop/FEINA/UPF/TFG/repo/scar-char-v0.1/lv-scar-segmentation/results/3d\_grid\_known.png and C:/Users/joan/Desktop/FEINA/UPF/TFG/repo/scar-char-v0.1/lv-scar-segmentation/results/3d\_overlay\_known.png}
+\imgpath{results/01\_scar\_exploration/3d\_grid\_known.png}
 \end{figure}
 
-\noindent\textbf{Space for interpretation:} Explain what anatomical regions seem to accumulate more scar and whether the overlay suggests a common spatial pattern across patients.
-
-\vspace{0.7cm}
+\noindent\textbf{Interpretation:} The main finding is that scar appears in many variable anatomical locations. This makes a statistical shape model unsuitable, because even after labeling the LV nodes, the scar does not follow a stable common pattern across cases.
 
     \subsection{2D polar maps and AHA segmentation}
     To facilitate comparison across patients, the 3D scar distribution was projected into 2D polar maps. This representation is easier to compare visually and is the basis for the AHA segment analysis.
 
 \begin{figure}[H]
 \centering
-\includegraphics[width=0.78\textwidth]{C:/Users/joan/Desktop/FEINA/UPF/TFG/repo/scar-char-v0.1/lv-scar-segmentation/results/polar_grid_known.png}
+\includegraphics[width=0.78\textwidth]{polar_grid_known.png}
 \caption{Patient-level 2D polar maps.}
 \label{fig:polar-grid}
 \imgpath{C:/Users/joan/Desktop/FEINA/UPF/TFG/repo/scar-char-v0.1/lv-scar-segmentation/results/polar\_grid\_known.png}
 \end{figure}
 
-\noindent\textbf{Space for interpretation:} Explain how the AHA segmentation is represented in the polar maps and what visual patterns become easier to identify in 2D than in 3D.
-
-\vspace{0.7cm}
+\noindent\textbf{Interpretation:} The scars were projected to 2D to assess whether they share common shape patterns. The bullseye was divided according to the AHA segments so that it becomes easier to see which parts of the LV accumulate more scar across patients.
 
     \subsection{Orientation used to define the AHA segmentation}
     The orientation of the polar maps was standardized before segment comparison. First, the left ventricular long axis was estimated from the anatomy. Then, the circumferential reference angle was defined from the basal ring orientation. This provides a consistent apex-to-base and angular alignment across patients.
@@ -65,39 +75,49 @@ The 3D analysis was performed on the known subset, which corresponds to 80\% of 
 
 \begin{figure}[H]
 \centering
-\includegraphics[width=0.58\textwidth]{C:/Users/joan/Desktop/FEINA/UPF/TFG/repo/scar-char-v0.1/lv-scar-segmentation/results/method_comparison_reference_case.png}
+\includegraphics[width=0.70\textwidth]{method_comparison_reference_case.png}
 \caption{Example of the reference orientation used for the polar-map alignment.}
 \label{fig:orientation}
 \imgpath{C:/Users/joan/Desktop/FEINA/UPF/TFG/repo/scar-char-v0.1/lv-scar-segmentation/results/method\_comparison\_reference\_case.png}
 \end{figure}
 
-\noindent\textbf{Space for interpretation:} Explain why this orientation is reasonable and how it helps define AHA segments consistently across patients.
-
-\vspace{0.7cm}
+\noindent\textbf{Interpretation:} This is properly explained by the alignment procedure itself: a consistent orientation is necessary so that the same anatomical regions correspond to the same AHA segments across all patients.
 
     \subsection{Superposition of the 2D polar maps}
     After alignment, all polar maps were superposed to estimate scar density across the cohort. This population-level view highlights where scar appears more frequently.
 
 \begin{figure}[H]
 \centering
-\includegraphics[width=0.62\textwidth]{C:/Users/joan/Desktop/FEINA/UPF/TFG/repo/scar-char-v0.1/lv-scar-segmentation/results/polar_superposition_known.png}
+\includegraphics[width=0.62\textwidth]{polar_superposition_known.png}
 \caption{Superposition of aligned polar maps showing higher scar density regions.}
 \label{fig:polar-superposition}
 \imgpath{C:/Users/joan/Desktop/FEINA/UPF/TFG/repo/scar-char-v0.1/lv-scar-segmentation/results/polar\_superposition\_known.png}
 \end{figure}
 
-    From this superposition, the higher scar probability appears in the segments: \textbf{[fill in the AHA segments here]}.
+    From this superposition, the higher scar probability appears across several AHA segments, reflecting the strong spatial variability of scar in the cohort.
 
-\noindent\textbf{Space for interpretation:} Explain which regions accumulate more scar and whether the pattern agrees with the expected clinical distribution.
+\noindent\textbf{Interpretation:} Scar appears most frequently in the mid, apical, and apex rings. In particular, the strongest concentration is observed around segments 11, 7, and 16.
 
-\vspace{0.7cm}
+    To summarize the polar-map density more explicitly, scar frequency was also aggregated by AHA segment and by concentric LV ring. These two summaries complement the visual superposition by quantifying where scar tends to accumulate circumferentially and radially.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.48\textwidth]{aha_scar_density.png}
+\hfill
+\includegraphics[width=0.48\textwidth]{aha_scar_density_rings.png}
+\caption{Left: scar density summarized by AHA segment. Right: scar density summarized by LV ring in the polar map.}
+\label{fig:aha-density}
+\imgpath{C:/Users/joan/Desktop/FEINA/UPF/TFG/repo/scar-char-v0.1/lv-scar-segmentation/results/01\_scar\_exploration/aha\_scar\_density.png and C:/Users/joan/Desktop/FEINA/UPF/TFG/repo/scar-char-v0.1/lv-scar-segmentation/results/01\_scar\_exploration/aha\_scar\_density\_rings.png}
+\end{figure}
+
+\noindent\textbf{Interpretation:} The segment- and ring-based summaries confirm that scar appears most frequently in the mid, apical, and apex regions, with the strongest concentration in segments 7, 11, and 16.
 
     \subsection{ISOMAP shape analysis}
     ISOMAP was used to compare scar geometry in a lower-dimensional representation. This helps identify whether a common scar shape appears across patients, even if the exact size and extent differ.
 
 \begin{figure}[H]
 \centering
-\includegraphics[width=0.68\textwidth]{C:/Users/joan/Desktop/FEINA/UPF/TFG/repo/scar-char-v0.1/lv-scar-segmentation/results/isomap_grid_known.png}
+\includegraphics[width=0.82\textwidth]{isomap_grid_known.png}
 \caption{ISOMAP-based embedding used to compare scar shapes.}
 \label{fig:isomap}
 \imgpath{C:/Users/joan/Desktop/FEINA/UPF/TFG/repo/scar-char-v0.1/lv-scar-segmentation/results/isomap\_grid\_known.png}
@@ -105,64 +125,59 @@ The 3D analysis was performed on the known subset, which corresponds to 80\% of 
 
     The embedding suggests a common shape pattern described as: \textbf{[fill in common shape / xyz description here]}.
 
-\noindent\textbf{Space for interpretation:} Explain whether the embedding suggests one dominant morphology, several clusters, or a continuous shape spectrum.
+\noindent\textbf{Interpretation:} ISOMAP was used to preserve the local relationships between scar nodes. A fragment-based strategy was needed because many scars contained very small components; these were removed below a node threshold, while the threshold was tuned so that fragments that were truly separated in 3D remained separated. In practice, the largest fragments were kept for the comparison.
 
-\vspace{0.7cm}
-
-    \section{Clinical EDA}
-
-    \subsection{Missing data and completeness}
-    The clinical exploratory analysis begins with the assessment of missing values and variable completeness. This is important because some descriptive summaries rely on fewer cases than the total cohort.
+    \subsection{XYZ candidate patterns}
+    In addition to the ISOMAP embedding, a specific visualization of XYZ-shape candidates was generated to inspect whether a repeated fragmented pattern could still be identified after the fragmentation thresholding step.
 
 \begin{figure}[H]
 \centering
-\includegraphics[width=0.62\textwidth]{C:/Users/joan/Desktop/FEINA/UPF/TFG/repo/scar-char-v0.1/lv-scar-segmentation/results/eda_completeness.png}
-\caption{Dataset completeness and missing-value overview.}
-\label{fig:missing}
-\imgpath{C:/Users/joan/Desktop/FEINA/UPF/TFG/repo/scar-char-v0.1/lv-scar-segmentation/results/eda\_completeness.png}
+\includegraphics[width=0.62\textwidth]{xyz_candidates.png}
+\caption{Candidate XYZ-like scar patterns identified after the fragmentation analysis.}
+\label{fig:xyz-candidates}
+\imgpath{C:/Users/joan/Desktop/FEINA/UPF/TFG/repo/scar-char-v0.1/lv-scar-segmentation/results/01\_scar\_exploration/xyz\_candidates.png}
 \end{figure}
+
+\noindent\textbf{Interpretation:} There seems to be a predominant shape, and the XYZ-like pattern appears in many cases.
+
+    \section{Clinical EDA}
+
+    \subsection{Dataset overview}
+    The clinical exploratory analysis begins with the assessment of variable completeness and general cohort structure. This is important because some descriptive summaries rely on fewer cases than the total cohort.
 
     The dataset contains NaNs in several variables, so some results should be interpreted with attention to the available sample size.
 
-\noindent\textbf{Space for interpretation:} Describe the most relevant NaN patterns and mention whether missingness looks mild, moderate, or substantial for the variables you care about most.
+    The top missing variables are mainly follow-up and event-date fields: \texttt{date\_followup\_va} (100.0\%), \texttt{date\_icd\_therapy} (100.0\%), \texttt{date\_death} (99.4\%), \texttt{date\_ablation} (97.1\%), \texttt{date\_device\_implant} (94.2\%), and \texttt{date\_eef} (92.5\%). Other highly incomplete variables include \texttt{date\_clinical\_va} (88.4\%), \texttt{type\_followup\_va} (86.7\%), and \texttt{notes\_followup\_va} (86.1\%). This indicates that missingness is concentrated mostly in secondary event descriptors rather than in the core scar burden variables.
 
-\vspace{0.7cm}
+\noindent\textbf{Interpretation:} The dataset overview shows that the most substantial missingness is concentrated in follow-up and event-detail variables, while the main scar burden variables are more complete and therefore more reliable for the central descriptive analyses.
 
 \subsection{Outlier handling}
 No strict outlier removal was applied. The goal was to preserve all cases and keep the natural variability of the cohort. Since there was no strong domain-based criterion to decide which unusual values should be excluded, it was more transparent to retain them.
 
-\noindent\textbf{Space for interpretation:} Explain that preserving variability was preferred over aggressive filtering, and that formal exclusion of unusual cases would require stronger clinical guidance.
+\noindent\textbf{Interpretation:} Preserving the full variability of the cohort was preferred over aggressive filtering. Since unusual values may still represent true clinical variability, a strict outlier exclusion strategy would require stronger clinical and domain-specific guidance.
 
-\vspace{0.6cm}
-
-    \subsection{Categorical plots}
-Several categorical distributions were reviewed to characterize the cohort and the available outcomes. Examples include sex, presence of channels, cardiac death, arrhythmic death, and other event-related variables.
+    \subsection{Demographic plot}
+The demographic plot provides the first descriptive overview of the cohort before looking at the broader set of categorical variables.
 
 \begin{figure}[H]
 \centering
-\includegraphics[width=0.32\textwidth]{C:/Users/joan/Desktop/FEINA/UPF/TFG/repo/scar-char-v0.1/lv-scar-segmentation/results/eda_demographics.png}
-\hfill
-\includegraphics[width=0.32\textwidth]{C:/Users/joan/Desktop/FEINA/UPF/TFG/repo/scar-char-v0.1/lv-scar-segmentation/results/eda_scar_categorical.png}
-\hfill
-\includegraphics[width=0.32\textwidth]{C:/Users/joan/Desktop/FEINA/UPF/TFG/repo/scar-char-v0.1/lv-scar-segmentation/results/eda_outcomes.png}
-\caption{Categorical summaries. Left: demographics. Center: scar-related categorical variables. Right: outcomes.}
-\label{fig:demo}
-\imgpath{C:/Users/joan/Desktop/FEINA/UPF/TFG/repo/scar-char-v0.1/lv-scar-segmentation/results/eda\_demographics.png, C:/Users/joan/Desktop/FEINA/UPF/TFG/repo/scar-char-v0.1/lv-scar-segmentation/results/eda\_scar\_categorical.png, C:/Users/joan/Desktop/FEINA/UPF/TFG/repo/scar-char-v0.1/lv-scar-segmentation/results/eda\_outcomes.png}
+\includegraphics[width=0.74\textwidth]{02a_demographics.png}
+\caption{Demographic summary of the cohort.}
+\label{fig:demographics-main}
+\imgpath{results/02\_clinical\_eda/02a\_demographics.png}
 \end{figure}
 
-\noindent\textbf{Space for interpretation:} Comment on the balance or imbalance of the main categories. Mention sex distribution, prevalence of channels, and how frequent cardiac death or arrhythmic death appear in the cohort.
+\noindent\textbf{Interpretation:} The cohort is composed mainly of older patients, with relatively few women. In addition, MRI acquisition appears to have been performed relatively soon after myocardial infarction in many cases.
 
-\vspace{0.7cm}
-
-    \subsection{Numerical variables and scar percentages}
-    Numerical distributions were used to inspect age and scar burden metrics. The percentage-based scar variables are especially relevant because they express scar burden relative to LV mass.
+    \subsection{MRI scar variables - numeric distribution}
+    The main numerical distributions of interest are the MRI-derived scar variables. These metrics are especially relevant because they quantify scar burden and its components, both in absolute and normalized form.
 
 \begin{figure}[H]
 \centering
-\includegraphics[width=0.62\textwidth]{C:/Users/joan/Desktop/FEINA/UPF/TFG/repo/scar-char-v0.1/lv-scar-segmentation/results/eda_scar_distributions.png}
-\caption{Distribution of continuous scar variables, including percentage-based metrics.}
+\includegraphics[width=0.74\textwidth]{02b_scar_numeric.png}
+\caption{Distribution of the main MRI scar variables.}
 \label{fig:scar-dist}
-\imgpath{C:/Users/joan/Desktop/FEINA/UPF/TFG/repo/scar-char-v0.1/lv-scar-segmentation/results/eda\_scar\_distributions.png}
+\imgpath{results/02\_clinical\_eda/02b\_scar\_numeric.png}
 \end{figure}
 
     Variables of special interest:
@@ -174,27 +189,23 @@ Several categorical distributions were reviewed to characterize the cohort and t
         \item Channel-related variables
     \end{itemize}
 
-\noindent\textbf{Space for interpretation:} Explain whether the percentage variables look concentrated, skewed, broad, or heterogeneous, and add a short sentence on the age distribution.
-
-\vspace{0.7cm}
+\noindent\textbf{Interpretation:} As expected, border zone burden is generally higher than core scar burden. Channel mass is usually low, most often remaining between 0 and 5 grams.
 
     \subsection{Risk factor prevalence}
-    Risk factor prevalence was summarized to provide a compact clinical overview of the cohort.
+    Risk factor prevalence summarizes how frequent the main baseline clinical risk factors are in the cohort. In other words, it shows the proportion of patients presenting each risk factor and provides a compact clinical profile of the study population.
 
 \begin{figure}[H]
 \centering
-\includegraphics[width=0.6\textwidth]{C:/Users/joan/Desktop/FEINA/UPF/TFG/repo/scar-char-v0.1/lv-scar-segmentation/results/eda_risk_factors.png}
+\includegraphics[width=0.72\textwidth]{03_risk_factors.png}
 \caption{Prevalence of the main clinical risk factors.}
 \label{fig:risk}
-\imgpath{C:/Users/joan/Desktop/FEINA/UPF/TFG/repo/scar-char-v0.1/lv-scar-segmentation/results/eda\_risk\_factors.png}
+\imgpath{results/02\_clinical\_eda/03\_risk\_factors.png}
 \end{figure}
 
-\noindent\textbf{Space for interpretation:} Briefly describe which risk factors are most common and whether the cohort profile is consistent with an ischemic scar population.
+\noindent\textbf{Interpretation:} Here, risk factor prevalence refers to the proportion of patients who already had each clinical risk factor at baseline or before the MRI assessment. This includes previous conditions such as prior myocardial infarction, hypertension, diabetes, or dyslipidemia, and helps describe the clinical background of the cohort before interpreting the scar findings.
 
-\vspace{0.6cm}
-
-    \subsection{Correlation matrix}
-    The correlation matrix was used to identify linear relationships between scar metrics and other clinical variables. The following associations were highlighted as relevant in the analysis:
+    \subsection{Focused correlation for scar percentage variables}
+    The focused correlation analysis was used to identify the most relevant linear relationships involving scar percentage metrics and other clinical variables.
 
     \begin{itemize}
         \item Core scar (\% LV mass) vs Channel mass (g): $r = 0.558$
@@ -205,75 +216,30 @@ Several categorical distributions were reviewed to characterize the cohort and t
 
 \begin{figure}[H]
 \centering
-\includegraphics[width=0.62\textwidth]{C:/Users/joan/Desktop/FEINA/UPF/TFG/repo/scar-char-v0.1/lv-scar-segmentation/results/eda_correlation_heatmap.png}
-\caption{Correlation matrix across numeric clinical and scar variables.}
+\includegraphics[width=0.74\textwidth]{06_scar_pct_focus_correlation.png}
+\caption{Focused correlation view for scar percentage variables.}
 \label{fig:corr}
-\imgpath{C:/Users/joan/Desktop/FEINA/UPF/TFG/repo/scar-char-v0.1/lv-scar-segmentation/results/eda\_correlation\_heatmap.png}
+\imgpath{results/02\_clinical\_eda/06\_scar\_pct\_focus\_correlation.png}
 \end{figure}
 
-\noindent\textbf{Space for interpretation:} Explain which relationships are the most interesting clinically. You can mention that scar burden tends to increase with channel-related metrics and tends to relate inversely to LVEF.
+\noindent\textbf{Interpretation:} Core scar percentage is positively correlated with the presence of channels, which is consistent with expectations. By contrast, the apparent correlation between core scar percentage and death is not reliable because there is only one death case in the dataset. Inducible ventricular arrhythmia shows a stronger association with border zone burden than with core scar, so interpreting it only through core scar could be misleading.
 
-\vspace{0.7cm}
-
-    \subsection{Relations among CZ, BZ, and total scar percentages}
-    The analysis also compares the normalized scar components directly, especially core scar, border zone scar, and total scar burden.
+    \subsection{Age vs scar burden percentages}
+    This analysis explores how age relates to the normalized scar burden components, especially core scar, border zone scar, and total scar percentage.
 
 \begin{figure}[H]
 \centering
-\includegraphics[width=0.62\textwidth]{C:/Users/joan/Desktop/FEINA/UPF/TFG/repo/scar-char-v0.1/lv-scar-segmentation/results/07_scar_relations_normalized.png}
-\caption{Normalized relationships among core scar, border zone scar, and total scar burden.}
+\includegraphics[width=0.74\textwidth]{07_age_vs_scar_pct_components.png}
+\caption{Relationship between age and scar burden percentage components.}
 \label{fig:scar-rel}
-\imgpath{C:/Users/joan/Desktop/FEINA/UPF/TFG/repo/scar-char-v0.1/lv-scar-segmentation/results/07\_scar\_relations\_normalized.png}
+\imgpath{results/02\_clinical\_eda/07\_age\_vs\_scar\_pct\_components.png}
 \end{figure}
 
-\noindent\textbf{Space for interpretation:} Explain whether the three scar components vary together and whether one component appears to dominate the total scar burden.
-
-\vspace{0.7cm}
-
-    \subsection{Subgroup comparisons}
-    Subgroup analyses were used to compare scar burden across sex and age groups. Additional plots explored how age relates to scar burden components.
-
-\begin{figure}[H]
-\centering
-\includegraphics[width=0.48\textwidth]{C:/Users/joan/Desktop/FEINA/UPF/TFG/repo/scar-char-v0.1/lv-scar-segmentation/results/07_subgroups.png}
-\hfill
-\includegraphics[width=0.48\textwidth]{C:/Users/joan/Desktop/FEINA/UPF/TFG/repo/scar-char-v0.1/lv-scar-segmentation/results/07_age_vs_scar_pct_components.png}
-\caption{Left: subgroup comparisons of scar burden across selected clinical groups. Right: relationship between age and scar burden percentage components.}
-\label{fig:subgroups}
-\imgpath{C:/Users/joan/Desktop/FEINA/UPF/TFG/repo/scar-char-v0.1/lv-scar-segmentation/results/07\_subgroups.png and C:/Users/joan/Desktop/FEINA/UPF/TFG/repo/scar-char-v0.1/lv-scar-segmentation/results/07\_age\_vs\_scar\_pct\_components.png}
-\end{figure}
-
-\noindent\textbf{Space for interpretation:} Add your comparison of core scar, border zone, and total scar by sex and age. Discuss whether age appears related to scar burden percentages.
-
-\vspace{0.7cm}
-
-    \subsection{Scar burden and outcomes}
-    The last set of plots relates scar burden to clinical outcomes such as death, inducible ventricular arrhythmia, and ventricular arrhythmia ablation. These figures are descriptive and help identify whether worse-outcome groups appear to have larger scar burden.
-
-\begin{figure}[H]
-\centering
-\includegraphics[width=0.62\textwidth]{C:/Users/joan/Desktop/FEINA/UPF/TFG/repo/scar-char-v0.1/lv-scar-segmentation/results/11c_scar_pct_by_selected_outcomes.png}
-\caption{Scar percentage metrics compared across selected clinical outcomes.}
-\label{fig:scar-outcomes}
-\imgpath{C:/Users/joan/Desktop/FEINA/UPF/TFG/repo/scar-char-v0.1/lv-scar-segmentation/results/11c\_scar\_pct\_by\_selected\_outcomes.png}
-\end{figure}
-
-    Suggested points to describe:
-    \begin{itemize}
-        \item Core scar (\% LV mass) by death, inducible VA, and VA ablation
-        \item Border zone (\% LV mass) by death, inducible VA, and VA ablation
-        \item Total scar (\% LV mass) by death, inducible VA, and VA ablation
-    \end{itemize}
-
-\noindent\textbf{Space for interpretation:} Write whether the groups with worse outcomes appear to have higher scar burden, and clarify that these are descriptive comparisons unless formal statistical testing is reported elsewhere.
-
-\vspace{0.7cm}
+\noindent\textbf{Interpretation:} Higher age does not appear to be strongly correlated with higher scar burden overall, although there may be a weak relationship with core scar percentage.
 
 \section{Closing Summary}
 Overall, the project combines two complementary views of scar: a spatial view based on 3D alignment, 2D polar maps, and ISOMAP; and a clinical view based on descriptive EDA, risk factor prevalence, correlations, subgroup comparisons, and outcome-related scar summaries.
 
-\noindent\textbf{Space for final conclusion:} Write your final 2--3 sentence conclusion here.
-
-\vspace{0.7cm}
+\noindent\textbf{Conclusion:} Overall, scars tend to accumulate more in the inner LV rings, especially in mid-apical and apical regions. Scar shape also seems to follow some recurrent patterns, including a possible XYZ-like morphology, although this still requires further investigation. Clinically, age does not appear to be a strong correlate of scar percentage in this cohort.
 
 \end{document}
