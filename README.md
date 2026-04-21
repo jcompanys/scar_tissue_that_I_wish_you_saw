@@ -10,13 +10,20 @@ Data stays local and is never committed to this repo.
 ```text
 scar-char-v0.1/
 |-- lv-scar-segmentation/
-|   |-- clinical_data.py
-|   |-- data_loading.py
 |   |-- notebooks/
 |   |-- results/
+|   |-- src/
+|   |   |-- __init__.py
+|   |   |-- clinical_data.py
+|   |   |-- cone_bspline_simple.py
+|   |   `-- data_loading.py
 |   `-- requirements.txt
-`-- memory/
+|-- memory/          (gitignored)
+`-- slides/          (gitignored)
 ```
+
+Notebook imports now use the package under `lv-scar-segmentation/src`, for
+example `from src.data_loading import scan`.
 
 ## Setup
 

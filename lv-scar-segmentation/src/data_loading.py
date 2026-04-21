@@ -23,7 +23,7 @@ Dataset layout on the external HD:
     (tried in that order; first match wins)
 
 Usage:
-    from data_loading import scan, diagnose
+    from src.data_loading import scan, diagnose
 
     cases = scan(r"F:/RM_TEKNON_DEVELOP")
     for c in cases:

@@ -35,7 +35,7 @@ CSV, especially ``revasc_type``, ``enhancement_distribution``,
 
 Typical usage::
 
-    from clinical_data import load, COLUMN_GROUPS, summary
+    from src.clinical_data import load, COLUMN_GROUPS, summary
 
     df = load("path/to/registry.csv")
     summary(df)
