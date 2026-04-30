@@ -78,13 +78,21 @@ Reads the study clinical registry CSV with Spanish headers, comma decimals, and 
 - Exposes `COLUMN_GROUPS` for grouped EDA summaries
 
 ## Notebook inventory
-- `01_scar_exploration.ipynb`: dataset scan, valid scar-case selection, split creation, LV/scar visualization, polar mapping, AHA summaries, fragmentation plots, and ISOMAP diagnostics.
+- `01_scar_exploration.ipynb`: dataset scan, valid scar-case selection, split creation, LV/scar visualization (raw + anatomically aligned side/top views), pre-flattening polar-frame diagnostic (blue dot = septal ref), polar mapping (individual + superposition + sex-stratified + ring density), AHA summaries, fragmentation plots, and ISOMAP diagnostics.
 - `02_clinical_eda.ipynb`: clinical registry cleaning checks plus demographics, scar burden summaries, risk factors, echo variables, subgroup comparisons, correlations, arrhythmias, medications, and outcomes plots.
 - `03_xyz_shape_analysis.ipynb`: XYZ-coordinate shape analysis and radial-envelope comparisons, with cached intermediate analyses.
 - `04_bspline_polar_test.ipynb`: newer B-spline / polar-method experimentation notebook currently present in the working tree.
 
 ## Results inventory
-- `results/01_scar_exploration/`: scar exploration figures such as `3d_grid_known.png`, `polar_grid_known.png`, `polar_superposition_known.png`, `aha_scar_density*.png`, `fragmentation_summary.png`, `top_fragmented_3d.png`, `xyz_candidates.png`, and ISOMAP/method-comparison diagnostics.
+- `results/01_scar_exploration/`: scar exploration figures including:
+  - `3d_grid_known.png` — raw side-view grid (pre-alignment)
+  - `3d_grid_known_anatomic.png` — anatomically aligned side view (long axis +Z, septal ref +X)
+  - `3d_grid_known_anatomic_top.png` — apex-to-base top view (septal ref upper-left, AHA convention)
+  - `polar_grid_known.png` — per-patient individual bull's-eye polar maps
+  - `polar_superposition_known.png` — any-patient footprint + scar density (with ANT/LAT/INF/SEPT labels)
+  - `polar_sex_stratified.png` — scar density split by sex (M / F / All, shared colorscale)
+  - `aha_scar_density_rings.png` — vertex-normalised scar coverage fraction per LV ring zone
+  - `aha_scar_density*.png`, `fragmentation_summary.png`, `top_fragmented_3d.png`, `xyz_candidates.png`, ISOMAP/method-comparison diagnostics
 - `results/02_clinical_eda/`: large set of clinical EDA outputs including missingness, demographics, scar summaries, risk factors, echo plots, subgroup analyses, device/arrhythmia/medication/outcome figures, and correlation CSV/PNG exports.
 - `results/03_xyz_analysis/`: `xyz_cases_overview.png`, `xyz_radial_envelopes.png`, and `analyses_cache.pkl`.
 - `results/04_bspline_polar_test/`: folder exists but was empty at the time this memory was updated.
