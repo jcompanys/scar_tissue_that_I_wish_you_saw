@@ -1,13 +1,22 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from pathlib import Path
 
 import numpy as np
-import pyvista as pv
 from scipy.interpolate import splprep, splev
 from scipy.ndimage import binary_closing, binary_erosion, binary_fill_holes
 from scipy.spatial import ConvexHull, Delaunay, cKDTree
+
+from .lv_geometry import (
+    prepare_polar_geometry as _prepare_polar_geometry,
+    project_points_to_polar,
+)
+from .mesh_utils import (
+    best_shell as _best_shell,
+    connected_fragments as _connected_fragments,
+    filter_fragments as _filter_fragments,
+    get_cz_mesh,
+)
 
 
 @dataclass
@@ -36,128 +45,6 @@ BSPLINE_SMOOTHING = 0.0015
 BSPLINE_SAMPLES = 300
 WHOLE_GRID_SIZE = 220
 WHOLE_CLOSE_ITERS = 2
-
-
-def _best_shell(case):
-    for key in ("lv", "myocardium", "endo", "epi"):
-        path = case.anatomy.get(key)
-        if path is not None and path.exists():
-            return pv.read(str(path))
-    return None
-
-
-def get_cz_mesh(case):
-    path = case.tissue_surfaces.get("core")
-    if path is None or not path.exists():
-        return None
-    return pv.read(str(path))
-
-
-def _connected_fragments(mesh):
-    labeled = mesh.connectivity(largest=False)
-    if "RegionId" in labeled.cell_data:
-        region_ids = np.unique(np.asarray(labeled.cell_data["RegionId"]).astype(int))
-    elif "RegionId" in labeled.point_data:
-        region_ids = np.unique(np.asarray(labeled.point_data["RegionId"]).astype(int))
-    else:
-        return [mesh]
-
-    fragments = []
-    for rid in region_ids:
-        piece = labeled.threshold((rid - 0.5, rid + 0.5), scalars="RegionId")
-        piece = piece.extract_surface().clean()
-        if piece.n_points > 0:
-            fragments.append(piece)
-    fragments.sort(key=lambda m: m.n_points, reverse=True)
-    return fragments
-
-
-def _filter_fragments(fragments, min_points=30):
-    kept = [frag for frag in fragments if frag.n_points >= min_points]
-    if kept:
-        return kept
-    return fragments[:1]
-
-
-def _long_axis(mesh):
-    pts = np.asarray(mesh.points)
-    center = pts.mean(axis=0)
-    _, _, vt = np.linalg.svd(pts - center, full_matrices=False)
-    axis = vt[0]
-    proj = (pts - center) @ axis
-    apex = pts[proj.argmin()]
-    if np.dot(center - apex, axis) < 0:
-        axis = -axis
-    return axis, apex
-
-
-def _plane_basis(axis):
-    secondary = np.array([0.0, 0.0, 1.0])
-    if abs(np.dot(axis, secondary)) > 0.9:
-        secondary = np.array([1.0, 0.0, 0.0])
-    u = np.cross(axis, secondary)
-    u /= np.linalg.norm(u)
-    w = np.cross(axis, u)
-    return u, w
-
-
-def _rv_reference_pca(lv_mesh, axis, apex, z_lo=0.60, z_hi=0.85):
-    u, w = _plane_basis(axis)
-    pts = np.asarray(lv_mesh.points)
-    proj = (pts - apex) @ axis
-    span = proj.max() - proj.min()
-    mask = (proj >= z_lo * span) & (proj <= z_hi * span)
-    ring = pts[mask]
-    if len(ring) < 20:
-        return u
-    ring_2d = np.column_stack([(ring - apex) @ u, (ring - apex) @ w])
-    centroid = ring_2d.mean(axis=0)
-    diff = ring_2d - centroid
-    _, _, vt = np.linalg.svd(diff, full_matrices=False)
-    pc1 = vt[0]
-    proj_pc1 = diff @ pc1
-    mask_pos = proj_pc1 > 0
-    mask_neg = proj_pc1 < 0
-    r_pos = np.linalg.norm(diff[mask_pos], axis=1).mean() if mask_pos.any() else np.inf
-    r_neg = np.linalg.norm(diff[mask_neg], axis=1).mean() if mask_neg.any() else np.inf
-    sign = -1.0 if r_pos < r_neg else 1.0
-    direction = sign * pc1
-    return direction[0] * u + direction[1] * w
-
-
-def _prepare_polar_geometry(shell, reference_points):
-    axis, apex = _long_axis(shell)
-    u, w = _plane_basis(axis)
-    ref = _rv_reference_pca(shell, axis, apex)
-    ref_angle = np.arctan2(np.dot(ref, w), np.dot(ref, u))
-    ref_points = np.asarray(reference_points)
-    ref_s_raw = (ref_points - apex) @ axis
-    return {
-        "axis": axis,
-        "apex": apex,
-        "u": u,
-        "w": w,
-        "ref_angle": ref_angle,
-        "s_min": float(ref_s_raw.min()),
-        "s_max": float(ref_s_raw.max()),
-    }
-
-
-def project_points_to_polar(points, geom):
-    axis = geom["axis"]
-    apex = geom["apex"]
-    u = geom["u"]
-    w = geom["w"]
-    ref_angle = geom["ref_angle"]
-
-    pts = np.asarray(points)
-    v = pts - apex
-    s_raw = v @ axis
-    span = geom["s_max"] - geom["s_min"]
-    s = np.clip((s_raw - geom["s_min"]) / (span + 1e-9), 0.0, 1.0)
-    perp = v - np.outer(s_raw, axis)
-    theta = (np.arctan2(perp @ w, perp @ u) - ref_angle) % (2.0 * np.pi)
-    return theta, s
 
 
 def polar_to_cone_xy(theta, s):

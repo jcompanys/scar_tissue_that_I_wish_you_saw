@@ -80,6 +80,7 @@ results/**
 */.ipynb_checkpoints/*
 *.nb.html
 .ipynb_checkpoints
+notebooks/_patch_*.py
 
 # ============================================================================
 # PYTHON - Standard ignores

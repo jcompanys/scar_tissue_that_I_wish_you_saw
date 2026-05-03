@@ -49,6 +49,26 @@ _ANATOMY_FILES: Dict[str, str] = {
     "myocardium": "Myocardium.vtk",
 }
 
+_RV_ANATOMY_GLOBS: Dict[str, Tuple[str, ...]] = {
+    "rv": (
+        "Right Ventricle.vtk",
+        "Right Ventricle Surface.vtk",
+        "*Right*Ventricle*.vtk",
+        "RV.vtk",
+        "RV Surface.vtk",
+    ),
+    "rv_endo": (
+        "RV Endo Layer.vtk",
+        "*RV*Endo*.vtk",
+        "*Endo*Layer*.vtk",
+    ),
+    "rv_epi": (
+        "RV Epi Layer.vtk",
+        "*RV*Epi*.vtk",
+        "*Epi*Layer*.vtk",
+    ),
+}
+
 # -- Tissue surfaces: glob patterns tried in order, searched recursively -------
 #
 # rglob is used so files inside sub-folders (e.g. TISSUE/Core Surface/*.vtk)
@@ -97,18 +117,22 @@ class PatientCase:
     patient_id: str
     root: Path
     lv_dir: Optional[Path]
+    rv_dir: Optional[Path] = None
 
     anatomy: Dict[str, Optional[Path]]         = field(default_factory=dict)
+    rv_anatomy: Dict[str, Optional[Path]]      = field(default_factory=dict)
     tissue_surfaces: Dict[str, Optional[Path]] = field(default_factory=dict)
     tissue_layers: List[Path]                  = field(default_factory=list)
     stats_csv: List[Path]                      = field(default_factory=list)
 
     def __str__(self) -> str:
         n_anatomy = sum(1 for v in self.anatomy.values() if v is not None)
+        n_rv      = sum(1 for v in self.rv_anatomy.values() if v is not None)
         n_tissue  = sum(1 for v in self.tissue_surfaces.values() if v is not None)
         return (
             f"[{self.year}] {self.patient_id} | "
             f"anatomy {n_anatomy}/{len(_ANATOMY_FILES)}  "
+            f"rv {n_rv}/{len(_RV_ANATOMY_GLOBS)}  "
             f"tissue {n_tissue}/{len(_TISSUE_SURFACE_GLOBS)}  "
             f"layers {len(self.tissue_layers)}  "
             f"CSVs {len(self.stats_csv)}"
@@ -140,6 +164,7 @@ def diagnose(case: PatientCase) -> None:
     print(f"\n{sep}")
     print(f"Patient : {case.year}/{case.patient_id}")
     print(f"LV dir  : {case.lv_dir}")
+    print(f"RV dir  : {case.rv_dir}")
 
     if case.lv_dir is None:
         print("  WARNING: LV directory not found")
@@ -161,6 +186,14 @@ def diagnose(case: PatientCase) -> None:
     for key, path in case.tissue_surfaces.items():
         status = str(path.relative_to(tissue_dir)) if path else "NOT FOUND"
         print(f"    {key:<12} -> {status}")
+
+    print(f"\n  Resolved rv_anatomy:")
+    if case.rv_dir is None:
+        print("    RV directory not found")
+    else:
+        for key, path in case.rv_anatomy.items():
+            status = str(path.relative_to(case.rv_dir)) if path else "NOT FOUND"
+            print(f"    {key:<12} -> {status}")
     print(f"{sep}\n")
 
 
@@ -183,10 +216,21 @@ def _find_tissue_surface(tissue_dir: Path,
     return None
 
 
+def _find_surface(root: Path, globs: Tuple[str, ...]) -> Optional[Path]:
+    """Search root recursively for the first file matching any pattern."""
+    for pattern in globs:
+        matches = sorted(root.rglob(pattern))
+        if matches:
+            return matches[0]
+    return None
+
+
 def _load_case(year: str, patient_dir: Path) -> PatientCase:
     lv_dir = _find_lv_dir(patient_dir)
+    rv_dir = _find_rv_dir(patient_dir)
 
     anatomy: Dict[str, Optional[Path]] = {}
+    rv_anatomy: Dict[str, Optional[Path]] = {}
     tissue_surfaces: Dict[str, Optional[Path]] = {}
     tissue_layers: List[Path] = []
     stats_csv: List[Path] = []
@@ -204,12 +248,18 @@ def _load_case(year: str, patient_dir: Path) -> PatientCase:
             tissue_layers = sorted(tissue_dir.glob("Layer_*.vtk"))
             stats_csv     = sorted(tissue_dir.rglob("*.csv"))
 
+    if rv_dir is not None:
+        for key, globs in _RV_ANATOMY_GLOBS.items():
+            rv_anatomy[key] = _find_surface(rv_dir, globs)
+
     return PatientCase(
         year=year,
         patient_id=patient_dir.name,
         root=patient_dir,
         lv_dir=lv_dir,
+        rv_dir=rv_dir,
         anatomy=anatomy,
+        rv_anatomy=rv_anatomy,
         tissue_surfaces=tissue_surfaces,
         tissue_layers=tissue_layers,
         stats_csv=stats_csv,
@@ -222,4 +272,15 @@ def _find_lv_dir(patient_dir: Path) -> Optional[Path]:
         lv = base / variant / "LV"
         if lv.is_dir():
             return lv
+    return None
+
+
+def _find_rv_dir(patient_dir: Path) -> Optional[Path]:
+    base = patient_dir / "Basal" / "Data"
+    for variant in _DE_MRI_VARIANTS:
+        variant_dir = base / variant
+        for name in ("RV", "Right Ventricle"):
+            rv = variant_dir / name
+            if rv.is_dir():
+                return rv
     return None
