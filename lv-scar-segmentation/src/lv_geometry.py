@@ -3,17 +3,122 @@ from __future__ import annotations
 import numpy as np
 
 
-def long_axis(mesh):
-    """Return the apex-to-base unit axis and apex point for an LV mesh."""
+def _hull_apex_candidate(pts, center, axis):
+    """Return (apex, eccentricity) using convex hull vertices along *axis*."""
+    try:
+        from scipy.spatial import ConvexHull
+        hull = ConvexHull(pts)
+        cand = pts[hull.vertices]
+    except Exception:
+        cand = pts
+
+    proj = (cand - center) @ axis
+    half_span = (((pts - center) @ axis).max() - ((pts - center) @ axis).min()) / 2.0
+    # apex = hull vertex furthest from centroid (max |projection|)
+    apex = cand[np.argmax(np.abs(proj))]
+    apex_dist = float(np.abs((apex - center) @ axis))
+    eccentricity = apex_dist / (half_span + 1e-9)
+    return apex, eccentricity, half_span
+
+
+def long_axis(mesh, rv_mesh=None):
+    """Return (axis, apex) for an LV mesh using robust convex-hull apex detection.
+
+    Algorithm:
+    1. If rv_mesh given: use RV SVD PC1 as primary candidate (cardiac long axis is
+       shared between LV and RV — RV PC1 is often a better estimate when the LV mesh
+       is truncated/holey and its own PC1 is dominated by circumferential variance).
+    2. LV SVD PC1 and PC2 as additional candidates.
+    3. Pick the candidate that yields the highest apex eccentricity
+       (||apex - center|| / half_span).
+    4. Orient axis so it points apex → base (dot(center-apex, axis) > 0).
+    """
     pts = np.asarray(mesh.points)
     center = pts.mean(axis=0)
-    _, _, vt = np.linalg.svd(pts - center, full_matrices=False)
+    _, sv, vt = np.linalg.svd(pts - center, full_matrices=False)
+
+    # Build candidate axes: RV PC1 first (highest priority), then LV PC1 / PC2
+    candidates = []
+    if rv_mesh is not None:
+        try:
+            rv_pts = np.asarray(rv_mesh.points)
+            rv_center = rv_pts.mean(axis=0)
+            _, _, rv_vt = np.linalg.svd(rv_pts - rv_center, full_matrices=False)
+            candidates.append(rv_vt[0])
+        except Exception:
+            pass
+    candidates.append(vt[0])
+    if len(sv) > 1:
+        candidates.append(vt[1])
+
+    best_apex, best_ecc = pts[0], -1.0
+    for cand in candidates:
+        apex, ecc, _ = _hull_apex_candidate(pts, center, cand)
+        if ecc > best_ecc:
+            best_ecc = ecc
+            best_apex = apex
+
+    # Force axis through apex: direction = apex → centroid (guaranteed to pass tip)
+    vec = center - best_apex
+    norm = np.linalg.norm(vec)
+    best_axis = vec / norm if norm > 1e-9 else vt[0]
+
+    return best_axis, best_apex
+
+
+def long_axis_qc(mesh):
+    """Compute QC metrics for long-axis detection.
+
+    Returns dict:
+        apex_eccentricity  : ||apex - center|| / half_span  (flag if < 0.35)
+        pc1_pc2_ratio      : sv[0] / sv[1]                  (flag if < 1.4)
+        mesh_completeness  : fraction of faces with inward normals (flag if > 0.15)
+        flag_bad           : True if any threshold triggered
+        reason             : human-readable summary
+    """
+    pts = np.asarray(mesh.points)
+    center = pts.mean(axis=0)
+    _, sv, vt = np.linalg.svd(pts - center, full_matrices=False)
+
     axis = vt[0]
-    proj = (pts - center) @ axis
-    apex = pts[proj.argmin()]
-    if np.dot(center - apex, axis) < 0:
-        axis = -axis
-    return axis, apex
+    _, apex_ecc, _ = _hull_apex_candidate(pts, center, axis)
+
+    pc1_pc2_ratio = float(sv[0] / (sv[1] + 1e-9)) if len(sv) > 1 else float("inf")
+
+    # mesh_completeness: fraction of faces whose normal points toward centroid
+    mesh_completeness = 0.0
+    try:
+        normals = np.asarray(mesh.face_normals)
+        faces_raw = np.asarray(mesh.faces)
+        if faces_raw.ndim == 1 and len(faces_raw) > 0:
+            # PyVista flat format: [3, i0, i1, i2, 3, i0, ...]
+            n_faces = len(normals)
+            stride = faces_raw[0] + 1  # assume uniform (triangles → 4)
+            face_verts_idx = faces_raw.reshape(n_faces, stride)[:, 1:]
+            face_centers = pts[face_verts_idx].mean(axis=1)
+        else:
+            face_centers = pts[np.asarray(mesh.faces)].mean(axis=1)
+        to_center = center - face_centers
+        dots = np.einsum("ij,ij->i", normals, to_center)
+        mesh_completeness = float((dots > 0).mean())
+    except Exception:
+        pass
+
+    reasons = []
+    if apex_ecc < 0.35:
+        reasons.append(f"apex_eccentricity={apex_ecc:.2f}<0.35")
+    if pc1_pc2_ratio < 1.4:
+        reasons.append(f"pc1_pc2_ratio={pc1_pc2_ratio:.2f}<1.4")
+    if mesh_completeness > 0.15:
+        reasons.append(f"mesh_completeness={mesh_completeness:.2f}>0.15")
+
+    return {
+        "apex_eccentricity": float(apex_ecc),
+        "pc1_pc2_ratio": pc1_pc2_ratio,
+        "mesh_completeness": mesh_completeness,
+        "flag_bad": len(reasons) > 0,
+        "reason": "; ".join(reasons) if reasons else "ok",
+    }
 
 
 def plane_basis(axis):
@@ -103,9 +208,10 @@ def compute_transform(
     align_septum=False,
     flip_septal_direction=False,
     ref_fn=rv_reference_pca,
+    rv_mesh=None,
 ):
     """Return (R, apex): apex at origin, long axis +Z, optional septal/RV +X."""
-    axis, apex = long_axis(lv_mesh)
+    axis, apex = long_axis(lv_mesh, rv_mesh=rv_mesh)
 
     z = np.array([0.0, 0.0, 1.0])
     v = np.cross(axis, z)
@@ -144,9 +250,10 @@ def prepare_polar_geometry(
     reference_points=None,
     flip_septal_direction=False,
     ref_fn=rv_reference_pca,
+    rv_mesh=None,
 ):
     """Build reusable geometry for cylindrical LV polar projections."""
-    axis, apex = long_axis(shell)
+    axis, apex = long_axis(shell, rv_mesh=rv_mesh)
     u, w = plane_basis(axis)
     ref = oriented_septal_reference(
         ref_fn(shell, axis, apex),
