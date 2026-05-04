@@ -1,309 +1,302 @@
-# ISOMAP Shape Analysis — Pipeline Reference
+# M02 - ISOMAP Shape Analysis Pipeline
+
+**Notebook file:** `lv-scar-segmentation/notebooks/M02_isomaps.ipynb`  
+**Output directory:** `lv-scar-segmentation/results/01_ISOMAPS/`
+
+---
 
 ## Overview
 
-ISOMAP is used to analyse the **intrinsic geometry** of each CZ scar fragment. Rather than
-describing where the scar is (that is the polar map's job), ISOMAP describes **what shape**
-the scar has — elongated, compact, branching, etc. — by unfolding the 3D surface into a
-meaningful 2D embedding.
+ISOMAP is used to analyse the intrinsic geometry of each Core Zone (CZ) scar
+fragment. It answers a different question from the polar-map notebooks:
 
-The pipeline has two concerns that must be kept separate:
-- **Shape** of each individual fragment → ISOMAP embedding per fragment.
-- **Spatial layout** of multiple fragments → centroid distance matrix.
+| Method | Question | Coordinate meaning |
+|---|---|---|
+| ISOMAP | What shape is each scar fragment? | Arbitrary 2D embedding preserving surface/geodesic shape |
+| Polar map | Where is scar on the LV? | Anatomical apex-base and circumferential coordinates |
 
----
+The key design rule is to keep two concepts separate:
 
-## Current notebook
+1. **Per-fragment shape:** run ISOMAP independently on each connected CZ island.
+2. **Whole-scar spatial layout:** store centroid distances between fragments in 3D.
 
-The ISOMAP section has been moved out of `notebooks/01_scar_exploration.ipynb` into
-`notebooks/01_ISOMAPS.ipynb`.
-
-`01_ISOMAPS.ipynb` is now intended to run standalone:
-- imports NumPy, pandas, matplotlib, PyVista, SciPy, scikit-learn, tqdm, and IPython `display`
-- detects the project root from either `lv-scar-segmentation/` or `lv-scar-segmentation/notebooks/`
-- imports `scan` from `src.data_loading`
-- scans `HD_ROOT` (default `F:/RM_TEKNON_DEVELOP`, override with `LV_SCAR_DATA_ROOT`)
-- loads the existing canonical split from `results/split.json` when present; otherwise creates it with `SEED=42`
-- writes split-out ISOMAP figures to `results/01_ISOMAPS/`
-- defines `_best_shell()` locally for the 3D diagnostic cells
-
-The shell Python available during the notebook split did not have `pandas` installed, so the
-notebook was syntax-checked but not executed end-to-end from that shell. Use the project/Jupyter
-environment with `requirements.txt` installed for a full run.
+Running ISOMAP on disconnected fragments together is invalid because geodesic
+distances between separate islands are infinite. The notebook therefore splits
+the CZ mesh first, filters tiny islands, and embeds each retained fragment on its
+own.
 
 ---
 
-## Key constants
+## Current Corrected Notebooks
 
-```python
-ISOMAP_PTS        = 800   # max vertices subsampled per fragment before ISOMAP
-ISOMAP_K          = 10    # number of neighbours in the k-NN graph
-MIN_VERTS_FRAGMENT = 30   # minimum vertices to keep a fragment (below = noise)
-MIN_VERTS_ISOMAP   = 5    # minimum vertices to attempt embedding (below = None)
-```
+The corrected notebook series is the `M...` series:
+
+| Notebook | Role |
+|---|---|
+| `M01_scar_exploration.ipynb` | Dataset scan, EDA, reproducible known/held-out split, and 3D CZ grid |
+| `M02_isomaps.ipynb` | ISOMAP scar-fragment shape analysis |
+| `M03_polar_diagnostics.ipynb` | Septal-reference diagnostics, polar maps, and vertex/area/coverage comparison |
+
+The older files `01_scar_exploration.ipynb`, `01_ISOMAPS.ipynb`,
+`06_polar_diagnostics.ipynb`, and `memory/polar_map_pipeline.md` have been
+replaced by the corrected `M...` notebooks and memory notes.
 
 ---
 
-## Output dataclass
+## Setup and Inputs
+
+`M02_isomaps.ipynb` runs as a standalone notebook. It:
+
+- finds the project root by walking upward until it sees `src/`, or a nested
+  `lv-scar-segmentation/src`
+- imports `scan()` from `src.data_loading`
+- reads the dataset root from `LV_SCAR_DATA_ROOT`, defaulting to
+  `F:/RM_TEKNON_DEVELOP`
+- reads the clinical CSV path from `LV_SCAR_CLINICAL_CSV`, defaulting to
+  `C:/Users/joan/Desktop/FEINA/UPF/TFG/develop-vt.csv`
+- loads `results/split.json` if present, otherwise creates the same seeded
+  80/20 split as M01
+- writes plots to `results/01_ISOMAPS/`
+
+M02 currently defines `_best_shell()`, `_connected_fragments()`, and
+`_filter_fragments()` locally. The same fragment utilities also exist in
+`src.mesh_utils` as shared project helpers:
+
+- `best_shell(case)`
+- `get_cz_mesh(case)`
+- `best_rv_mesh(case)`
+- `connected_fragments(mesh)`
+- `filter_fragments(fragments, min_points=30)`
+
+If the notebook is refactored later, those `src.mesh_utils` helpers are the
+natural source of truth to import instead of duplicating the local functions.
+
+---
+
+## Key Constants
+
+| Constant | Value | Purpose |
+|---|---:|---|
+| `SEED` | `42` | Reproducible split and ISOMAP subsampling |
+| `TRAIN_RATIO` | `0.80` | Known/held-out split ratio if `split.json` is missing |
+| `ISOMAP_PTS` | `800` | Maximum sampled vertices per fragment before ISOMAP |
+| `ISOMAP_K` | `10` | Neighbours in the ISOMAP k-NN graph |
+| `MIN_VERTS_FRAGMENT` | `30` | Minimum vertices to keep a connected fragment |
+| `MIN_VERTS_ISOMAP` | `5` | Minimum vertices to attempt a 2D embedding |
+| `MAX_PLOT_FRAGMENTS` | `4` | Maximum fragments shown per patient in grids |
+
+---
+
+## Main Result Dataclass
 
 ```python
 @dataclass
 class CZAnalysis:
-    key:                  str            # "year/patient_id"
-    raw_n_fragments:      int            # total fragments before filtering
-    n_fragments:          int            # kept after MIN_VERTS_FRAGMENT filter
-    dropped_fragments:    int            # raw - kept  (noise islands removed)
-    vertex_counts:        list           # number of vertices per kept fragment
-    largest_fraction:     float          # vertex_counts[0] / total  → compactness [0,1]
-    centroids:            np.ndarray     # 3D centre of mass per fragment  (N×3)
-    centroid_dist_matrix: np.ndarray     # pairwise Euclidean dist between centroids
-    fragment_meshes:      list           # PyVista mesh per fragment
-    embeddings:           list           # normalised 2D ISOMAP per fragment (or None)
+    key: str                         # "year/patient_id"
+    raw_n_fragments: int             # connected islands before filtering
+    n_fragments: int                 # retained fragments after filtering
+    dropped_fragments: int           # raw_n_fragments - n_fragments
+    vertex_counts: list              # vertices per retained fragment
+    largest_fraction: float          # largest fragment / total retained vertices
+    centroids: np.ndarray            # 3D centroid per retained fragment
+    centroid_dist_matrix: np.ndarray # pairwise 3D centroid distances
+    fragment_meshes: list            # PyVista mesh per retained fragment
+    embeddings: list                 # normalized 2D ISOMAP embedding, or None
 
     @property
     def is_compact(self):
-        return self.n_fragments == 1     # True = single solid scar
+        return self.n_fragments == 1
 ```
 
-`embeddings[i]` is parallel to `fragment_meshes[i]`. F1 (index 0) is always the largest
-fragment. `None` embedding means the fragment was too small to embed.
+Fragments are sorted largest to smallest. Fragment 1 (`F1`, index 0) is therefore
+always the dominant scar fragment.
 
 ---
 
-## Stage 1 — Load raw CZ mesh
+## Stage 1 - Load the CZ Mesh
 
 ```python
 cz = pv.read(str(case.tissue_surfaces["core"]))
 ```
 
-One raw PyVista mesh per patient. May contain multiple disconnected islands — either genuine
-separate scar fragments or segmentation noise.
+Only Core Zone meshes are analysed. M01 is responsible for scanning the dataset
+and creating/loading the known split; M02 reuses that split and runs ISOMAP on
+the known cases.
 
 ---
 
-## Stage 2 — Split into connected fragments  `_connected_fragments(cz)`
-
-**Goal**: separate the raw mesh into one mesh per disconnected island.
-
-**Why**: geodesic distances between disconnected islands are infinite. Running ISOMAP on the
-whole mesh at once would corrupt the distance matrix and produce meaningless embeddings. Each
-fragment must be embedded independently.
+## Stage 2 - Split Connected Fragments
 
 ```python
-labeled    = mesh.connectivity(largest=False)   # assigns RegionId to every cell/point
-region_ids = np.unique(labeled.cell_data['RegionId'])
-
-fragments = []
-for rid in region_ids:
-    piece = labeled.threshold((rid - 0.5, rid + 0.5), scalars='RegionId')
-    piece = piece.extract_surface().clean()
-    if piece.n_points > 0:
-        fragments.append(piece)
-
-fragments.sort(key=lambda m: m.n_points, reverse=True)   # largest first → F1, F2, ...
+labeled = mesh.connectivity(largest=False)
 ```
 
-`connectivity()` labels regions but RegionId may live on cell data or point data depending
-on the mesh — the code checks both. Sorted largest→smallest so F1 is always the dominant
-fragment.
+`connectivity()` assigns a `RegionId` to each connected mesh island. Depending
+on the PyVista mesh, `RegionId` can be stored in `cell_data` or `point_data`, so
+the code checks both.
 
-**Returns**: list of PyVista meshes, one per connected island.
+Each region is extracted by thresholding:
+
+```python
+piece = labeled.threshold((rid - 0.5, rid + 0.5), scalars="RegionId")
+piece = piece.extract_surface().clean()
+```
+
+The resulting fragment meshes are sorted by decreasing vertex count. This avoids
+point/cell indexing mismatches and guarantees a stable fragment rank.
 
 ---
 
-## Stage 3 — Drop noise fragments  `_filter_fragments(fragments)`
-
-**Goal**: remove tiny islands that are almost certainly segmentation artefacts.
+## Stage 3 - Drop Tiny Fragments
 
 ```python
-MIN_VERTS_FRAGMENT = 30
-
 kept = [frag for frag in fragments if frag.n_points >= MIN_VERTS_FRAGMENT]
-if not kept:
-    return fragments[:1]    # always keep at least one fragment
+if kept:
+    return kept
+return fragments[:1]
 ```
 
-`dropped_fragments = raw_n_fragments - n_fragments` is stored in `CZAnalysis` for diagnostics.
+Fragments below 30 vertices are treated as likely segmentation noise. If every
+fragment is below the threshold, the largest fragment is still kept so the case
+does not disappear silently.
 
-**Known limitation**: vertex-count filtering is a rough proxy. Area-based filtering would be
-more principled but is not currently implemented.
-
-**Returns**: cleaned fragment list.
+`dropped_fragments` is stored in `CZAnalysis` for diagnostics.
 
 ---
 
-## Stage 4 — Per-fragment ISOMAP embedding  `_run_isomap(pts)`
+## Stage 4 - Run ISOMAP Per Fragment
 
-### What ISOMAP does
+ISOMAP approximates geodesic distances along the scar surface:
 
-ISOMAP unfolds the intrinsic geometry of a 3D surface into 2D coordinates. The shape of the
-2D point cloud reflects the true shape of the scar surface — elongated arms in the embedding
-mean elongated arms in the real scar, regardless of its orientation in 3D space.
+1. Build a k-nearest-neighbour graph in 3D (`k=10`).
+2. Compute shortest-path distances through that graph.
+3. Use MDS internally to find 2D coordinates that preserve those geodesic
+   distances as well as possible.
 
-ISOMAP = **k-NN graph → geodesic distances → MDS**.
-
-### Step A — k-NN graph
-
-Each vertex is connected by an edge to its `k=10` nearest neighbours measured by Euclidean
-distance. Because neighbours on a surface are close together, each edge is a tiny step *along*
-the surface. The result is a graph that hugs the surface geometry.
-
-**Why k=10?**
-- Too small (k=2): graph breaks apart, some point pairs have no path → infinite distances.
-- Too large (k=50): edges start cutting through 3D space rather than following the surface →
-  geodesic approximation degrades.
-
-### Step B — geodesic distances (shortest paths)
-
-Dijkstra's algorithm computes the shortest path between every pair of points through the k-NN
-graph. These path lengths approximate the true geodesic distance along the surface — the
-distance you would measure if you laid a tape measure along the surface between two points.
-
-**Key contrast with Euclidean distance**: two points on opposite sides of a fold in the scar
-may be close in 3D space (small Euclidean distance) but far along the surface (large geodesic
-distance). ISOMAP uses the geodesic — plain MDS on Euclidean distances would wrongly place
-them near each other.
-
-### Step C — MDS (Multidimensional Scaling)
-
-MDS answers: *given a table of pairwise distances between N points, find 2D coordinates such
-that the distances between the dots match the table as closely as possible.*
-
-It does this via eigendecomposition of the double-centred squared distance matrix D². The top
-2 eigenvectors give the best 2D layout — the one that preserves the most distance information
-in 2 dimensions.
-
-**ISOMAP's only trick**: feed MDS geodesic distances instead of Euclidean ones.
-
-### Code
+M02 uses scikit-learn:
 
 ```python
-ISOMAP_PTS = 800
-ISOMAP_K   = 10
-
 def _run_isomap(pts, k=ISOMAP_K, n_pts=ISOMAP_PTS):
-    # 1. subsample if needed  (ISOMAP is O(N²) in memory)
     if len(pts) > n_pts:
         idx = np.random.default_rng(SEED).choice(len(pts), n_pts, replace=False)
         pts = pts[idx]
-
-    # 2. run ISOMAP  (sklearn handles k-NN graph + geodesic distances + MDS internally)
     k_actual = min(k, len(pts) - 1)
     return Isomap(n_neighbors=k_actual, n_components=2).fit_transform(pts)
 ```
 
-**Subsampling**: ISOMAP builds an N×N distance matrix — O(N²) memory. Capping at 800 points
-keeps it tractable. The random seed is fixed for reproducibility.
-
-**Returns**: raw 2D embedding array (N×2).
-
----
-
-## Stage 5 — Normalise embedding  `_normalise_embedding(emb)`
-
-**Goal**: remove arbitrary translation and scale so embeddings are comparable across patients
-and fragments of different sizes.
-
-```python
-def _normalise_embedding(emb):
-    emb   = np.asarray(emb, dtype=float)
-    emb   = emb - emb.mean(axis=0, keepdims=True)   # centre at origin
-    scale = np.linalg.norm(emb, axis=1).max()        # furthest point from centre
-    if scale > 0:
-        emb = emb / scale                            # scale to unit radius
-    return emb
-```
-
-After normalisation every embedding fits inside a unit circle. ISOMAP axes are **arbitrary**
-(rotation and reflection are not fixed) — the shape of the point cloud is meaningful, not its
-absolute orientation.
-
-**Returns**: normalised 2D embedding in unit circle.
+The 800-point cap keeps the pairwise distance matrix tractable. Any fragment
+with fewer than `MIN_VERTS_ISOMAP` vertices gets `None` instead of an embedding.
+If scikit-learn raises during embedding, the notebook prints the case key and
+stores `None` for that fragment.
 
 ---
 
-## Stage 6 — Collect fragment metadata  inside `analyze_cz()`
+## Stage 5 - Normalize Embeddings
 
 ```python
-for frag in fragments:
-    pts = np.array(frag.points)
-    vertex_counts.append(len(pts))
-    centroids.append(pts.mean(axis=0))              # 3D centre of mass
-
-    if len(pts) >= MIN_VERTS_ISOMAP:
-        embeddings.append(_normalise_embedding(_run_isomap(pts)))
-    else:
-        embeddings.append(None)                     # too small to embed
-
-centroids = np.array(centroids)
-dist_mat  = cdist(centroids, centroids)             # pairwise Euclidean distances (mm)
-
-largest_fraction = vertex_counts[0] / max(sum(vertex_counts), 1)
+emb = emb - emb.mean(axis=0, keepdims=True)
+scale = np.linalg.norm(emb, axis=1).max()
+if scale > 0:
+    emb = emb / scale
 ```
+
+Normalization removes translation and scale so embeddings can be compared across
+patients and fragments. The embedding axes remain arbitrary: rotation, reflection,
+and absolute orientation are not anatomical.
+
+The shape of the point cloud is meaningful; the x/y labels are not.
+
+---
+
+## Stage 6 - Collect Fragment Metadata
+
+For each retained fragment, `analyze_cz(case)` stores:
 
 | Field | Meaning |
-|-------|---------|
-| `vertex_counts` | Size proxy for each fragment |
-| `centroids` | 3D centre of mass — where in the LV each fragment sits |
-| `centroid_dist_matrix` | How spatially spread the fragments are (real-space mm distances) |
-| `largest_fraction` | 1.0 = single compact scar; <1.0 = fragmented |
+|---|---|
+| `vertex_counts` | Size proxy for every retained fragment |
+| `centroids` | 3D centre of mass for each fragment |
+| `centroid_dist_matrix` | Pairwise Euclidean distances between fragment centroids |
+| `largest_fraction` | Compactness score; `1.0` means a single retained scar island |
+| `fragment_meshes` | Meshes used for 3D diagnostics |
+| `embeddings` | Normalized per-fragment ISOMAP embeddings |
 
-**Design**: `centroid_dist_matrix` bridges the per-fragment shape analysis (ISOMAP) and the
-global spatial layout of the whole scar. The two together give a complete picture of scar
-morphology.
-
----
-
-## End-to-end call
-
-```python
-# run for one patient
-analysis = analyze_cz(case)
-
-# key derived fields
-analysis.is_compact          # True / False
-analysis.n_fragments         # how many islands
-analysis.largest_fraction    # compactness score
-analysis.embeddings[0]       # normalised 2D embedding of the largest fragment (F1)
-analysis.centroid_dist_matrix  # pairwise distances between fragment centres
-```
+`centroid_dist_matrix` is intentionally not part of the ISOMAP embedding. It
+describes how far apart fragments are in physical LV space, while ISOMAP
+describes the intrinsic shape of each fragment.
 
 ---
 
-## Why ISOMAP and not PCA?
+## Notebook Outputs
 
-PCA on the raw 3D vertex coordinates finds the axes of maximum variance in 3D space. For a
-flat patch this works, but for a curved or folded scar it treats all points as if they were
-in a flat cloud — the curvature is lost. ISOMAP respects the surface: points that are far
-apart along the surface remain far apart in the embedding, even if they are geometrically
-close in 3D.
+| Section | Output | Description |
+|---|---|---|
+| 1a | console summary | Number of analysed, compact, and fragmented known-set cases |
+| 1b | `isomap_grid_known.png` | Known-set grid of normalized embeddings; compact cases have grey borders, fragmented cases orange borders |
+| 1c | `isomap_3d_vs_embedding_diagnostic.png` | Side-by-side 3D fragment renderings and ISOMAP plots for selected fragmented cases |
+| 1d | `fragmentation_summary.png` | Fragment count, compactness, and top fragmented cases |
+| 1d | `top_fragmented_3d.png` | 3D renders of the most fragmented cases |
+| 1e | `xyz_candidates.png` | Candidate F1 embeddings with three-arm/XYZ-like radial signatures |
+
+The file names above come from the current `savefig()` calls in
+`M02_isomaps.ipynb`.
 
 ---
 
-## Interpreting the embedding
+## Interpreting the Embedding
 
 | Embedding shape | Scar interpretation |
-|----------------|---------------------|
-| Compact disc | Single continuous blob with no dominant elongation |
-| Elongated band | Scar with one main axis — a stripe along the wall |
-| Star / XYZ shape | Three elongated arms — detected by `_f1_xyz_signature()` |
-| Multiple separated clouds | Fragmented scar — separate islands in the same plot lane |
-| `None` | Fragment too small to embed (< `MIN_VERTS_ISOMAP` vertices) |
+|---|---|
+| Compact disc | One continuous blob without a dominant elongation |
+| Elongated band | Scar with one main geometric axis |
+| Star / XYZ-like shape | Three elongated arms in the dominant fragment |
+| Multiple plotted lanes | Multiple retained fragments in one patient |
+| `x` marker / `None` | Fragment too small or failed to embed |
 
-The embedding axes are **not anatomical**. They do not correspond to X/Y/Z in the scanner
-frame. A star shape means three geometric arms, not three Cartesian directions. The colour
-of each fragment (F1=blue, F2=orange, F3=green, F4=red) identifies fragment rank by size, not
-anatomy.
+Fragment colours identify size rank, not anatomy:
+
+| Label | Colour |
+|---|---|
+| `F1` | blue |
+| `F2` | orange |
+| `F3` | green |
+| `F4` | red |
 
 ---
 
-## Relationship to the Polar Map
+## Relationship to M01 and M03
 
-| | Polar Map | ISOMAP |
-|--|-----------|--------|
-| Question answered | Where is the scar? | What shape is the scar? |
-| Input | CZ mesh + LV shell | CZ mesh only |
-| Output | 64×128 boolean grid | 2D point cloud per fragment |
-| Coordinate system | Anatomically grounded (septum=0, apex=centre) | Arbitrary (shape only) |
-| Handles fragments? | No — projects all CZ vertices together | Yes — per fragment |
-| Limitation | Apical scars distorted by cylindrical projection | Axes not anatomically labelled |
+M01 establishes the dataset inventory and reproducible known/held-out split.
+M02 uses that split to quantify CZ shape and fragmentation. M03 then validates
+the anatomical reference frame and builds polar maps that describe scar location.
+
+Together:
+
+- **M01:** what data is available and what cases are in the known split
+- **M02:** what shape and fragmentation pattern each CZ scar has
+- **M03:** where scar lies on the LV, with vertex, area, and coverage projections
+
+---
+
+## Source Modules Checked
+
+| Module | Relevant role |
+|---|---|
+| `src.data_loading` | Dataset discovery, CZ/LV/RV path resolution, `PatientCase` model |
+| `src.mesh_utils` | Shared mesh loading plus connected-fragment splitting/filtering |
+| `src.lv_geometry` | Long-axis, septal reference, transforms, and polar projection geometry |
+| `src.clinical_data` | Clinical CSV loading and sex-label normalization |
+| `src.cone_bspline_simple` | Cone/polar B-spline scar-envelope utilities built on the shared geometry and fragment helpers |
+
+---
+
+## Caveats
+
+- The fragment filter is vertex-count based; an area-based threshold would be
+  more physically meaningful.
+- ISOMAP embeddings are shape descriptors only. They do not carry anatomical
+  orientation.
+- The notebook still duplicates some helper functions that now exist in
+  `src.mesh_utils`; future cleanup can import the shared helpers directly.
+- Full execution requires the project/Jupyter environment with the scientific
+  stack installed and access to the external dataset root.
