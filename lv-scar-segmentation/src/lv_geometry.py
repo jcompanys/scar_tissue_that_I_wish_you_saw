@@ -290,3 +290,22 @@ def project_points_to_polar(points, geom):
     perp = v - np.outer(s_raw, axis)
     theta = (np.arctan2(perp @ w, perp @ u) - ref_angle) % (2.0 * np.pi)
     return theta, s
+
+
+def polar_mask(theta, s, n_r, n_theta, roll_deg=0.0):
+    """Binary polar map with X-axis orientation correction and optional AHA roll.
+
+    X-flip ([:, ::-1]) corrects the theta mirroring that arises from the
+    clockwise flip applied in callers before binning.
+    roll_deg rotates the bullseye CW to align with AHA display convention
+    (pass AHA_DISPLAY_DEG from the notebook config).
+    """
+    mask = np.zeros((n_r, n_theta), dtype=bool)
+    ri = np.clip((s * n_r).astype(int), 0, n_r - 1)
+    ti = np.clip((theta / (2.0 * np.pi) * n_theta).astype(int), 0, n_theta - 1)
+    mask[ri, ti] = True
+    mask = mask[:, ::-1]
+    if roll_deg:
+        k = int(round(roll_deg / 360.0 * n_theta))
+        mask = np.roll(mask, k, axis=1)
+    return mask

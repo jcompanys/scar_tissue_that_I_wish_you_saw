@@ -221,9 +221,32 @@ FLOAT_COLS: List[str] = [
     "enhancement_grade",
 ]
 
+#: Coded categorical columns stored as nullable Int64.
+CATEGORICAL_CODE_COLS: List[str] = [
+    "sex",
+]
+
+#: Human-readable labels for coded categorical columns.
+CATEGORICAL_LABELS: Dict[str, Dict[int, str]] = {
+    "sex": {1: "Male", 2: "Female"},
+}
+
+#: Fields whose clinical meaning or coding should be confirmed with doctors.
+CLINICAL_REVIEW_NOTES: Dict[str, str] = {
+    "risk_factors": (
+        "Risk-factor definitions and 0/1 coding should be confirmed with "
+        "the clinical team before interpreting prevalence as final."
+    ),
+    "enhancement_distribution": (
+        "Numeric distribution codes need the registry coding legend."
+    ),
+    "enhancement_grade": (
+        "The direction and clinical meaning of the grade should be confirmed."
+    ),
+}
+
 #: Binary / flag columns stored as nullable Int64 (0/1, possibly NaN).
 BINARY_COLS: List[str] = [
-    "sex",
     "hta",
     "dlp",
     "dm",
@@ -476,6 +499,14 @@ def _cast_types(df: pd.DataFrame) -> pd.DataFrame:
 
     # Binary / nullable int ------------------------------------------------
     for col in BINARY_COLS:
+        if col in df.columns:
+            df[col] = (
+                pd.to_numeric(df[col], errors="coerce")
+                .astype("Int64")
+            )
+
+    # Coded categorical / nullable int ------------------------------------
+    for col in CATEGORICAL_CODE_COLS:
         if col in df.columns:
             df[col] = (
                 pd.to_numeric(df[col], errors="coerce")
