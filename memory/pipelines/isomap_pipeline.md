@@ -38,7 +38,7 @@ The corrected notebook series is the `M...` series:
 | `M03_polar_diagnostics.ipynb` | Septal-reference diagnostics, polar maps, and vertex/area/coverage comparison |
 
 The older files `01_scar_exploration.ipynb`, `01_ISOMAPS.ipynb`,
-`06_polar_diagnostics.ipynb`, and `memory/polar_map_pipeline.md` have been
+`M03_polar_diagnostics.ipynb`, and `../notebooks/M03_polar_diagnostics.md` have been
 replaced by the corrected `M...` notebooks and memory notes.
 
 ---

@@ -14,10 +14,10 @@ The same coordinate convention is enforced throughout: the long axis runs apex �
 | Section | Contents |
 |---|---|
 | 1 | Imports, data loading, clinical sex labels, and shared helpers |
-| 2 | D1–D5 septal-reference diagnostics plus raw LV PCA axis vs robust axis |
+| 2 | D1–D6 septal-reference diagnostics, raw LV PCA axis vs robust axis, and candidate-axis inspection |
 | 3 | Polar-map computational steps, all-case trial maps, and population superposition |
 | 4 | Polar-map quality checks |
-| 5 | Vertex vs area vs surface-normalized comparison |
+| 5 | Vertex vs area vs surface-normalized comparison, including AHA and ring-level summaries |
 
 ---
 
@@ -157,6 +157,22 @@ Side-by-side comparison of the naive SVD PC1 (orange) vs the robust `long_axis()
 
 **Output:** `axis_diagnostic.png`
 
+### D6 — Long axis candidates
+
+Shows all candidate axes considered by `long_axis()` for 12 cases and highlights the final chosen axis.
+
+| Visual element | Meaning |
+|---|---|
+| Blue line | RV SVD PC1 candidate, when an RV mesh is available |
+| Orange line | LV SVD PC1, the naive long-axis candidate |
+| Purple line | LV SVD PC2 |
+| Thick green line | Final `long_axis()` output, recomputed as apex-to-centroid after candidate selection |
+| Red sphere | Apex selected from the winning candidate |
+
+The candidates are evaluated with `_hull_apex_candidate()`. The winning candidate is the one with the highest apex eccentricity, but the final green vector is not simply the winning raw PC direction: it is recomputed as `normalize(centroid - apex)` to match `long_axis()` exactly.
+
+**Output:** `d6_long_axis_candidates.png`
+
 ---
 
 ## Section 3 — Polar Map Construction
@@ -258,6 +274,19 @@ Side-by-side comparison of the 3D apex-to-base view and the resulting bull's-eye
 ### 4.6 Complementary scar profiles (Check 4f)
 
 Five supplementary population-level plots derived from the `pmaps` stack:
+
+An additional ring-level vertex coverage plot is computed before the 4f profile plots using `polar_map_counts(case)`. It bins both CZ vertices and LV shell vertices into the same `(N_R × N_THETA)` grid and reports CZ vertices / LV vertices per AHA ring zone.
+
+**Output:** `aha_scar_density_rings.png`
+
+**Runtime values:**
+
+| Ring zone | CZ / LV vertex fraction | Counts |
+|---|---:|---:|
+| Apex (17) | 0.6196 | 41,654 / 67,228 |
+| Apical (13–16) | 0.7199 | 73,290 / 101,803 |
+| Mid (7–12) | 0.2957 | 82,900 / 280,392 |
+| Basal (1–6) | 0.0526 | 23,644 / 449,545 |
 
 #### 4f-a — Circumferential scar profile by ring zone
 
@@ -394,6 +423,36 @@ The AHA segment grid is computed by `_aha_segment_grid_06()`, which assigns each
 
 **Output:** `comparison_aha_segments.png`
 
+### 5.6 CZ area by LV ring
+
+Pools the Section 5 area results by four radial AHA-style ring zones:
+
+| Ring zone | Radial range |
+|---|---|
+| Apex (17) | `r < 0.25` |
+| Apical (13–16) | `0.25 <= r < 0.50` |
+| Mid (7–12) | `0.50 <= r < 0.75` |
+| Basal (1–6) | `r >= 0.75` |
+
+For each ring, the metric is pooled CZ area divided by pooled LV area across all cases in `_s5_keys`. This is the area-based analogue of the vertex ring coverage plot in Section 4.6 and is less sensitive to mesh sampling density.
+
+**Output:** `s5_ring_area_coverage.png`
+
+### 5.7 CZ area by LV ring — sex split
+
+Repeats the pooled ring area coverage calculation separately for cases whose `patient_id` has a clinical sex label in `sex_map`.
+
+The notebook constructs:
+
+```python
+_keys_m = [k for k in _s5_keys if sex_map.get(k.split('/')[1]) == 'M']
+_keys_f = [k for k in _s5_keys if sex_map.get(k.split('/')[1]) == 'F']
+```
+
+It then plots side-by-side male and female bars for each ring. The metric remains pooled CZ area / pooled LV area per ring, not mean of per-patient ratios.
+
+**Output:** `s5_ring_area_sex_split.png`
+
 ---
 
 ## Output Files Summary
@@ -406,6 +465,7 @@ The AHA segment grid is computed by `_aha_segment_grid_06()`, which assigns each
 | `D4_alignment_grid.png` | 2 / D4 | Five-row 3D alignment grid (raw → anatomical → apex view) |
 | `D5_axis_septal_overlay.png` | 2 / D5 | Long-axis and septal vector side + smashed views |
 | `axis_diagnostic.png` | 2 | Raw SVD PC1 vs robust long axis |
+| `d6_long_axis_candidates.png` | 2 / D6 | Candidate axes tested by `long_axis()` plus final chosen axis |
 | `polar_map_steps.png` | 3.1 | Pipeline strip: side → smash → theta/s coloring → bull's-eye |
 | `polar_maps_all_cases.png` | 3.2 | Per-case bull's-eye grid, 84 cases |
 | `polar_maps_superposition.png` | 3.3 | Population mean scar fraction: all / male / female |
@@ -418,9 +478,12 @@ The AHA segment grid is computed by `_aha_segment_grid_06()`, which assigns each
 | `polar_hotspot_maps.png` | 4.6c | Hotspot maps at 2%, 5%, 10% thresholds |
 | `polar_density_contours.png` | 4.6d | Density map with 5%/10%/20% iso-contours |
 | `polar_eccentricity.png` | 4.6e | Angular entropy per ring row |
+| `aha_scar_density_rings.png` | 4.6 | Vertex-count CZ/LV coverage by AHA ring zone |
 | `comparison_population_maps.png` | 5.3 | Four-panel: vertex / area freq / mean area / mean coverage |
 | `comparison_per_patient_grid.png` | 5.4 | Per-patient 3-row grid for 12 cases |
 | `comparison_aha_segments.png` | 5.5 | AHA-17 bar chart: vertex / area freq / pooled coverage |
+| `s5_ring_area_coverage.png` | 5.6 | Pooled CZ area / LV area by ring zone |
+| `s5_ring_area_sex_split.png` | 5.7 | Pooled ring area coverage split by male/female labels |
 
 ---
 
