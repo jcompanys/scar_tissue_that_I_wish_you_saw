@@ -1,86 +1,76 @@
-# LV Scar Segmentation
+# LV Scar Characterization
 
-Research code for LV scar characterisation from ADAS3D cardiac MRI exports and
-the local clinical registry.
+Research notebooks and helper code for left-ventricular scar characterization
+from ADAS3D cardiac MRI exports.
 
-Data stays local and is never committed to this repo.
+The repository stores code only. Patient data, generated figures, CSV outputs,
+and old exploratory notebooks are ignored by git.
 
-## Organization
+## Project Layout
 
 ```text
 scar-char-v0.1/
 |-- lv-scar-segmentation/
 |   |-- notebooks/
-|   |   |-- 01_scar_exploration.ipynb
-|   |   |-- 01_ISOMAPS.ipynb
-|   |   |-- 02_clinical_eda.ipynb
-|   |   |-- 03_xyz_shape_analysis.ipynb
-|   |   |-- 04_bspline_polar_test.ipynb
-|   |   |-- 05_inspect_patient_50122488.ipynb
-|   |   `-- 06_polar_diagnostics.ipynb
-|   |-- results/
-|   |   |-- 01_scar_exploration/
-|   |   |-- 02_clinical_eda/
-|   |   |-- 03_xyz_analysis/
-|   |   |-- 04_bspline_polar_test/
-|   |   |-- 06_polar_diagnostics/
-|   |   `-- split.json
+|   |   |-- M01_scar_exploration.ipynb
+|   |   |-- M02_clinical_eda.ipynb
+|   |   |-- M02_isomaps.ipynb
+|   |   |-- M03_polar_diagnostics.ipynb
+|   |   |-- M04_scar_analysis.ipynb
+|   |   `-- M05_retrieval_based_generation.ipynb
 |   |-- src/
-|   |   |-- __init__.py
-|   |   |-- clinical_data.py
-|   |   |-- cone_bspline_simple.py
 |   |   |-- data_loading.py
+|   |   |-- mesh_utils.py
 |   |   |-- lv_geometry.py
-|   |   `-- mesh_utils.py
+|   |   |-- clinical_data.py
+|   |   |-- scar_characterization.py
+|   |   `-- scar_analysis.py
+|   |-- results/
+|   |   `-- .gitkeep
+|   |-- old_results/        # ignored
+|   |-- notebooks/old/      # ignored
 |   `-- requirements.txt
-|-- memory/
-`-- slides/
+`-- README.md
 ```
 
-Notebook imports use the package under `lv-scar-segmentation/src`, for example:
+## Notebook Pipeline
 
-```python
-from src.data_loading import scan
-from src.mesh_utils import best_shell, best_rv_mesh, get_cz_mesh
-from src.lv_geometry import prepare_polar_geometry, project_points_to_polar
+Run notebooks from `lv-scar-segmentation/` so imports like `from src...` work.
+
+1. `M01_scar_exploration.ipynb` scans the external ADAS3D dataset and builds the
+   full scar cohort. No train/test split is created.
+2. `M02_clinical_eda.ipynb` summarizes the clinical registry and marks patients
+   with available MRI segmentation.
+3. `M02_isomaps.ipynb` explores scar fragment shape with Isomap diagnostics.
+4. `M03_polar_diagnostics.ipynb` validates LV axis, RV/septal reference, and
+   polar-map orientation.
+5. `M04_scar_analysis.ipynb` produces cohort-level scar descriptors, regional
+   summaries, and statistical outputs.
+6. `M05_retrieval_based_generation.ipynb` runs retrieval-based scar generation
+   and leave-one-out validation on the full cohort.
+
+All current analysis notebooks use the full available cohort. The old numbered
+notebooks (`02`, `03`, `04`, `05`, `07`) live in `notebooks/old/` and are not
+tracked.
+
+## Data And Outputs
+
+Default local paths used by the notebooks:
+
+```text
+MRI data:       F:/RM_TEKNON_DEVELOP
+Clinical CSV:   C:/Users/joan/Desktop/FEINA/UPF/TFG/develop-vt.csv
+Outputs:        lv-scar-segmentation/results/
 ```
 
-## Current Pipeline
-
-1. `src/data_loading.py` scans the external ADAS3D dataset and builds one
-   `PatientCase` per patient. It resolves LV anatomy, optional RV anatomy,
-   tissue surfaces, layer files, and stats CSVs.
-2. `src/mesh_utils.py` centralises mesh selection and scar-fragment helpers:
-   best LV shell, optional RV mesh, Core Zone mesh, connected fragments, and
-   fragment filtering.
-3. `src/lv_geometry.py` is the shared geometry source of truth: LV long axis,
-   cross-section basis, septal/RV reference estimation, anatomical transform,
-   and polar-coordinate projection.
-4. `src/cone_bspline_simple.py` contains the B-spline/cone polar workflow and
-   imports the shared helpers instead of redefining them.
-5. `notebooks/06_polar_diagnostics.ipynb` validates the angular reference used
-   by polar maps before population-level density maps are trusted.
-
-## Data Conventions
-
-- Main external dataset: `F:/RM_TEKNON_DEVELOP`
-- Expected LV layout: `<root>/<year>/<patient_id>/Basal/Data/<DE-MRI variant>/LV/`
-- Optional RV layouts: `<root>/<year>/<patient_id>/Basal/Data/<DE-MRI variant>/RV/`
-  or `<root>/<year>/<patient_id>/Basal/Data/<DE-MRI variant>/Right Ventricle/`
-- Frozen known/held-out split: `lv-scar-segmentation/results/split.json`
-
-For 3-D diagnostic views, the current preferred convention is:
-
-- `+Z` means apex to base.
-- The camera looks from apex toward base when checking polar orientation.
-- Septal/RV direction should appear on screen-right for the diagnostic view.
-- The extra AHA display roll is only for matching the bull's-eye layout.
+Generated outputs are ignored. The previous output folder was renamed to
+`old_results/`; new runs should write fresh files into `results/`.
 
 ## Setup
 
 ```bash
-pip install -r lv-scar-segmentation/requirements.txt
+cd lv-scar-segmentation
+python -m pip install -r requirements.txt
 ```
 
-Run notebooks from `lv-scar-segmentation/` or add that folder to `sys.path` so
-`src.*` imports resolve correctly.
+Then open JupyterLab and run the notebooks in order.
