@@ -4,3 +4,7 @@ backup/
 memory/
 slides/
 writting/
+lv-scar-segmentation/notebooks/old/
+lv-scar-segmentation/old_results/
+lv-scar-segmentation/results/*
+!lv-scar-segmentation/results/.gitkeep

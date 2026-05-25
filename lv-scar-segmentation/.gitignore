@@ -21,7 +21,6 @@ data/interim/*
 # ============================================================================
 # RESULTS & OUTPUTS - Large files, may contain sensitive derivatives
 # ============================================================================
-results/
 results/**
 *.csv
 *.tsv
