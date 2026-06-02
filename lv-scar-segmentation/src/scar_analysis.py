@@ -179,3 +179,4 @@ def scalar_associations(
             }
         )
     return pd.DataFrame(rows)
+

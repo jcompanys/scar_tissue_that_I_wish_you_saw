@@ -1,9 +1,8 @@
 .claude/
 .vscode/
 backup/
-memory/
-slides/
-writting/
+auxiliary/slides/
+auxiliary/writting/
 lv-scar-segmentation/notebooks/old/
 lv-scar-segmentation/old_results/
 lv-scar-segmentation/results/*

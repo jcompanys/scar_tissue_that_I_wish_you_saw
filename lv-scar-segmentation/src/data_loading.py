@@ -102,6 +102,24 @@ _TISSUE_SURFACE_GLOBS: Dict[str, Tuple[str, ...]] = {
         "*Power*Path*.vtk",
         "*PowerPath*.vtk",
     ),
+    "corridors": (
+        "Automatic 3D Corridors.vtk",
+        "*Automatic*Corridor*.vtk",
+        "*Automatic*3D*Corridor*.vtk",
+    ),
+    "corridor_labels": (
+        "3D Corridor Labels.vtk",
+        "*Corridor*Labels*.vtk",
+    ),
+    "corridor_centerlines_unified": (
+        "3D Corridor Unified Centerlines.vtk",
+        "*Corridor*Unified*Centerlines*.vtk",
+    ),
+    "corridor_bz": (
+        "3D Corridor 3D Border Zone.vtk",
+        "*Corridor*3D*Border*Zone*.vtk",
+        "*Corridor*Border*Zone*.vtk",
+    ),
 }
 
 # -- DE-MRI folder name variants (tried in order, first match wins) -----------

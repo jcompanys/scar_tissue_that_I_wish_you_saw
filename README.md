@@ -30,6 +30,13 @@ scar-char-v0.1/
 |   |-- old_results/        # ignored
 |   |-- notebooks/old/      # ignored
 |   `-- requirements.txt
+|-- auxiliary/
+|   |-- memory/
+|   |-- slides/
+|   |-- tools/
+|   `-- writting/
+|-- backup/
+|   `-- lv-scar-segmentation/
 `-- README.md
 ```
 
@@ -65,6 +72,18 @@ Outputs:        lv-scar-segmentation/results/
 
 Generated outputs are ignored. The previous output folder was renamed to
 `old_results/`; new runs should write fresh files into `results/`.
+
+## Auxiliary Files And Backup
+
+Auxiliary project materials live under `auxiliary/`:
+
+- `auxiliary/memory/` stores project memory and reference notes.
+- `auxiliary/slides/` stores presentation materials.
+- `auxiliary/tools/` stores helper tooling outside the main package.
+- `auxiliary/writting/` stores writing materials.
+
+The `backup/lv-scar-segmentation/` folder is a working copy snapshot of the main
+`lv-scar-segmentation/` project folder.
 
 ## Setup
 

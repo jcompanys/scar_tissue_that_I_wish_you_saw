@@ -11,15 +11,16 @@ Characterize LV scar geometry from ADAS3D cardiac MRI exports and correlate scar
 - Repo root: `C:\Users\joan\Desktop\FEINA\UPF\TFG\repo\scar-char-v0.1`
 - Main Git branch currently in use: `claude/charming-buck`
 - Main project code lives in: `lv-scar-segmentation/`
-- Project memory lives in: `memory/`
-- Auxiliary repo folders also present at root: `.claude/`, `backup/`, `slides/`, and `tools/`
+- Project memory lives in: `auxiliary/memory/`
+- Auxiliary repo folders live under `auxiliary/`: `memory/`, `slides/`, `tools/`, and `writting/`
+- `backup/lv-scar-segmentation/` contains a snapshot copy of the main project folder.
 
 ## Branch and worktree model
 - `scar-char-v0.1` is the canonical Git repository folder for normal work.
 - Commits are made from the repo root `scar-char-v0.1`, even when edited files are inside `lv-scar-segmentation/`.
 - The branch is attached to the whole repo/worktree, not to the `lv-scar-segmentation/` subfolder.
 - `.claude/worktrees/` may contain extra assistant-created worktrees for other sessions or branches, but they are secondary.
-- `memory/` is the shared project memory folder that should be updated when the project organization or pipeline changes.
+- `auxiliary/memory/` is the shared project memory folder that should be updated when the project organization or pipeline changes.
 
 ## Live project structure
 Current `lv-scar-segmentation/` layout:
@@ -135,7 +136,7 @@ Reads the study clinical registry CSV with Spanish headers, comma decimals, and 
 ## Working rule
 Always treat `C:\Users\joan\Desktop\FEINA\UPF\TFG\repo\scar-char-v0.1` as the source of truth:
 - start assistant sessions there
-- use its `memory/` folder as the project memory
+- use its `auxiliary/memory/` folder as the project memory
 - treat `.claude/worktrees/` as auxiliary branch or session folders, not as the main home of the project
 
 ## Next steps
