@@ -1,0 +1,102 @@
+\documentclass[11pt, a4paper, twoside]{tfg_dtic_upf}
+
+% Languages
+\usepackage[catalan,spanish,english]{babel}
+
+% Page margins (matches Word template ~2.5cm)
+\usepackage{geometry}
+\geometry{
+  a4paper,
+  top=2.5cm,
+  bottom=2.5cm,
+  inner=2.5cm,
+  outer=2.5cm
+}
+
+% Graphics
+\usepackage{graphicx}
+\graphicspath{{figures/}{../lv-scar-segmentation/}}
+
+% Font
+\usepackage{times}
+
+% No headings
+\pagestyle{plain}
+
+% Index
+\usepackage{makeidx}
+\makeindex
+
+% Bibliography style (APA)
+\bibliographystyle{apalike}
+
+% Appendix
+\usepackage{appendix}
+
+% Useful packages
+\usepackage{amsmath}
+\usepackage{booktabs}
+\usepackage{hyperref}
+\usepackage{subcaption}
+\usepackage{siunitx}
+
+% Language: English (change to catalan if writing in Catalan)
+\selectlanguage{english}
+
+% ============================================================
+% THESIS METADATA — fill in
+% ============================================================
+\title{Automated Left Ventricular Scar Characterization from Cardiac MRI}
+\subtitle{A Deep Learning Approach with Retrieval-Based Generation}
+\author{Joan Companys}
+\thyear{Academic Year 2024--2025}
+\supervisor{[Supervisor Name]}
+\grau{Grau en Enginyeria Biomèdica}
+
+% ============================================================
+\begin{document}
+
+\frontmatter
+\maketitle
+
+\input{chapters/00_frontmatter}
+
+% Table of contents
+\tableofcontents
+
+% List of figures (remove if no figures)
+\listoffigures
+\addcontentsline{toc}{chapter}{List of Figures}
+
+% List of tables (remove if no tables)
+\listoftables
+\addcontentsline{toc}{chapter}{List of Tables}
+
+% ============================================================
+% MAIN BODY — 30-page limit (excl. bibliography & appendix)
+% ============================================================
+\mainmatter
+
+\input{chapters/01_introduction}
+\input{chapters/02_background}
+\input{chapters/03_methods}
+\input{chapters/04_results}
+\input{chapters/05_discussion}
+\input{chapters/06_conclusion}
+
+% ============================================================
+% BIBLIOGRAPHY
+% ============================================================
+\bibliography{bibliography}
+
+% ============================================================
+% APPENDIX (no page limit)
+% ============================================================
+\clearpage
+\appendix
+\input{chapters/A1_appendix}
+
+% Index (remove if unused)
+% \printindex
+
+\end{document}
