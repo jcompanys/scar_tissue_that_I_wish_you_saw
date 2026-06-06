@@ -2,6 +2,7 @@
 
 % Languages
 \usepackage[catalan,spanish,english]{babel}
+\selectlanguage{english}
 
 % Page margins (matches Word template ~2.5cm)
 \usepackage{geometry}
@@ -15,7 +16,7 @@
 
 % Graphics
 \usepackage{graphicx}
-\graphicspath{{figures/}{../lv-scar-segmentation/}}
+\graphicspath{{figures/}}
 
 % Font
 \usepackage{times}
@@ -33,25 +34,35 @@
 % Appendix
 \usepackage{appendix}
 
-% Useful packages
+% Math
 \usepackage{amsmath}
+\usepackage{amssymb}
+
+% Tables
 \usepackage{booktabs}
-\usepackage{hyperref}
+
+% Figures
 \usepackage{subcaption}
+
+% Units
 \usepackage{siunitx}
 
-% Language: English (change to catalan if writing in Catalan)
-\selectlanguage{english}
+% Fix chapter name to Catalan/Spanish style ("Chapter" → keep English for now)
+% To match Word template: chapter number in smaller font, title in larger
+% The cls already does: \huge "Chapter N" then \Huge TITLE — acceptable
+
+% Hyperlinks (load last)
+\usepackage[hidelinks]{hyperref}
 
 % ============================================================
-% THESIS METADATA — fill in
+% THESIS METADATA
 % ============================================================
-\title{Automated Left Ventricular Scar Characterization from Cardiac MRI}
-\subtitle{A Deep Learning Approach with Retrieval-Based Generation}
-\author{Joan Companys}
-\thyear{Academic Year 2024--2025}
-\supervisor{[Supervisor Name]}
-\grau{Grau en Enginyeria Biomèdica}
+\title{Population-Level Analysis of Post-Infarction Scar Geometry Using Standardised Polar Maps}
+\subtitle{A Geometric Pipeline for Population-Level Analysis and Retrieval-Based Generation}
+\author{Joan Company Company}
+\thyear{Academic Year 2025--2026}
+\supervisor{\`{O}scar C\`{a}mara and Juli\`{a} Camps}
+\grau{Grau en Enginyeria Matem\`{a}tica en Ci\`{e}ncia de Dades}
 
 % ============================================================
 \begin{document}
@@ -61,28 +72,39 @@
 
 \input{chapters/00_frontmatter}
 
-% Table of contents
 \tableofcontents
-
-% List of figures (remove if no figures)
 \listoffigures
 \addcontentsline{toc}{chapter}{List of Figures}
-
-% List of tables (remove if no tables)
 \listoftables
 \addcontentsline{toc}{chapter}{List of Tables}
 
 % ============================================================
-% MAIN BODY — 30-page limit (excl. bibliography & appendix)
+% MAIN BODY
 % ============================================================
 \mainmatter
 
 \input{chapters/01_introduction}
+
 \input{chapters/02_background}
-\input{chapters/03_methods}
-\input{chapters/04_results}
-\input{chapters/05_discussion}
-\input{chapters/06_conclusion}
+\label{chap:background}
+
+\input{chapters/03_data}
+\label{chap:data}
+
+\input{chapters/04_polarmaps}
+\label{chap:polarmaps}
+
+\input{chapters/05_statistical}
+\label{chap:statistical}
+
+\input{chapters/06_retrieval}
+\label{chap:retrieval}
+
+\input{chapters/07_results}
+
+\input{chapters/08_discussion}
+
+\input{chapters/09_conclusion}
 
 % ============================================================
 % BIBLIOGRAPHY
@@ -90,13 +112,10 @@
 \bibliography{bibliography}
 
 % ============================================================
-% APPENDIX (no page limit)
+% APPENDIX
 % ============================================================
 \clearpage
 \appendix
 \input{chapters/A1_appendix}
-
-% Index (remove if unused)
-% \printindex
 
 \end{document}

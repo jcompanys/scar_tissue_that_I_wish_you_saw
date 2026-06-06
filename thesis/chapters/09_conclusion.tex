@@ -1,0 +1,166 @@
+\chapter*{Conclusion}
+\addcontentsline{toc}{chapter}{Conclusion}
+
+\section*{Original Motivation and the Pivot to an Analytical Pipeline}
+
+The original ambition of this thesis was generative. The intended goal was to learn a latent
+space of scar geometry---a compact, continuous representation from which new, plausible
+scar configurations could be sampled and modified. The clinical endpoint motivating this was
+not generation for its own sake: the latent space was meant to be navigable toward
+arrhythmogenic geometry, so that configurations likely to sustain re-entrant ventricular
+tachycardia could be identified, characterised, and eventually synthesised for use in
+simulation or risk stratification. In that vision, understanding scar geometry at the population
+level was a means to a functional end---the detection of probable VT substrates.
+
+That goal proved unreachable at the current scale. The fundamental obstacle is the extreme
+heterogeneity of the cohort: scar varies in location across all three coronary territories and
+all longitudinal levels, in extent from focal subendocardial lesions to near-transmural
+multi-territory involvement, in transmural profile, in compactness, and in fragment count.
+This variability is not noise---it is the signal, reflecting the genuine diversity of ischaemic
+injury across patients. But it also means that no compact low-dimensional structure exists in
+the scar-geometry space that a generative model could faithfully learn from 105 cases. The
+thesis therefore pivoted to a more analytical and reproducible strategy: rather than learning
+the geometry implicitly in a latent space, characterise it explicitly through a set of
+interpretable descriptors, and use those descriptors as the basis for retrieval-based
+generation. This is a more conservative approach, but it is honest about what the data
+support, produces verifiable outputs---every generated scar is a real observed case---and
+establishes the descriptive foundation that any future generative model will need to build on.
+
+\section*{Research Questions and Findings}
+
+Three research questions guided this work, each representing an attempt at a progressively
+more conservative form of geometric representation.
+
+\paragraph{RQ1: Is there a low-dimensional space that can reproduce plausible scar geometries?}
+
+The original aim was to learn a compact latent representation of scar geometry---a
+low-dimensional manifold from which new, plausible scar configurations could be sampled
+and modified. This proved infeasible. The scar-pattern space is intrinsically high-dimensional:
+six PCA components are required to explain only 72\% of segment-level variance at the
+coarse resolution of AHA-17 segments, with PC1 accounting for only 18\%. This low
+concentration of variance in the leading component is not a property of the chosen
+representation---it reflects the genuine independence of infarct location, extent,
+transmurality, and longitudinal distribution across patients, which vary as a function of which
+vessel occludes, at what level, and for how long. A cohort of 105 patients is fundamentally
+underpowered to learn a reliable latent space over a distribution this high-dimensional. The
+answer to RQ1 is \textbf{no}, and the reason is intrinsic to the biology rather than to the
+method.
+
+\paragraph{RQ2: Can scar geometry be described by a known parametric distribution?}
+
+If a full generative latent space is out of reach, a weaker goal is to describe scar geometry
+through a known parametric family from which new cases could be sampled. This also
+proved infeasible. At every level of aggregation---individual AHA segments, coronary
+territories, global burden---the distributions are zero-inflated, heavily right-skewed, and
+non-normal, with mean-to-median ratios of 2.4--3.7 and standard-deviation-to-mean ratios of
+2--4 at the segment level. The marginal distributions of individual descriptors can be
+characterised non-parametrically, but the joint distribution across descriptors cannot be
+reproduced from them: territory assignment, scar location, longitudinal gradient,
+transmurality, and fragment shape are not independent, and the dependencies between them
+are complex and patient-specific. Encoding a patient as a feature vector captures marginal
+properties but loses the geometric relationships between them. Two patients with identical
+feature vectors can present fundamentally different scar geometries. The answer to RQ2 is
+\textbf{no}, and it sharpens the problem: what is needed is not a generative model but a
+representation that is honest about what it encodes and what it discards.
+
+\paragraph{RQ3: How can post-infarction scar geometry be parameterised in a compact representation that preserves clinically meaningful structure?}
+
+This is the question the thesis answers. The polar-map representation projects the
+three-dimensional scar surface onto a standardised $64 \times 128$ bull's-eye grid anchored
+to the long axis and the septal reference, providing a common $(s, \theta)$ coordinate frame
+across patients regardless of ventricular size, shape, or orientation. This representation
+preserves the properties that are clinically meaningful and statistically tractable: scar location
+by territory and AHA segment, circumferential and longitudinal extent, transmural onset and
+depth, and fragment-level shape. The population-level characterisation built on this
+representation identified the mid-inferolateral and mid-inferior segments as the dominant
+hotspot, confirmed the three-axis organisation of scar geometry, and showed that the
+retrieval-based framework can identify geometrically similar patients with a mean segment
+Dice of 0.597 under leave-one-out evaluation.
+
+The answer to RQ3 is: polar maps, with explicit information loss. What is preserved is
+enough to support population-level analysis and retrieval-based generation. What is lost is
+the intrinsic three-dimensional volumetric geometry of the scar---how it develops through the
+wall, how adjacent regions are connected in depth, and what its full surface morphology
+looks like from the epicardial side. The large gap between segment Dice (mean 0.597) and
+polar-map Dice (mean 0.106) is a partial measure of this loss at the sub-segment level; the
+loss in the transmural dimension is harder to quantify but no less real.
+
+This also defines where the present work sits relative to the existing literature. Recent methods such as LGESynthNet \cite{jacob2024} and CLAIM \cite{ramzan2025}
+have demonstrated synthesis of LGE-CMR images and scar segmentation masks at the
+two-dimensional image level. Complementary approaches have explored Perlin-noise-based
+synthetic fibrosis microstructure generation \cite{lawson2024} and deep learning
+classification of wall thickness maps for VA prediction \cite{ly2021}. These methods
+solve the image placement problem---they can produce pixel-level augmentations that are
+visually and statistically plausible as cardiac MRI---but they treat scar as a pixel mask rather
+than as a geometric object. They do not characterise transmurality, fragment shape,
+circumferential spread, or apex-to-base organisation as explicit geometric properties, and
+they cannot reason about the three-dimensional structure of the scar within the ventricular
+wall. The present work approaches the problem from the opposite direction: it analyses the
+scar as a 3D surface embedded in the myocardium and asks what geometric properties
+characterise it across a population. The two directions are complementary. Image-level
+synthesis methods know where to place scar in the image domain; the geometric
+characterisation developed here provides the structural layer they currently lack. Connecting
+them---using geometric descriptors to condition image-level synthesis---is a natural next step.
+
+\section*{Summary of Contributions}
+
+A cohort of 105 patients with valid left ventricular reconstructions and core-zone meshes was
+assembled from 168 candidate folders spanning five acquisition years, constituting the first
+systematically curated and centrally organised version of the DEVELOP registry available for
+computational analysis.
+
+A fully automated polar-map pipeline was implemented, with a multi-candidate
+apex-detection strategy that evaluates LV PC1, RV PC1, and LV PC2 as search directions
+and selects the one yielding maximum eccentricity---necessary because post-infarction
+remodelling renders a single fixed direction insufficient in approximately 25\% of cases. A
+continuous vertex-depth transmurality measure was developed as a replacement for the
+too-coarse discrete layer meshes exported by ADAS 3D.
+
+A population-level statistical characterisation of scar geometry was performed, establishing
+non-uniform spatial distribution across AHA segments, identifying the mid-inferolateral and
+mid-inferior segments (AHA 11 and 10) as the most affected regions straddling the
+RCA--LCX boundary, confirming consistent basal sparing, and documenting the three-axis
+geometric organisation of scar. Transmurality was characterised as predominantly
+endocardial-dominant with a dense-core / thin-edge gradient.
+
+A retrieval-based scar generation framework was proposed and evaluated under
+leave-one-out cross-validation, yielding a mean absolute burden error of 0.015, mean
+segment Dice of 0.597, and mean polar-map Dice of 0.106. SVD-based feature pruning
+consistently degraded retrieval performance, demonstrating that discriminative information is
+distributed across dimensions with low individual variance contributions.
+
+\section*{Future Directions}
+
+The most immediate extension is linkage to clinical outcome data as the DEVELOP registry
+accumulates follow-up events. The feature vector developed here provides a direct interface
+between population geometry and clinical prediction. On the generative side, the retrieval
+framework could be conditioned on clinical variables---culprit territory, ejection fraction, time
+since infarction---which the current architecture already supports by restriction of the case
+base or appending of clinical features to the descriptor vector. A natural further extension
+would connect the geometric representation to image-level synthesis methods such as
+LGESynthNet, using the polar-map descriptors to condition image generation and produce
+augmented LGE-CMR data with geometrically controlled scar properties.
+
+The deeper open problem is the transition from the scalar-descriptor representation built
+here toward a true geometric shape model of scar. One concrete pathway toward this is a
+two-stage generative architecture. In the first stage, a shape encoder operating on the target
+LV geometry---without scar---learns a representation of the feasible anatomical region where
+scar can live, constrained by wall thickness, curvature, and coronary territory boundaries. In
+the second stage, a scar geometry encoder places a scar configuration inside that feasible
+region, using the polar-map descriptors and the retrieval-based library developed in this
+thesis as the prior over plausible scar shapes. Decoupling these two stages is important:
+trying to learn scar geometry and its anatomical context jointly is precisely what proved
+infeasible at 105 cases; separating them gives each encoder a more tractable learning
+problem.
+
+The labelling problem remains: a generative model trained only on observed scars produces
+plausible configurations but cannot distinguish arrhythmogenic from non-arrhythmogenic
+ones. The solution is to close the loop through electrophysiological simulation. Scar
+configurations generated by the two-stage architecture would be passed to a computational
+model, re-entrant circuit formation would be assessed, and outcomes would be compared
+against clinical markers such as LVEF. This process builds a labelled library of scar
+geometries annotated by their simulated arrhythmogenic potential. With that library, a
+generative model conditioned on arrhythmogenic label becomes trainable---and the latent
+space becomes navigable not toward any plausible scar, but specifically toward
+configurations that sustain VT. This is the pathway that connects the population geometry
+characterised in this thesis to the clinical endpoint that motivated it.

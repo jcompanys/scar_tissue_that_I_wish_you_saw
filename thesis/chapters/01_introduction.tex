@@ -1,17 +1,194 @@
 \chapter*{Introduction}
 \addcontentsline{toc}{chapter}{Introduction}
 
-[Introduction text. Context, motivation, research questions, thesis structure overview.]
+\section*{Clinical motivation: post-infarction scar as an arrhythmogenic substrate}
 
-\section*{Motivation}
-[Why this work matters clinically and technically.]
+Myocardial infarction (MI) produces permanent structural remodeling of the left ventricular
+myocardium. Following the acute ischemic event, prolonged oxygen deprivation causes
+irreversible cardiomyocyte necrosis. Because adult myocardial tissue has limited
+regenerative capacity, the damaged region is progressively replaced by fibrotic scar.
+Although this reparative process preserves the mechanical integrity of the ventricular wall, it
+also creates a heterogeneous electrical substrate that can alter impulse propagation and
+promote ventricular arrhythmias.
+
+In chronic post-MI patients, ventricular tachycardia (VT) is commonly sustained by re-entrant
+circuits associated with the infarct scar. Dense fibrotic tissue, usually referred to as the core
+zone, is largely unexcitable. In contrast, the surrounding peri-infarct or border zone contains
+a mixture of surviving myocytes, collagen deposition, and altered cell-to-cell coupling. This
+heterogeneous tissue organization can generate slow conduction, conduction block, and
+spatial dispersion of refractoriness, which together create the conditions required for
+re-entry.
+
+Importantly, the arrhythmogenic potential of post-infarction scar is not determined only by its
+total amount. Two patients with similar scar burden may present different arrhythmic
+vulnerability depending on scar location, transmural extent, compactness, and internal
+organization. Narrow conducting corridors within or around scar tissue can act as protected
+pathways for re-entry and may correspond to critical VT isthmuses. Therefore, scar should
+not be understood only as a scalar biomarker, but as a spatially organized three-dimensional
+structure embedded within the left ventricle.
+
+Despite this mechanistic understanding, clinical risk stratification after MI remains limited.
+Current strategies rely heavily on global functional markers, particularly left ventricular
+ejection fraction (LVEF). Although reduced LVEF is associated with increased arrhythmic
+risk, it does not directly describe the substrate responsible for re-entry. Many patients with
+severely reduced LVEF never develop malignant ventricular arrhythmias, while sudden
+cardiac death may also occur in patients with moderately reduced or preserved LVEF. These
+limitations motivate approaches that characterize the structure of scar more directly, with
+particular attention to its geometry.
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.9\textwidth]{figures/fig1b_representative_lv_iso}
+    \caption{Representative 3D isometric view of a left ventricular reconstruction with core-zone scar overlay (opaque red). The LV shell is rendered semi-transparent. Example from the DEVELOP-VT cohort.}
+    \label{fig:intro1}
+\end{figure}
+
+\section*{Imaging-based characterization of scar geometry}
+
+Non-invasive cardiac imaging plays a central role in the characterization of post-infarction
+scar. Late gadolinium enhancement cardiac magnetic resonance imaging (LGE-CMR) is
+widely considered the reference modality for in vivo visualization of myocardial fibrosis. After
+gadolinium administration, fibrotic and infarcted tissue shows delayed contrast wash-out
+compared with healthy myocardium, producing hyperenhanced regions that can be identified
+as scar. This makes LGE-CMR particularly suitable for detecting post-infarction scar,
+distinguishing dense core tissue from heterogeneous peri-infarct regions, and assessing the
+transmural extent of fibrosis.
+
+LGE-CMR provides the most complete characterization of myocardial scar because it
+directly exploits contrast enhancement associated with fibrotic tissue. However, it also
+presents technical challenges: cardiac and respiratory motion must be controlled, image
+quality may vary across centres, and scar segmentation depends on intensity thresholds,
+making border-zone delineation sensitive to acquisition parameters and observer decisions.
+Even with these limitations, LGE-CMR remains the most appropriate imaging modality for
+this thesis because the objective is to analyze scar geometry itself. Platforms such as ADAS
+3D allow LGE-CMR data to be transformed into patient-specific three-dimensional
+representations of the left ventricle, core zone, border zone, and slow-conduction channels.
+
+Computed tomography has emerged as a complementary modality, particularly in patients
+with contraindications to CMR. Although CT offers faster acquisition, it lacks direct sensitivity
+to fibrosis and therefore provides less specific scar characterization than LGE-CMR. Its
+superior spatial resolution, however, enables detailed assessment of ventricular wall
+thinning---a hallmark of chronic infarction---and recent work has shown that CT-derived wall
+thickness heterogeneity can identify channels of relatively preserved thickness within thinned
+regions that colocalize with VT isthmuses \cite{cedilnik2023}. Nevertheless, because this
+thesis focuses on scar geometric characterization, LGE-CMR remains the primary data
+source.
+
+\section*{Standardized polar maps for population-level scar comparison}
+
+A major challenge in scar geometry analysis is that scar is patient-specific. Each scar
+occupies a different location, follows the curvature of a different ventricular anatomy, and
+may extend through the wall with variable transmurality. Direct comparison of
+three-dimensional scar surfaces across patients is therefore difficult. The same apparent
+shape may have different anatomical meaning depending on whether it is located at the
+apex, mid-ventricle, or base.
+
+To enable population-level analysis, patient-specific scar distributions must be mapped into a
+common anatomical reference. The American Heart Association (AHA) 17-segment model \cite{cerqueira2002}
+provides a standardized division of the left ventricle into basal, mid-cavity, apical, and
+apical-cap regions. This standardization naturally supports the use of polar or bull's-eye
+maps, where the longitudinal coordinate encodes apex-to-base position and the angular
+coordinate encodes circumferential location. When aligned with the AHA model, polar maps
+allow scar location and extent to be compared across patients in an anatomically meaningful
+way, preserving clinically meaningful information about scar location, circumferential
+extension, apex-to-base distribution, and transmurality.
+
+\section*{Data curation and the need for scalable pipelines}
+
+Before population-level scar geometry analysis can be performed, patient-specific data must
+be collected, organized, curated, and transformed into a consistent computational format.
+This thesis was developed in collaboration with Centro M\'{e}dico Teknon, using data from the
+DEVELOP-VT dataset. A practical part of the project involved working directly with the
+clinical and image-processing workflow at Teknon. This included reviewing available cases,
+helping with the segmentation of new cases, centralizing the dataset, and extracting the
+necessary files for each patient. Because ADAS 3D exports are case-specific and not
+designed for large automatic batch extraction, this required substantial manual and
+semi-automatic organization before any population-level analysis could be performed.
+
+More broadly, scalable computational cardiology increasingly requires automated pipelines.
+The goal of this thesis is therefore to build a reproducible Python pipeline that transforms
+patient-specific three-dimensional scar segmentations into standardized polar-map
+representations suitable for cohort-level geometric analysis.
+
+\section*{From scalar scar biomarkers to population-level geometry}
+
+Existing imaging-based approaches often summarize scar using scalar or regional
+descriptors such as total scar mass, core mass, border-zone mass, or percentage of left
+ventricular involvement. These variables are clinically useful but compress a complex
+three-dimensional structure into a small set of numbers, losing information about scar
+location, shape, spatial extension, transmurality, and relationship with anatomical regions.
+
+Patient-specific simulation studies incorporate scar geometry but do not describe how it
+varies across a population. Machine learning and generative imaging methods such as
+CLAIM \cite{ramzan2025} and LGESynthNet \cite{jacob2024} have been proposed for scar
+synthesis, but they operate at the two-dimensional image and segmentation-mask level, targeting image
+augmentation and segmentation performance rather than three-dimensional geometric
+characterization. In contrast, this thesis analyzes the scar itself as a geometric object defined
+on three-dimensional meshes, emphasizing shape properties---such as extent and
+transmurality---over pixel-level position in imaging slices. Although the present work
+prioritizes geometry, scar position within the ventricle remains important because the
+underlying tissue architecture (fiber orientation, wall thickness, proximity to conduction
+system) varies spatially and modulates arrhythmogenic behavior. Complementary work in
+vascular modeling has demonstrated that coordinate-system-based geometric
+representations enable quantitative point-wise comparison across patients \cite{romero2025},
+supporting the broader hypothesis that clinically relevant information is contained in
+spatial geometry beyond global scalar biomarkers \cite{romero2024}. Patient-specific
+electrophysiological simulations using the same DEVELOP registry data have demonstrated
+that integrating imaging with computational models of slow conduction channels enables
+automated VT risk stratification in clinical timeframes \cite{serra2024}. Scalable automated
+pipelines for generating large virtual patient cohorts confirm the feasibility of
+population-scale cardiac modelling \cite{doste2026}.
+
+\section*{Research gap and thesis rationale}
+
+Despite advances in imaging, simulation, and data-driven modelling, there remains a need
+for reproducible frameworks that analyse post-infarction scar geometry at the population
+level. Current approaches focus either on scalar biomarkers, patient-specific simulations, or
+image-level scar synthesis. What is less developed is a standardised representation that
+allows scar distributions from many patients to be compared directly while preserving
+anatomical context.
+
+Three research questions guide this thesis. \textbf{RQ1:} Is there a low-dimensional space
+that can reproduce plausible post-infarction scar geometries? \textbf{RQ2:} Can scar
+geometry be described by a known parametric distribution? \textbf{RQ3:} How can
+post-infarction scar geometry be parameterised in a compact representation that preserves
+clinically meaningful structure?
 
 \section*{Objectives}
+
+The main objective of this thesis is to develop and apply a reproducible computational
+pipeline for the geometric characterisation of post-infarction scar across a patient cohort.
+The specific objectives are:
+
 \begin{enumerate}
-    \item [Objective 1]
-    \item [Objective 2]
-    \item [Objective 3]
+    \item Curate and organise the DEVELOP-VT data, including patient-specific ADAS 3D
+          outputs and VTK mesh files.
+    \item Design and implement a Python pipeline for processing post-infarction scar
+          segmentations obtained from LGE-CMR data.
+    \item Project three-dimensional scar distributions onto standardised two-dimensional left
+          ventricular polar maps aligned with the AHA 17-segment model.
+    \item Enable cross-patient comparison of scar geometry by representing scar location,
+          shape, and transmurality in a common anatomical reference frame.
+    \item Apply the pipeline to the DEVELOP-VT dataset, comprising 168 post-MI patients,
+          of which 105 presented usable core zone segmentations.
+    \item Perform population-level visualisation and analysis of scar geometry, assessing how
+          scar location conditions apparent scar shape and spatial organisation, and
+          determining the intrinsic dimensionality of the scar-pattern space.
+    \item Propose and evaluate a retrieval-based generative framework that builds on the
+          standardised polar-map representation to produce spatially coherent synthetic scar
+          cases from existing population patterns.
 \end{enumerate}
 
-\section*{Thesis Structure}
-[Brief outline of chapters.]
+\section*{Main contributions}
+
+\begin{itemize}
+    \item Curated and organised the DEVELOP-VT clinical dataset, centralising records
+          distributed across five acquisition years.
+    \item Assisted with the segmentation of approximately 40 additional cases at Centro
+          M\'{e}dico Teknon.
+    \item Implemented a fully automated, reproducible polar-map pipeline for cohort-scale scar
+          projection.
+    \item Performed population-level geometric characterisation of post-infarction scar anatomy.
+    \item Proposed a retrieval-based generation baseline preserving realistic scar patterns,
+          suitable for future simulation or data-augmentation studies.
+\end{itemize}

@@ -1,11 +1,193 @@
-% Bibliography — APA style (bibliographystyle{apalike} in main.tex)
-% Add references here. Export from Mendeley/Zotero as BibTeX.
+% ============================================================
+% Bibliography — APA style (apalike)
+% ============================================================
 
-@article{placeholder2024,
-  author  = {Author, A. and Author, B.},
-  title   = {Placeholder reference},
-  journal = {Journal Name},
+% ---- AHA 17-segment model ----
+@article{cerqueira2002,
+  author  = {Cerqueira, Manuel D. and Weissman, Neil J. and Dilsizian, Vasken
+             and Jacobs, Alice K. and Kaul, Sanjiv and Laskey, Warren K.
+             and Pennell, Dudley J. and Rumberger, John A. and Ryan, Thomas
+             and Verani, Mario S.},
+  title   = {Standardized Myocardial Segmentation and Nomenclature for
+             Tomographic Imaging of the Heart},
+  journal = {Circulation},
+  year    = {2002},
+  volume  = {105},
+  number  = {4},
+  pages   = {539--542},
+  doi     = {10.1161/hc0402.102975},
+}
+
+% ---- CT wall thickness / VT simulation ----
+@article{cedilnik2023,
+  author  = {Cedilnik, Nicolas and Pop, Mihaela and Duchateau, Josselin
+             and Sacher, Fr{\'e}d{\'e}ric and Ja{\"i}s, Pierre
+             and Cochet, Hubert and Sermesant, Maxime},
+  title   = {Efficient Patient-Specific Simulations of Ventricular Tachycardia
+             Based on Computed Tomography-Defined Wall Thickness Heterogeneity},
+  journal = {{JACC}: Clinical Electrophysiology},
+  year    = {2023},
+  volume  = {9},
+  number  = {12},
+  pages   = {2529--2543},
+  doi     = {10.1016/j.jacep.2023.07.023},
+}
+
+% ---- CLAIM: scar synthesis via diffusion + AHA conditioning ----
+@misc{ramzan2025,
+  author    = {Ramzan, Farheen and Kiberu, Yusuf and Jathanna, Nikesh
+               and Jamil-Copley, Shahnaz and Clayton, Richard H. and Chen, Chen},
+  title     = {{CLAIM}: Clinically-Guided {LGE} Augmentation for Realistic and
+               Diverse Myocardial Scar Synthesis and Segmentation},
+  year      = {2025},
+  eprint    = {2506.15549},
+  archivePrefix = {arXiv},
+  primaryClass  = {eess.IV},
+}
+
+% ---- Cardiac imaging review / VT re-entry substrate ----
+@article{mahida2017,
+  author  = {Mahida, Saagar and Sacher, Fr{\'e}d{\'e}ric and Dubois, R{\'e}mi
+             and Sermesant, Maxime and Bogun, Frank and Ha{\"i}ssaguerre, Michel
+             and Ja{\"i}s, Pierre and Cochet, Hubert},
+  title   = {Cardiac Imaging in Patients With Ventricular Tachycardia},
+  journal = {Circulation},
+  year    = {2017},
+  volume  = {136},
+  number  = {25},
+  pages   = {2491--2507},
+  doi     = {10.1161/CIRCULATIONAHA.117.029942},
+}
+
+% ---- LGESynthNet: latent diffusion for LGE scar synthesis ----
+@inproceedings{jacob2024,
+  author    = {Jacob, Athira J. and Sharma, Puneet and Rueckert, Daniel},
+  title     = {{LGESynthNet}: Controlled Scar Synthesis for Improved Scar
+               Segmentation in Cardiac {LGE-MRI} Imaging},
+  booktitle = {Medical Image Computing and Computer-Assisted Intervention
+               ({MICCAI})},
+  year      = {2024},
+  note      = {Siemens Healthineers / Technical University of Munich},
+}
+
+% ---- Vessel coordinate system: point-wise comparison across cohorts ----
+@article{romero2025,
+  author  = {Romero, Pau and Pedr{\'o}s, Abel and Sebastian, Rafael
+             and Lozano, Miguel and Garc{\'i}a-Fern{\'a}ndez, Ignacio},
+  title   = {A Robust Shape Model for Blood Vessels Analysis},
+  journal = {Applied Mathematics and Computation},
+  year    = {2025},
+  volume  = {487},
+  pages   = {129078},
+  doi     = {10.1016/j.amc.2024.129078},
+}
+
+% ---- VCS applied to aortic disease diagnosis (geometric characterization) ----
+@article{romero2024,
+  author  = {Romero, Pau and Lozano, Miguel and Dux-Santoy, Lydia
+             and Guala, Andrea and Teixid{\'o}-Tur{\`a}, Gisela
+             and Sebasti{\'a}n, Rafael and Garc{\'i}a-Fern{\'a}ndez, Ignacio},
+  title   = {Beyond the Root: Geometric Characterization for the Diagnosis
+             of Syndromic Heritable Thoracic Aortic Diseases},
+  journal = {Computers in Biology and Medicine},
   year    = {2024},
-  volume  = {1},
-  pages   = {1--10},
+  volume  = {182},
+  pages   = {109176},
+  doi     = {10.1016/j.compbiomed.2024.109176},
+}
+
+% ---- Healthy cardiac SSM: compact low-dimensional representation ----
+@article{rodero2021,
+  author  = {Rodero, Cristobal and Strocchi, Marina and Marciniak, Maciej
+             and Longobardi, Stefano and Whitaker, John and O'Neill, Mark D.
+             and Gillette, Karli and Augustin, Christoph and Plank, Gernot
+             and Vigmond, Edward J. and Lamata, Pablo and Niederer, Steven A.},
+  title   = {Linking Statistical Shape Models and Simulated Function in the
+             Healthy Adult Human Heart},
+  journal = {{PLoS} Computational Biology},
+  year    = {2021},
+  volume  = {17},
+  number  = {4},
+  pages   = {e1008851},
+  doi     = {10.1371/journal.pcbi.1008851},
+}
+
+% ---- Marta Nuñez PhD thesis: LV conformal flattening / polar maps ----
+@phdthesis{nunez2018,
+  author = {N{\'u}{\~n}ez Garc{\'i}a, Marta},
+  title  = {Left Atrial Parameterisation and Multi-modal Data Analysis:
+            Application to Atrial Fibrillation},
+  school = {Universitat Pompeu Fabra},
+  year   = {2018},
+}
+
+% ---- ARRISK: patient-specific VT simulations / DEVELOP registry ----
+@article{serra2024,
+  author  = {Serra, Dolors and Romero, Pau and Franco, Paula and Bernat, Ignacio
+             and Lozano, Miguel and Garcia-Fernandez, Ignacio and Soto, David
+             and Berruezo, Antonio and Camara, Oscar and Sebastian, Rafael},
+  title   = {Unsupervised Stratification of Patients with Myocardial Infarction
+             Based on Imaging and In-Silico Biomarkers},
+  journal = {{IEEE} Transactions on Medical Imaging},
+  year    = {2024},
+  note    = {In press},
+  doi     = {10.1109/TMI.2024.XXXXXXX},
+}
+
+% ---- Scar-related VA prediction (deep learning, wall thickness map) ----
+@inproceedings{ly2021,
+  author    = {Ly, Buntheng and Finsterbach, Sonny and Nu{\~n}ez-Garcia, Marta
+               and Cochet, Hubert and Sermesant, Maxime},
+  title     = {Scar-Related Ventricular Arrhythmia Prediction from Imaging
+               using Explainable Deep Learning},
+  booktitle = {Functional Imaging and Modeling of the Heart ({FIMH})},
+  series    = {Lecture Notes in Computer Science},
+  year      = {2021},
+  publisher = {Springer},
+}
+
+% ---- Perlin noise for synthetic cardiac fibrosis ----
+@article{lawson2024,
+  author  = {Lawson, Brodie A. J. and Drovandi, Christopher and Burrage, Pamela
+             and Bueno-Orovio, Alfonso and Weber dos Santos, Rodrigo
+             and Rodriguez, Blanca and Mengersen, Kerrie and Burrage, Kevin},
+  title   = {Perlin Noise Generation of Physiologically Realistic Cardiac Fibrosis},
+  journal = {Medical Image Analysis},
+  year    = {2024},
+  volume  = {98},
+  pages   = {103240},
+  doi     = {10.1016/j.media.2024.103240},
+}
+
+% ---- Automated pipeline for large-scale virtual patient cohorts ----
+@article{doste2026,
+  author  = {Doste, Ruben and Camps, Julia and Wang, Zhinuo Jenny
+             and Berg, Lucas Arantes and Holmes, Maxx and Smith, Hannah
+             and Beetz, Marcel and Li, Lei and Banerjee, Abhirup
+             and Grau, Vicente and Rodriguez, Blanca},
+  title   = {An Automated Computational Pipeline for Generating Large-Scale
+             Cohorts of Patient-Specific Ventricular Models in
+             Electromechanical In Silico Trials},
+  journal = {Computer Methods and Programs in Biomedicine},
+  year    = {2026},
+  volume  = {279},
+  pages   = {109290},
+  doi     = {10.1016/j.cmpb.2025.109290},
+}
+
+% ---- Paula Mira Master Thesis ----
+@mastersthesis{miralopez2025,
+  author = {Mira L{\'o}pez, Paula},
+  title  = {In Silico Characterization of Ventricular Tachycardias in a Large
+            Study to Stratify Risk Prediction},
+  school = {Universitat Pompeu Fabra},
+  year   = {2025},
+}
+
+% ---- Paun et al. 2017 (r^{1/3} radial mapping) — REPLACE when paper found ----
+@article{paun2017,
+  author  = {Paun, L. M. and others},
+  title   = {[Conformal LV flattening / $r^{1/3}$ radial mapping --- REPLACE]},
+  journal = {[Journal]},
+  year    = {2017},
 }

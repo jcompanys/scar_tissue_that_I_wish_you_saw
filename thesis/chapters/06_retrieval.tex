@@ -1,0 +1,90 @@
+\chapter{Retrieval-Based Scar Generation}
+
+The previous chapters established a compact geometric characterization of post-infarction
+scar. This chapter presents a retrieval-based generation (RBG) framework that leverages
+these descriptors to retrieve plausible scar patterns from the available patient cohort.
+
+\section{Problem Formulation}
+
+Given a target specification---which may be a partial clinical profile, a set of desired scar
+properties, or an existing patient to be matched---the goal is to produce a plausible scar
+polar map that is consistent with the population-level distribution observed in real data.
+Formally, given a query vector $\mathbf{q} \in \mathbb{R}^d$ encoding the desired scar
+characteristics, the system must return one or more polar maps drawn from real observations
+whose descriptor vectors are close to $\mathbf{q}$.
+
+A retrieval-based strategy was chosen over generative alternatives such as VAEs, GANs, or
+diffusion models for three main reasons. First, the available cohort is relatively small for
+training deep generative models with high-dimensional outputs. Second, every output is, by
+construction, a real patient scar observed in clinical practice, which provides a strong
+plausibility constraint. Third, retrieval is fully interpretable: the distance to the nearest
+neighbour quantifies how well the query is represented in the case base, and the identity and
+geometry of the retrieved patient can be inspected directly. The main limitation is that the
+method cannot synthesize completely new scar shapes outside the observed cohort; this is
+partially addressed through probabilistic retrieval.
+
+\section{Scar Descriptor Space}
+
+The retrieval engine operates in a descriptor space where each patient is represented by a
+fixed-length feature vector $\mathbf{v} \in \mathbb{R}^d$. Six candidate descriptor vectors
+were compared, designed to evaluate the relative contribution of structured scar features,
+AHA segment burdens, dimensionality reduction, and pixel-level polar-map information.
+
+The \textbf{full} vector (39 features) contains all structured descriptors: segment-level scar
+burden across the 17 AHA segments, coronary territory fractions, number of involved
+territories, circumferential spread, compactness, apex-to-base gradient, number of
+fragments, and fragment-level radial and size descriptors. The \textbf{full\_no\_seg} variant
+(22 features) removes the 17 AHA segment burdens to test whether territory, morphology,
+and fragment descriptors are sufficient without per-segment information. Pruned variants
+were derived using SVD contribution analysis: features with contributions below the 25th
+percentile were dropped, yielding \textbf{full\_pruned} (29 features) from the full vector and
+\textbf{full\_ns\_pruned} (16 features) from the segment-free variant. The
+\textbf{pmap\_only} vector (8 features) uses PCA scores from the flattened binary polar
+maps, capturing pixel-level spatial variation without manually designed features. The
+\textbf{full\_ns+pmap} hybrid (30 features) combines the non-segment structured features
+with the polar-map PCA scores.
+
+\section{Similarity Metric and Retrieval Strategy}
+
+Four distance metrics were evaluated on the selected descriptor: weighted Euclidean
+(equivalent to standard Euclidean after $z$-score normalisation), standard Euclidean,
+Manhattan, and cosine. Manhattan distance on $z$-score normalised features was selected
+as the primary metric based on leave-one-out performance.
+
+The retrieval engine follows a $k$-nearest-neighbour strategy. Two modes were implemented:
+
+\textbf{Deterministic retrieval} ($k = 1$) returns the single nearest neighbour:
+$i^* = \arg\min_i\, d(\mathbf{q}, \mathbf{v}_i)$.
+This mode maximises descriptor-space similarity but always returns the same patient for the
+same query.
+
+\textbf{Probabilistic retrieval} ($k = 10$) retains the top 10 neighbours and samples
+according to softmax weights:
+\begin{equation}
+    p_i = \frac{\exp(-d_i/\tau)}{\sum_j \exp(-d_j/\tau)},
+    \label{eq:softmax}
+\end{equation}
+where $\tau = 1.0$ balances similarity and diversity. Every output remains a real patient scar,
+but repeated calls with the same query can return different plausible cases.
+
+\section{Conditioning on Clinical Variables}
+
+As an exploratory extension, the retrieval system was tested using manually defined target
+profiles representing simplified scar specifications such as ``small inferior scar'', ``large
+anteroseptal scar'', ``moderate lateral scar'', and ``diffuse multiterritory scar''. Each profile
+was encoded as a query vector with non-zero burden assigned to the relevant AHA segments.
+Full conditioning on demographic variables was not implemented due to cohort size
+limitations, but the retrieval framework naturally supports such conditioning by restricting the
+searchable case base or by appending clinical variables to the descriptor vector.
+
+\section{Evaluation Framework}
+
+Retrieval quality was assessed using leave-one-out cross-validation across the full cohort.
+For each patient, that patient was temporarily removed from the case base and used as the
+query. Three complementary metrics were computed: scar amount error $|\Delta\text{CZ}|$
+(absolute difference in core-zone burden between target and retrieved patient), segment
+Dice (binarised overlap over the AHA 17-segment model), and polar-map Dice (pixel-level
+overlap on the $64 \times 128$ polar grid). All six candidate vectors were evaluated using this
+protocol with the same distance metric.
+
+% Figure removed per revision.

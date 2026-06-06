@@ -1,47 +1,115 @@
 % ============================================================
-% DEDICATION (optional)
+% BLANK PAGE after cover
 % ============================================================
-\noindent [Dedication text here, or comment out this block]
+\cleardoublepage
+
+% ============================================================
+% DEDICATION (optional) — size 12 per template
+% ============================================================
+{\fontsize{12}{14}\selectfont
+\noindent [Dedication text here, or comment out this block.]
+}
 
 \cleardoublepage
 
 % ============================================================
-% ACKNOWLEDGMENTS (optional)
+% ACKNOWLEDGMENTS — heading size 14, body size 11
 % ============================================================
-\noindent {\Large \sffamily Acknowledgments}
+{\Large \sffamily Acknowledgments}
 
-[Acknowledgment text here.]
+\vspace{0.5em}
+
+{\fontsize{11}{13.5}\selectfont
+\noindent [Acknowledgment text here.]
+}
 
 \cleardoublepage
 
 % ============================================================
-% ABSTRACTS
+% ABSTRACTS — heading size 14 (= \Large), body size 11
+% Template: all three summaries in same section (no blank between them)
 % ============================================================
+
 \selectlanguage{english}
 \section*{\Large \sffamily Abstract}
-[Abstract in English. Max 150 words.]
+
+{\fontsize{11}{13.5}\selectfont
+\noindent
+Myocardial infarction leaves permanent fibrotic scar in the left ventricle, the primary
+structural substrate for ventricular tachycardia. Current risk stratification relies almost
+exclusively on Left Ventricular Ejection Fraction (LVEF), a global marker that fails to
+capture the geometric organisation of scar. This project, developed in collaboration with
+Centro M\'{e}dico Teknon, designs and implements a computational pipeline for geometric
+characterisation of post-infarction scar across a patient cohort.
+
+The pipeline is applied to the DEVELOP-VT dataset (168 post-MI patients, 105 with usable
+core-zone segmentations from LGE-CMR data processed with ADAS3D). Three-dimensional
+scar distributions are projected onto standardised polar maps aligned to the AHA 17-segment
+model, enabling cross-patient comparison of scar location, shape, and transmurality.
+Dimensionality analysis reveals the intrinsic high-dimensionality of the scar-pattern space.
+Building on this characterisation, a retrieval-based generation framework is proposed to
+produce spatially coherent synthetic scar cases.
+
+The project delivers a reproducible tool for population-level scar geometry analysis,
+supporting data augmentation for arrhythmia risk models and providing a principled
+framework to explore scar variability where clinical data are scarce.
+}
+
+\vspace{1.5em}
 
 \selectlanguage{catalan}
-\vspace*{\fill}
 \section*{\Large \sffamily Resum}
-[Resum en català. Màxim 150 paraules.]
-\vspace*{\fill}
+
+{\fontsize{11}{13.5}\selectfont
+\noindent
+L'infart de miocardi deixa una cicatriu fibr\`{o}tica permanent al ventr\'{i}cle esquerre, el
+principal substrat estructural de la taquic\`{a}rdia ventricular. L'estratificaci\'{o} de risc actual
+es basa gaireb\'{e} exclusivament en la fracci\'{o} d'ejecci\'{o} del ventr\'{i}cle esquerre (FEVE), un
+marcador global que no captura l'organitzaci\'{o} geom\`{e}trica de la cicatriu. Aquest projecte,
+desenvolupat en col$\cdot$laboraci\'{o} amb el Centro M\'{e}dico Teknon, dissenya i implementa un
+pipeline computacional per a la caracteritzaci\'{o} geom\`{e}trica de la cicatriu postinfart a escala
+de cohort.
+
+El pipeline s'aplica al conjunt de dades DEVELOP-VT (168 pacients post-IM, 105 amb
+segmentaci\'{o} de zona central v\`{a}lida a partir d'imatges LGE-CMR processades amb ADAS3D).
+Les distribucions tridimensionals de cicatriu es projecten sobre mapes polars estandarditzats
+alineats al model AHA de 17 segments, facilitant la comparaci\'{o} entre pacients de la
+localitzaci\'{o}, la forma i la transmural\'{i}tat de la cicatriu. L'an\`{a}lisi de dimensionalitat revela
+l'alta dimensionalitat intr\'{i}nseca de l'espai de patrons. A partir d'aquesta caracteritzaci\'{o},
+es proposa un marc generatiu basat en recuperaci\'{o} per produir casos sint\`{e}tics coherents.
+
+El projecte ofereix una eina reproduïble per a l'an\`{a}lisi de la geometria de cicatriu a nivell
+poblacional, donant suport a l'augmentaci\'{o} de dades per a models de risc aritmogenic.
+}
+
+\vspace{1.5em}
 
 \selectlanguage{spanish}
-\vspace*{\fill}
 \section*{\Large \sffamily Resumen}
-[Resumen en castellano. Máximo 150 palabras.]
-\vspace*{\fill}
+
+{\fontsize{11}{13.5}\selectfont
+\noindent
+El infarto de miocardio deja una cicatriz fibr\'{o}tica permanente en el ventr\'{i}culo izquierdo,
+el principal sustrato estructural de la taquicardia ventricular. La estratificaci\'{o}n de riesgo
+actual se basa casi exclusivamente en la fracci\'{o}n de eyecci\'{o}n del ventr\'{i}culo izquierdo (FEVI),
+un marcador global que no captura la organizaci\'{o}n geom\'{e}trica de la cicatriz. Este proyecto,
+desarrollado en colaboraci\'{o}n con el Centro M\'{e}dico Teknon, dise\~{n}a e implementa un pipeline
+computacional para la caracterizaci\'{o}n geom\'{e}trica de la cicatriz postinfarto a escala de cohorte.
+
+El pipeline se aplica al conjunto de datos DEVELOP-VT (168 pacientes post-IM, 105 con
+segmentaci\'{o}n de zona central v\'{a}lida a partir de im\'{a}genes LGE-CMR procesadas con ADAS3D).
+Las distribuciones tridimensionales de cicatriz se proyectan sobre mapas polares
+estandarizados alineados al modelo AHA de 17 segmentos, facilitando la comparaci\'{o}n entre
+pacientes de la localizaci\'{o}n, la forma y la transmural\'{i}dad de la cicatriz. El an\'{a}lisis de
+dimensionalidad revela la alta dimensionalidad intr\'{i}nseca del espacio de patrones. A partir
+de esta caracterizaci\'{o}n, se propone un marco generativo basado en recuperaci\'{o}n para
+producir casos sint\'{e}ticos espacialmente coherentes.
+
+El proyecto entrega una herramienta reproducible para el an\'{a}lisis de la geometr\'{i}a de
+cicatriz a nivel poblacional, apoyando el aumento de datos para modelos de riesgo
+arritm\'{o}geno y proporcionando un marco para explorar la variabilidad de la cicatriz.
+}
 
 \selectlanguage{english}
-
-\cleardoublepage
-
-% ============================================================
-% PREFACE (optional)
-% ============================================================
-{\bf Preface}
-
-[Preface text here, or comment out this block.]
 
 \cleardoublepage
