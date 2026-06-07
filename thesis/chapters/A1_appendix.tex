@@ -5,13 +5,210 @@
 
 \begin{figure}[htbp]
     \centering
+    \includegraphics[width=\textwidth]{figures/territory_threshold_sensitivity}
+    \caption{Territory involvement threshold sensitivity analysis. Each candidate threshold (1\%--10\% of polar bins scar-positive) is evaluated by the resulting fractions of patients classified as no-territory, single-territory, two-territory, and three-territory involvement. The 2\% threshold (dashed line) is the earliest stable point where single-territory classification reaches its plateau without over-assigning multi-territory status.}
+    \label{fig:app_territory_threshold}
+\end{figure}
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=\textwidth]{figures/fig3_population_superposition}
+    \caption{Population-level superposition maps for all three projection methods (vertex-based, area-based, and LV surface coverage) across the 105-patient cohort. Spatial patterns are consistent across methods; the coverage method reveals higher local scar density in the RCA territory, obscured in the vertex-based map by that territory's smaller absolute surface area.}
+    \label{fig:app_superposition}
+\end{figure}
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=\textwidth]{figures/fig4_resolution_exploration}
+    \caption{Grid resolution sensitivity analysis. Population mean scar frequency maps computed at three resolutions: $32\times64$ (coarse, ${\sim}24$ LV vertices/bin), $64\times128$ (operational, ${\sim}6$/bin), and $128\times256$ (fine, ${\sim}1.5$/bin). The spatial pattern of the inferior-to-apical hotspot is consistent across all three configurations, confirming that reported findings are not an artefact of the chosen grid density.}
+    \label{fig:app_gridres}
+\end{figure}
+
+\begin{figure}[htbp]
+    \centering
     \includegraphics[width=\textwidth]{figures/fig2_axis_winner_vs_pc1}
     \caption{Per-patient comparison of apex-defining direction selected by the multi-candidate algorithm versus a forced LV~PC1 baseline. Cases where the algorithm selects RV~PC1 or LV~PC2 correspond to failures of the single-direction approach, visible as incorrect apex locations shifted toward the lateral wall or base. All 105 cases are shown.}
     \label{fig:app_axis_winner}
 \end{figure}
 
-\section{Implementation Details}
-[Extended code descriptions, hyperparameter tables.]
+\section{Excluded Cases}
+\label{app:excluded}
 
-\section{Dataset Details}
-[Extended cohort statistics, data dictionary.]
+Table~\ref{tab:excluded} lists all 63 patient folders excluded from the analysis cohort,
+with the automated scanner's reason for exclusion. Cases with \texttt{no\_lv} lacked a
+recognisable LV reconstruction directory; cases with \texttt{no\_cz} had an LV directory
+but no usable core-zone mesh.
+
+\begin{longtable}{lll}
+\caption{Excluded cases with reason for exclusion.}
+\label{tab:excluded} \\
+\toprule
+Patient ID & Status & Reason \\
+\midrule
+\endfirsthead
+\multicolumn{3}{c}{\tablename~\thetable{} (continued)} \\
+\toprule
+Patient ID & Status & Reason \\
+\midrule
+\endhead
+\bottomrule
+\endfoot
+00021123 & no\_lv & No DE-MRI folder \\
+01041694 & no\_lv & No DE-MRI folder \\
+02002319 & no\_lv & No DE-MRI folder \\
+02011130 & no\_lv & No DE-MRI folder \\
+02020684 & no\_lv & No DE-MRI folder \\
+03015023 & no\_lv & No DE-MRI folder \\
+03031339 & no\_lv & No DE-MRI folder \\
+04020449 & no\_lv & No DE-MRI folder \\
+05001858 & no\_lv & No DE-MRI folder \\
+05027445 & no\_lv & No DE-MRI folder \\
+05044223 & no\_lv & No DE-MRI folder \\
+06040109 & no\_lv & No DE-MRI folder \\
+06050540 & no\_lv & No DE-MRI folder \\
+07037693 & no\_lv & No DE-MRI folder \\
+07043391 & no\_lv & No DE-MRI folder \\
+07044737 & no\_lv & No DE-MRI folder \\
+08022556 & no\_lv & No DE-MRI folder \\
+18022861 & no\_lv & No DE-MRI folder \\
+18042739 & no\_lv & No DE-MRI folder \\
+98027481 & no\_lv & No DE-MRI folder \\
+98037676 & no\_lv & No DE-MRI folder \\
+caso11hsp & no\_lv & No DE-MRI folder \\
+CASO12HSP & no\_lv & No DE-MRI folder \\
+caso14hsp & no\_lv & No DE-MRI folder \\
+caso8hsp  & no\_lv & No DE-MRI folder \\
+caso9hsp  & no\_lv & No DE-MRI folder \\
+00016504  & no\_lv & No DE-MRI folder \\
+00050633  & no\_lv & No DE-MRI folder \\
+01004887  & no\_lv & No DE-MRI folder \\
+12805382  & no\_lv & No DE-MRI folder \\
+19033528  & no\_lv & No DE-MRI folder \\
+2025015442 & no\_lv & No DE-MRI folder \\
+50105639  & no\_lv & No DE-MRI folder \\
+50149701  & no\_lv & No DE-MRI folder \\
+50187501  & no\_lv & No DE-MRI folder \\
+00044761  & no\_lv & No \texttt{Basal/Data} path \\
+02000042  & no\_lv & No \texttt{Basal/Data} path \\
+02045555  & no\_lv & No \texttt{Basal/Data} path \\
+09019007  & no\_lv & No \texttt{Basal/Data} path \\
+12001780  & no\_lv & No \texttt{Basal/Data} path \\
+13018580  & no\_lv & No \texttt{Basal/Data} path \\
+14008873  & no\_lv & No \texttt{Basal/Data} path \\
+21058337  & no\_lv & No \texttt{Basal/Data} path \\
+972100446 & no\_lv & No \texttt{Basal/Data} path \\
+987012904 & no\_lv & No \texttt{Basal/Data} path \\
+22004656  & no\_lv & No \texttt{Basal/Data} path \\
+20027330  & no\_lv & No \texttt{Basal/Data} path \\
+MLF00254  & no\_lv & No \texttt{Basal/Data} path \\
+1111593944 & no\_lv & No \texttt{Basal/Data} path \\
+2491608   & no\_lv & No \texttt{Basal/Data} path \\
+07039239  & no\_cz & TISSUE exists but no VTK files \\
+10025183  & no\_cz & TISSUE exists but no VTK files \\
+13017471  & no\_cz & TISSUE exists but no VTK files \\
+20023806  & no\_cz & TISSUE exists but no VTK files \\
+50033820  & no\_cz & TISSUE exists but no VTK files \\
+50037142  & no\_cz & TISSUE exists but no VTK files \\
+50042306  & no\_cz & TISSUE exists but no VTK files \\
+50045793  & no\_cz & TISSUE exists but no VTK files \\
+50052223  & no\_cz & TISSUE exists but no VTK files \\
+50054988  & no\_cz & TISSUE exists but no VTK files \\
+50056378  & no\_cz & TISSUE exists but no VTK files \\
+95025044  & no\_cz & TISSUE exists but no VTK files \\
+96024662  & no\_cz & No CZ match (only corridor files present) \\
+\end{longtable}
+
+\section{Clinical Metadata: Field Completeness}
+\label{app:clinicalcsv}
+
+The DEVELOP registry CSV contains 85 columns across 173 patient records. Fields are
+grouped below by category with their completeness percentage. The severe sparsity of
+demographic and outcome variables --- most falling below 55\% --- is the primary reason
+all geometric analyses are conducted on the full 105-case cohort without clinical
+sub-grouping.
+
+\begin{table}[htbp]
+\centering
+\caption{DEVELOP registry CSV field completeness, grouped by category.}
+\label{tab:clinicalcsv}
+\small
+\begin{tabular}{llr}
+\toprule
+Category & Field & Complete (\%) \\
+\midrule
+\multicolumn{3}{l}{\textit{MRI-derived scar metrics}} \\
+& channel\_mass\_g, channels & 96.5 \\
+& lv\_mass\_g, bz\_g, bz\_pct, bz\_core\_g, bz\_core\_pct & 96.0 \\
+& core\_g, core\_pct & 96.0 \\
+\midrule
+\multicolumn{3}{l}{\textit{Clinical / imaging context}} \\
+& diagnosis & 93.6 \\
+& mri\_type & 91.9 \\
+& date\_mri & 78.6 \\
+& inclusion & 74.0 \\
+\midrule
+\multicolumn{3}{l}{\textit{Demographics}} \\
+& date\_birth, age, sex & 54.9 \\
+\midrule
+\multicolumn{3}{l}{\textit{Echocardiography}} \\
+& enhancement\_territory, lvef\_pct, septum\_mm, post\_wall\_mm & 51.4 \\
+& lvedv\_ml, lvesv\_ml, lvedv\_index, lvesv\_index, lvesd\_mm, lvedd\_mm & 50.9 \\
+\midrule
+\multicolumn{3}{l}{\textit{Comorbidities}} \\
+& mi\_yn & 49.7 \\
+& device\_carrier & 49.1 \\
+& la\_mm, dm, hta, afib, dlp, smoking & 43--47 \\
+\midrule
+\multicolumn{3}{l}{\textit{Revascularisation}} \\
+& revasc\_type, revasc\_notes & 40--43 \\
+& date\_revasc, date\_mi & 31--33 \\
+\midrule
+\multicolumn{3}{l}{\textit{Arrhythmia / device}} \\
+& clinical\_va, enhancement\_grade & 38.7 \\
+& va\_ablation, nyha & 36--37 \\
+& device\_type, icd\_prevention\_type & 28--30 \\
+& inducible\_va, type\_inducible\_va & 22--25 \\
+\midrule
+\multicolumn{3}{l}{\textit{Medications}} \\
+& med\_bb, med\_arb, med\_acei, med\_amiodarone, \ldots & 26.6 \\
+\midrule
+\multicolumn{3}{l}{\textit{Follow-up outcomes}} \\
+& death\_yn, revasc\_followup\_yn & 24.9 \\
+& followup\_va\_yn, admission\_hf & 23--24 \\
+& icd\_therapies, date\_6m\_followup & 22--23 \\
+& date\_eef & 7.5 \\
+& date\_device\_implant & 5.8 \\
+& date\_ablation & 2.9 \\
+& date\_death & 0.6 \\
+& date\_followup\_va, notes\_misc & 0.0 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\section{Retrieval Descriptor Space: SVD and Patient Scatter Plots}
+
+\begin{figure}[htbp]
+    \centering
+    \begin{subfigure}[b]{\textwidth}
+        \includegraphics[width=\textwidth]{figures/svd_full_scree_scatter}
+        \caption{\texttt{full} (39 features). PC1 25.5\%; 16 PCs for 90\% variance. Patients cluster by CZ burden along PC1.}
+    \end{subfigure}\\[0.5em]
+    \begin{subfigure}[b]{\textwidth}
+        \includegraphics[width=\textwidth]{figures/svd_full_noseg_scree_scatter}
+        \caption{\texttt{full\_no\_seg} (22 features). PC1 34.3\%; 11 PCs for 90\%. Cleaner CZ burden gradient.}
+    \end{subfigure}\\[0.5em]
+    \begin{subfigure}[b]{\textwidth}
+        \includegraphics[width=\textwidth]{figures/svd_full_pruned}
+        \caption{\texttt{full\_pruned} (29 features). PC1 18.5\%; 14 PCs for 90\%. Scatter similar to full vector.}
+    \end{subfigure}\\[0.5em]
+    \begin{subfigure}[b]{\textwidth}
+        \includegraphics[width=\textwidth]{figures/svd_full_ns_pruned}
+        \caption{\texttt{full\_ns\_pruned} (16 features). PC1 27.5\%; 10 PCs for 90\%. Disorganised scatter, no CZ burden gradient --- consistent with inferior retrieval.}
+    \end{subfigure}\\[0.5em]
+    \begin{subfigure}[b]{\textwidth}
+        \includegraphics[width=\textwidth]{figures/svd_pmap_only}
+        \caption{\texttt{pmap\_only} (8 features). Polar-map PCA scores only.}
+    \end{subfigure}
+    \caption{SVD scree plots (left: cumulative explained variance) and PC1--PC2 patient scatter coloured by CZ burden (right) for five descriptor vectors. \texttt{full\_ns\_pruned} is the only vector without a coherent CZ burden gradient in PC space, consistent with its inferior retrieval performance (Table~\ref{tab:featurevectors}).}
+    \label{fig:app_svd_plots}
+\end{figure}

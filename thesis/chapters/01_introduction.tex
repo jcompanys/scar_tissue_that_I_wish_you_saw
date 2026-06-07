@@ -95,20 +95,13 @@ extension, apex-to-base distribution, and transmurality.
 
 \section*{Data curation and the need for scalable pipelines}
 
-Before population-level scar geometry analysis can be performed, patient-specific data must
-be collected, organized, curated, and transformed into a consistent computational format.
-This thesis was developed in collaboration with Centro M\'{e}dico Teknon, using data from the
-DEVELOP-VT dataset. A practical part of the project involved working directly with the
-clinical and image-processing workflow at Teknon. This included reviewing available cases,
-helping with the segmentation of new cases, centralizing the dataset, and extracting the
-necessary files for each patient. Because ADAS 3D exports are case-specific and not
-designed for large automatic batch extraction, this required substantial manual and
-semi-automatic organization before any population-level analysis could be performed.
-
-More broadly, scalable computational cardiology increasingly requires automated pipelines.
-The goal of this thesis is therefore to build a reproducible Python pipeline that transforms
-patient-specific three-dimensional scar segmentations into standardized polar-map
-representations suitable for cohort-level geometric analysis.
+Population-level scar geometry analysis requires patient-specific data to be collected,
+curated, and transformed into a consistent computational format. This thesis was developed
+in collaboration with Centro M\'{e}dico Teknon using the DEVELOP-VT dataset; the data
+curation process and its practical challenges are described in Chapter~2. The goal is to
+build a reproducible Python pipeline that transforms patient-specific three-dimensional scar
+segmentations into standardized polar-map representations suitable for cohort-level
+geometric analysis.
 
 \section*{From scalar scar biomarkers to population-level geometry}
 

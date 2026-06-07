@@ -26,19 +26,14 @@ the primary geometric input to the analyses in this work.
 
 \section{Data Acquisition and Processing at Teknon}
 
-Data extraction was performed on-site at Centro M\'{e}dico Teknon's computer system. With
-the help of technicians and clinicians, I learned to use ADAS 3D and gained a detailed
-understanding of the segmentation workflow: how scar appears under different acquisition
-conditions, how tissue thresholds are adjusted, and how the resulting 3D models relate to
-the underlying cardiac anatomy. Beyond the left ventricle, this experience also provided
-exposure to left atrial ablation workflows and different arrhythmia types, including atrial
-fibrillation and typical and atypical flutter.
-
-A significant practical contribution of this project was centralising the dataset, which had
-previously been distributed across different storage locations within the hospital system, and
-assisting in the segmentation of approximately 40 new cases. This work served not only to
-expand the cohort but also to develop a first-hand understanding of the clinical data that
-informs all subsequent modelling decisions.
+Data extraction was performed on-site at Centro M\'{e}dico Teknon's computer system.
+Building on prior familiarity with ADAS 3D acquired before the collaboration, the
+understanding of the segmentation workflow was substantially deepened through direct
+interaction with Teknon's technicians and clinicians: how scar appears under different
+acquisition conditions, how tissue thresholds are adjusted, and how the resulting 3D models
+relate to the underlying cardiac anatomy. Beyond the left ventricle, this experience also
+provided exposure to left atrial ablation workflows and different arrhythmia types, including
+atrial fibrillation and typical and atypical flutter.
 
 Since no automatic pipeline existed for batch retrieval of specific mesh files from the ADAS
 3D exports, a one-by-one extraction of CZ, BZ, healthy tissue, and corridor files was
@@ -97,12 +92,16 @@ additional border zone, healthy, and corridor meshes when available; (iii) trans
 meshes (Layer\_10 through Layer\_90), representing concentric wall-depth levels at 10\%
 increments from the endocardial surface; and (iv) clinical metadata from the DEVELOP
 registry CSV, including demographics, MRI-derived scar metrics, echocardiography,
-arrhythmia variables, and follow-up outcomes. A detailed description of the clinical metadata
-fields is provided in Annex~\ref{app:supplementary}. Sex information was available for 48 of the
-105 valid patients, with a predominantly male distribution consistent with the epidemiology of
-myocardial infarction. Age was available for a subset of 48 patients (mean
-$63.0 \pm 11.5$ years). The high rate of missingness in key variables limits stratified analyses
-and motivates the use of the full cohort without clinical sub-grouping.
+arrhythmia variables, and follow-up outcomes. A detailed description of the clinical metadata fields and their completeness is provided in
+Annex~\ref{app:supplementary}. The registry CSV is severely sparse outside MRI-derived
+scar metrics: while LV mass, core zone, and border zone variables are available for
+$\geq$96\% of registry entries, most demographic and clinical variables fall below 55\%
+completeness, and outcome variables (dates of death, ablation, device implant) are available
+for fewer than 6\% of entries. Sex information was available for 48 of the 105 valid patients,
+with a predominantly male distribution consistent with the epidemiology of myocardial
+infarction. Age was available for a subset of 48 patients (mean $63.0 \pm 11.5$ years). This
+degree of missingness makes supervised clinical outcome modelling infeasible at the current
+scale and motivates the use of the full cohort without clinical sub-grouping.
 
 \section{Quality Control}
 

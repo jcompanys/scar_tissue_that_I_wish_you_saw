@@ -33,7 +33,8 @@ mass, border zone, core zone, and channel mass---are the most complete, availabl
 incomplete: sex is recorded for 94 patients and age for 95 out of 173 in the full registry.
 However, these figures reflect completeness within the CSV registry alone.
 Cross-referencing with the available ADAS 3D segmentations reduces the usable labelled
-subset to 48 patients with age data and 48 patients with sex data.
+subset to 48 patients with age data and 48 patients with sex data. Expanding demographic
+coverage through registry completion is identified as a priority for future work.
 
 \subsection{Demographic profile}
 
@@ -52,43 +53,28 @@ patients this difference carries no interpretable signal.
 
 The high missingness of demographic and outcome variables---sex available in only 54\% of
 the full registry, follow-up outcomes in fewer still---makes any form of supervised clinical
-outcome modelling infeasible at the current cohort size. All subsequent geometric analyses
-therefore proceed on the full 105-case cohort without clinical sub-grouping. The scar
-heterogeneity documented here is treated not as a limitation but as a characterisation of the
-problem: the representation developed in subsequent sections must be able to accommodate
-this variability rather than assume it away.
+outcome modelling infeasible at the current cohort size. All subsequent geometric analyses therefore proceed on the full 105-case cohort without
+clinical sub-grouping.
 
 \section{Polar Map Construction and Orientation Verification}
 
 \subsection{Apex and axis detection}
 
-Prior methods for flattening the LV, including the approach developed by N\'{u}\~{n}ez
-Garc\'{i}a \cite{nunez2018} within the same research group, are semi-automatic, requiring manual input of three
-landmarks per case (apex, aortic root, and an auxiliary point). The goal here was to fully
-automate this step to produce a fast and reliable pipeline applicable at cohort scale. A
-qualitative comparison against this reference method is presented in
-Section~\ref{sec:polarmapverif}.
+The multi-candidate apex detection strategy (Chapter~\ref{chap:polarmaps}) was applied
+to all 105 cases. LV~PC1 was selected as the apex-defining direction in 74\% of cases,
+RV~PC1 in 21\%, and LV~PC2 in the remaining 5\% (Figure~\ref{fig:apexdirection}). In
+the RV~PC1 cases, LV~PC1 aligned with circumferential rather than longitudinal variance,
+producing an incorrect apex location shifted toward the lateral wall. In the LV~PC2 cases,
+near-equal variance in the two largest dimensions caused the true long axis to be captured
+by the second rather than the first principal direction. The multi-candidate strategy correctly
+identified the apical tip in all 105 cases.
 
-Apex detection is performed by evaluating multiple candidate search directions and selecting
-the one that yields the highest eccentricity---that is, the vertex lying furthest from the LV
-centroid relative to the cloud's half-span. This multi-candidate strategy is necessary because
-LV meshes follow highly heterogeneous shapes: pathological ventricular remodelling or
-mesh truncation can cause the LV point cloud to become sufficiently isotropic that its first
-principal component does not align with the true apex-to-base direction.
-
-In the current cohort of 105 patients, LV PC1 was selected as the apex-defining direction in
-approximately 74\% of cases, RV PC1 in 21\%, and LV PC2 in the remaining 5\%
-(Figure~\ref{fig:apexdirection}). In the RV PC1 cases, LV PC1 aligned with circumferential
-rather than longitudinal variance, producing an incorrect apex location shifted toward the
-lateral wall. In the LV PC2 cases, the true long axis was captured by the second rather than
-the first principal direction due to near-equal variance in the two largest dimensions. In all
-cases, the multi-candidate strategy correctly identified the apical tip, confirming that the
-algorithm is robust to the anatomical variability present in this post-infarction cohort.
-
-To validate this, a forced-LV-PC1 test was performed: when the long axis is constrained to
-LV PC1 regardless of eccentricity, apex detection fails in the 25\% of cases where RV PC1
-or LV PC2 would have been selected, confirming that a single fixed direction is insufficient
-for this cohort.
+A forced-LV-PC1 ablation confirmed that constraining the axis to LV~PC1 regardless of
+eccentricity produces incorrect apex detection in the 25\% of cases where RV~PC1 or
+LV~PC2 would otherwise be selected, demonstrating that a single fixed direction is
+insufficient for this cohort (Figure~\ref{fig:app_axis_winner} in Appendix). A qualitative
+comparison against the reference flattening method of N\'{u}\~{n}ez Garc\'{i}a
+\cite{nunez2018} is presented in Section~\ref{sec:polarmapverif}.
 
 \begin{figure}[htbp]
     \centering
@@ -111,13 +97,15 @@ Visual inspection of these examples confirms several properties of the projectio
 apex-to-base gradient is correctly encoded in the radial coordinate, with apical scar
 appearing near the centre of the bull's-eye and basal scar at the periphery. The
 circumferential position of the scar is preserved: anterior scar maps to the expected angular
-sector and the RV insertion points appear at the correct septal position. The binary
-representation captures the spatial footprint of the scar without distorting its shape beyond
-the expected effects of the cylindrical-to-polar coordinate transformation.
+sector and the RV insertion points appear at the correct septal position. The binary representation captures the spatial footprint of the scar faithfully; the only
+systematic distortion is the compression of the apical region inherent to any cylindrical
+projection, where the apex occupies proportionally fewer bins than its true surface area ---
+a known trade-off of the bull's-eye representation discussed in Section~\ref{sec:polarmapverif}.
 
 % Figure removed: identical to Figure~\ref{fig:polarmaps2} in Chapter~\ref{chap:polarmaps}.
 
 \subsection{Projection method comparison}
+\label{sec:projmethods}
 
 Three complementary projection methods were evaluated at the population level: the
 vertex-based method (binary scar presence per polar bin), the area-based method
@@ -132,9 +120,14 @@ Segment-level and territory-level Spearman rank correlations between the vertex-
 area-based metrics across all 105 patients confirm that the binary vertex representation---which
 is the primary representation throughout this thesis because of its reversibility and
 interpretability---captures equivalent spatial information to the continuous area-weighted
-representation. The sole additional insight from the area-based method was the detection of
-higher local scar density in the RCA territory, obscured in the vertex-based analysis by that
-territory's smaller absolute size.
+representation. The sole additional insight from the coverage method (CZ area divided by LV surface area
+per bin) was the detection of higher local surface density in the RCA territory, obscured in
+the vertex-based analysis by that territory's smaller absolute surface area. This does not
+contradict the vertex-based territory burden reported in Section~\ref{sec:terrburden}: fewer
+RCA bins are affected overall, but those that are carry higher local scar density per bin ---
+consistent with RCA infarcts producing focal, concentrated involvement rather than diffuse
+spread. Population-level superposition maps for all three methods are shown in
+Figure~\ref{fig:app_superposition} in the Appendix.
 
 % Figure removed per revision.
 
@@ -167,15 +160,8 @@ introduces noise into connectivity-based metrics such as fragment counting. The
 $64 \times 128$ grid provides the best trade-off: approximately 6 vertices per bin is sufficient
 for stable binary scar detection while preserving enough resolution to distinguish all 17 AHA
 segments. The spatial pattern of scar concentration in the population mean map is consistent
-across all three resolutions (Figure~\ref{fig:gridres}), confirming that the reported findings
-are not an artefact of the chosen grid density.
-
-\begin{figure}[htbp]
-    \centering
-    \fbox{\begin{minipage}{0.85\textwidth}\centering\vspace{2.5cm}[Figure placeholder: grid resolution comparison]\vspace{2.5cm}\end{minipage}}
-    \caption{[Caption to be added.]}
-    \label{fig:gridres}
-\end{figure}
+across all three resolutions (Figure~\ref{fig:app_gridres} in Appendix), confirming that
+the reported findings are not an artefact of the chosen grid density.
 
 \subsection{Verification of polar maps}
 \label{sec:polarmapverif}
@@ -278,7 +264,10 @@ right-skewed distributions. The population atlas identifies a robust inferior-to
 centred on the mid-inferolateral and mid-inferior segments (AHA 11 and 10), straddling the
 RCA--LCX boundary, with basal segments consistently spared.
 
+% [FIGURE PLACEHOLDER — archetype/atlas map to be inserted]
+
 \subsection{Coronary territory burden and archetype maps}
+\label{sec:terrburden}
 
 LCX showed the numerically highest mean territory burden (0.055), followed by LAD (0.051)
 and RCA (0.047). These differences were not statistically significant (Friedman
@@ -286,10 +275,19 @@ $\chi^2 = 3.82$, $p = 0.148$), indicating no systematic coronary territory prefe
 population level. Ring-level analysis showed that the apical and mid-cavity rings carry the
 highest scar involvement, with the basal ring consistently spared.
 
-Archetype maps stratified by dominant territory show that LAD-dominant scar concentrates
-in the anterior and anteroseptal segments, whereas RCA- and LCX-dominant scar spreads
-more circumferentially---patients with a dominant RCA or LCX infarct present more
-involvement across adjacent territories relative to LAD-dominant cases.
+Archetype maps stratified by dominant territory reveal distinct spatial geometries. LAD-dominant
+scar is the most diffuse: it extends longitudinally from the anteroseptal segments down through
+the apex (segment 17), producing an elongated pattern along the long axis that spans multiple
+rings. RCA- and LCX-dominant scar, by contrast, tends toward circumferential spread at the
+mid-cavity level, wrapping around the inferior and lateral walls with less longitudinal extension.
+This difference reflects the anatomical territory boundaries: the LAD supplies the anterior wall
+and apex, while RCA and LCX supply the inferior and lateral walls, which are arranged more
+circumferentially in the mid-ventricular ring.
+
+The lower vertex-based RCA burden does not imply geometrically insignificant infarction:
+as shown by the coverage analysis (Section~\ref{sec:projmethods}), RCA scar tends to be
+locally concentrated when present, with higher surface density per affected bin than LCX or
+LAD.
 
 The area-based and vertex-based analyses produced concordant spatial rankings at both
 segment and territory levels (Spearman $\rho > 0.85$ across all 17 segments and all three
@@ -326,10 +324,7 @@ strongest associations were a positive trend in the mid-inferior segment
 correction ($p_\text{Bonferroni} = 0.280$ and $0.575$, respectively). At the territory level, RCA
 showed the numerically highest correlation with age ($\rho = 0.285$, $p = 0.050$), but this
 did not reach statistical significance. Age showed no significant correlation with total
-vertex-based scar burden (Spearman $\rho = -0.220$, $p = 0.132$, $n = 48$). A comparison
-of age across patients grouped by number of involved territories (0, 1, 2, or 3) was also
-non-significant (Kruskal-Wallis, $p = 0.134$, $n = 48$ patients with at least one involved
-territory), though group sizes were too small to support reliable inference.
+vertex-based scar burden (Spearman $\rho = -0.220$, $p = 0.132$, $n = 48$).
 
 Sex-stratified analysis was not performed: only 10 female patients among the 48 patients
 with available age data, against 38 male patients. This degree of imbalance renders any
@@ -337,6 +332,14 @@ formal comparison uninformative, and the predominantly male composition reflects
 known epidemiology of myocardial infarction---a real data limitation.
 
 \subsection{Transmurality}
+
+Figures~\ref{fig:transmurality_ring} and~\ref{fig:transmurality_territory} show
+fragment-level onset and transmurality stratified by ring zone and coronary territory
+respectively. Onset measures the shallowest wall depth at which scar begins (0 =
+endocardial, 1 = epicardial); transmurality is the span from onset to outermost depth. Both
+are derived from the continuous vertex-depth computation described in
+Chapter~\ref{chap:statistical}. Interpretation of these patterns is provided in
+Section~\ref{sec:transmurality_discussion}.
 
 The continuous vertex-depth approach yields a mean fragment onset of 0.300 and a mean
 fragment transmurality of 0.190, indicating that scar originates near the endocardial surface
@@ -389,12 +392,32 @@ scar appears most circumferentially spread.
 
 Six candidate descriptor vectors were evaluated under leave-one-out retrieval with Manhattan
 distance. Table~\ref{tab:featurevectors} and Figure~\ref{fig:featurevectors} report their
-dimensionality and the three retrieval quality metrics.
+dimensionality and the three retrieval quality metrics. SVD scree plots and patient PC1--PC2
+scatter plots for all vectors are provided in Figure~\ref{fig:app_svd_plots} in the Appendix.
+
+\begin{table}[htbp]
+    \centering
+    \caption{Leave-one-out retrieval performance for the six descriptor vectors (Manhattan distance, $n=105$). $|\Delta\text{CZ}|$: mean absolute scar burden error (lower better). Seg Dice: mean segment-level Dice. Polar Dice: mean pixel-level polar-map Dice (higher better).}
+    \label{tab:featurevectors}
+    \small
+    \begin{tabular}{lrrrr}
+        \toprule
+        Vector & Feats & $|\Delta\text{CZ}|$ & Seg Dice & Polar Dice \\
+        \midrule
+        \textbf{full}        & \textbf{39} & \textbf{0.0148} & \textbf{0.597} & 0.106 \\
+        full\_no\_seg        & 22 & 0.0130 & 0.489 & 0.099 \\
+        full\_pruned         & 29 & 0.0188 & 0.545 & 0.109 \\
+        full\_ns\_pruned     & 16 & 0.0189 & 0.474 & 0.093 \\
+        pmap\_only           &  8 & 0.0188 & 0.359 & \textbf{0.214} \\
+        full\_ns+pmap        & 30 & 0.0136 & 0.484 & 0.155 \\
+        \bottomrule
+    \end{tabular}
+\end{table}
 
 \begin{figure}[htbp]
     \centering
     \includegraphics[width=\textwidth]{figures/retrieval_six_vectors}
-    \caption{Leave-one-out retrieval performance for the six candidate descriptor vectors under Manhattan distance. Three metrics reported: scar burden error $|\Delta\text{CZ}|$ (lower is better), segment Dice, and polar-map Dice (higher is better). The full 39-feature vector achieves best segment Dice (0.597) and lowest burden error; \texttt{pmap\_only} achieves highest polar-map Dice but fails on the other metrics.}
+    \caption{Leave-one-out retrieval performance for the six candidate descriptor vectors under Manhattan distance. Three metrics reported: scar burden error $|\Delta\text{CZ}|$ (lower is better), segment Dice, and polar-map Dice (higher is better). The full 39-feature vector achieves best segment Dice and lowest burden error; \texttt{pmap\_only} achieves highest polar-map Dice but performs worst on the other metrics.}
     \label{fig:featurevectors}
 \end{figure}
 

@@ -114,8 +114,12 @@ different vertex densities.
 
 The \textbf{area-based method} accumulates triangle surface areas per bin (mm$^2$),
 capturing absolute scar burden. The \textbf{coverage method} divides CZ area by total LV
-area per bin, removing bin-size and LV-size bias. Consistency between all three approaches
-was verified to ensure that findings are not artefacts of the binary representation.
+area per bin, removing bin-size and LV-size bias. Both area-based methods were tested
+specifically to verify that the apical region --- which is compressed toward the centre of the
+bull's-eye disk --- does not introduce a systematic underestimation artefact analogous to
+the Antarctic distortion in cylindrical cartographic projections, where polar regions appear
+disproportionately small. Consistency between all three approaches was verified to ensure
+that findings are not artefacts of the binary representation.
 
 \section{Polar Map Verification}
 
@@ -132,8 +136,22 @@ Surface vertices directly onto the polar grid, whereas the reference method prox
 endocardial surface points within a tolerance derived from the Core Surface mesh spacing,
 then maps those labelled points using the 2D flat coordinates. A further distinction concerns
 the radial mapping: the reference method applies a radial displacement transform of the form
-$r_\text{new} = r^{1/3}$ to the conformally flattened disk \cite{paun2017}, which
-redistributes points outward and produces denser coverage near the basal ring. The
+$r_\text{new} = r^{1/3}$ to the conformally flattened disk, which redistributes points
+outward and produces denser coverage near the basal ring. The
 proposed pipeline uses a linear longitudinal mapping and therefore does not exhibit this
 redistribution. Prior to visual comparison, both polar maps were aligned to the same septal
 reference direction.
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.65\textwidth]{figures/M06_3d_scar_2024_07009967}
+    \caption{3D LV reconstruction for representative case 2024\_07009967 used in the polar map verification. Core-zone scar (red) overlaid on the semi-transparent LV shell.}
+    \label{fig:verif3d}
+\end{figure}
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=\textwidth]{figures/M06_polar_comparison_2024_07009967}
+    \caption{Polar map comparison for case 2024\_07009967. Left: proposed pipeline (linear $s$ coordinate, Core Surface vertices projected directly). Right: conformal flattening method of N\'{u}\~{n}ez Garc\'{i}a \cite{nunez2018} ($r^{1/3}$ radial remapping, endocardial proximity labelling). Scar localisation is consistent; differences in radial density and apical coverage reflect distinct mapping choices rather than anatomical disagreement.}
+    \label{fig:verifpolar}
+\end{figure}

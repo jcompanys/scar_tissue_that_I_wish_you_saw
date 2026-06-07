@@ -64,18 +64,15 @@ according to softmax weights:
     p_i = \frac{\exp(-d_i/\tau)}{\sum_j \exp(-d_j/\tau)},
     \label{eq:softmax}
 \end{equation}
-where $\tau = 1.0$ balances similarity and diversity. Every output remains a real patient scar,
+where $\tau > 0$ is a temperature parameter controlling the sharpness of the distribution:
+as $\tau \to 0$ all weight concentrates on the nearest neighbour (recovering deterministic
+retrieval), while larger $\tau$ spreads weight more uniformly across the top-$k$ candidates,
+increasing diversity at the cost of similarity. A value of $\tau = 1.0$ was used throughout:
+probabilistic experiments showed that even at this setting the softmax weights were already
+strongly concentrated on the nearest neighbour for most patients, leaving very little
+probability mass on non-close cases; a smaller $\tau$ would have further reduced diversity
+without meaningful gain in retrieval quality. Every output remains a real patient scar,
 but repeated calls with the same query can return different plausible cases.
-
-\section{Conditioning on Clinical Variables}
-
-As an exploratory extension, the retrieval system was tested using manually defined target
-profiles representing simplified scar specifications such as ``small inferior scar'', ``large
-anteroseptal scar'', ``moderate lateral scar'', and ``diffuse multiterritory scar''. Each profile
-was encoded as a query vector with non-zero burden assigned to the relevant AHA segments.
-Full conditioning on demographic variables was not implemented due to cohort size
-limitations, but the retrieval framework naturally supports such conditioning by restricting the
-searchable case base or by appending clinical variables to the descriptor vector.
 
 \section{Evaluation Framework}
 

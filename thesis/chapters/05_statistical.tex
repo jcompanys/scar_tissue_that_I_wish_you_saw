@@ -5,52 +5,66 @@ Chapter~\ref{chap:polarmaps}. The first part covers the analysis of scar extent 
 surface; the second extends the characterisation to wall-depth penetration and
 fragment-level geometry. Numerical results are presented in Chapter~\ref{chap:results}.
 
-Characterising the spatial distribution and structural properties of myocardial scar at the
-population level remains a substantial methodological challenge. The difficulty arises from
-the high inter-patient variability in scar location, shape, and tissue composition. In current
-clinical practice, scar assessment relies predominantly on summary metrics such as LVEF
-and global scar mass, which capture overall disease severity but discard the spatial and
-geometric information that determines electrophysiological substrate and arrhythmic risk.
-The analyses presented here aim to take a step beyond these aggregate measures by
-systematically quantifying the spatial, statistical, and transmural properties of scar across the
-cohort.
-
 \section{AHA-17 Segmentation, Territory Assignment, and Normality Diagnostics}
 
-Each binary polar map was partitioned into the 17-segment model recommended by the
-AHA \cite{cerqueira2002}. Scar burden per segment was defined as the fraction of polar-map bins classified as
+Scar burden per segment was defined as the fraction of polar-map bins classified as
 scar-positive. Territory burden was defined analogously over LAD (segments 1, 2, 7, 8, 13,
 14, 17; 4\,448 bins, 54.3\%), RCA (segments 3, 4, 9, 10, 15; 1\,888 bins, 23.0\%), and LCX
 (segments 5, 6, 11, 12, 16; 1\,856 bins, 22.7\%). A territory was considered involved when
 at least 2\% of its polar bins were scar-positive. This threshold was selected via sensitivity
-analysis across candidate values (1\%, 2\%, 3\%, 5\%, 10\%): at 1\% the multi-territory
+analysis across candidate values (1\%, 2\%, 3\%, 5\%, 10\%); the full sensitivity curve is
+shown in Figure~\ref{fig:app_territory_threshold} in the Appendix. At 1\% the multi-territory
 fraction exceeded 60\%, implausibly high for a focal-infarct cohort; thresholds above 3\%
 progressively assigned no-scar classification to patients with minor genuine involvement.
 The 2\% value represents the earliest stable point at which single-territory classification
 reaches its plateau and the no-scar fraction remains low (${\sim}10\%$).
 
 Prior to selecting inferential methods, the distributional properties of all analysis variables
-were assessed using quantile--quantile plots and chi-squared goodness-of-fit plots. Based
-on these diagnostics, all subsequent analyses relied on non-parametric methods and
-resampling-based confidence intervals.
+were assessed using quantile--quantile plots and chi-squared goodness-of-fit plots. Of all
+variables examined, only age satisfied the normality criterion; all scar-related variables
+showed strong zero-inflation and right skewness. All subsequent analyses therefore relied on
+non-parametric methods and resampling-based confidence intervals.
 
 A notable aspect of the segment-level analysis is the dissociation between prevalence and
-extent: a segment can be frequently affected across patients yet carry low mean burden
-(many patients have a small amount of scar there), or rarely affected but carrying high burden
-when it is. This dissociation is a direct consequence of the zero-inflation documented above.
-Because the majority of patients have zero scar in any given segment, the unconditional
-mean is dragged toward zero even when the positive-only mean is substantial. To make this
-structure visible, the segment-level summary tables report both quantities
-separately---prevalence as the percentage of patients with any scar in the segment, and
-conditional extent as the mean burden among those patients---rather than relying on a single
-unconditional mean that would obscure the distinction.
+extent: a segment can be frequently affected yet carry low mean burden, or rarely affected
+but carrying high conditional burden. This arises from zero-inflation---the unconditional mean
+is dragged toward zero even when the conditional mean among affected patients is
+substantial. Segment-level summaries therefore report both quantities separately: prevalence
+(fraction of patients with any scar in the segment) and conditional extent (mean burden among
+affected patients). Table~\ref{tab:aha17summary} reports these for all 17 AHA segments.
 
-\begin{figure}[htbp]
+\begin{table}[htbp]
     \centering
-    \includegraphics[width=\textwidth]{figures/fig5b_population_scar_frequency}
-    \caption{Population scar frequency map. Each bin of the $64\times128$ polar grid is coloured by the fraction of the 105-patient cohort with scar present at that location. The AHA 17-segment boundaries are overlaid. Hotspot concentrated in mid-inferolateral and mid-inferior segments (AHA 11 and 10).}
-    \label{fig:stat3}
-\end{figure}
+    \caption{AHA 17-segment scar burden summary ($n=105$). Segments ordered by ring (basal, mid, apical, apex). Extent = fraction of polar-map bins classified as scar-positive.}
+    \label{tab:aha17summary}
+    \small
+    \begin{tabular}{rllrrrr}
+        \toprule
+        Seg & Label & Ring & Prev.\ (\%) & Mean (all) & Mean (pos.) & Median (pos.) \\
+        \midrule
+        1  & Bas ant      & Basal & 30.5 & 0.023 & 0.077 & 0.044 \\
+        2  & Bas ant-sep  & Basal & 37.1 & 0.023 & 0.061 & 0.039 \\
+        3  & Bas inf-sep  & Basal & 23.8 & 0.014 & 0.059 & 0.030 \\
+        4  & Bas inf      & Basal & 33.3 & 0.014 & 0.041 & 0.026 \\
+        5  & Bas inf-lat  & Basal & 44.8 & 0.032 & 0.071 & 0.033 \\
+        6  & Bas ant-lat  & Basal & 39.0 & 0.032 & 0.083 & 0.063 \\
+        \midrule
+        7  & Mid ant      & Mid   & 34.3 & 0.042 & 0.121 & 0.048 \\
+        8  & Mid ant-sep  & Mid   & 48.6 & 0.057 & 0.117 & 0.063 \\
+        9  & Mid inf-sep  & Mid   & 52.4 & 0.060 & 0.114 & 0.060 \\
+        10 & Mid inf      & Mid   & 61.0 & 0.088 & 0.145 & 0.080 \\
+        11 & Mid inf-lat  & Mid   & 56.2 & 0.100 & 0.178 & 0.110 \\
+        12 & Mid ant-lat  & Mid   & 46.7 & 0.063 & 0.136 & 0.071 \\
+        \midrule
+        13 & Api ant      & Apical & 41.0 & 0.060 & 0.148 & 0.066 \\
+        14 & Api sep      & Apical & 41.0 & 0.078 & 0.190 & 0.098 \\
+        15 & Api inf      & Apical & 56.2 & 0.058 & 0.103 & 0.059 \\
+        16 & Api lat      & Apical & 49.5 & 0.051 & 0.103 & 0.059 \\
+        \midrule
+        17 & Apex         & Apex  & 53.3 & 0.052 & 0.097 & 0.024 \\
+        \bottomrule
+    \end{tabular}
+\end{table}
 
 \section{Within-Patient Spatial Tests and Bootstrap Confidence Intervals}
 
@@ -144,6 +158,27 @@ Transmurality per bin is then computed as:
     \label{eq:transmurality}
 \end{equation}
 
+These bin-level values form the base representation from which all higher-level transmurality
+summaries are derived by aggregation over scar-positive bins only (bins with no projected CZ
+vertex are excluded):
+
+\begin{itemize}
+    \item \textbf{Segment level.} Mean onset and mean transmurality over all scar-positive
+          bins within each AHA segment's polar boundaries. Produces a 17-element
+          per-patient transmurality vector directly comparable to the extent vector.
+    \item \textbf{Territory level.} Same aggregation pooled across all scar-positive bins
+          belonging to a coronary territory's constituent segments (LAD, RCA, or LCX).
+          Characterises how deeply each vascular territory's scar penetrates the wall on
+          average.
+    \item \textbf{Fragment level.} Connected-component labelling (Section~\ref{sec:fragments})
+          identifies spatially distinct scar regions in 3D. Each fragment's \emph{polar
+          footprint}---the set of bins it occupies on the 2D grid---defines the domain over
+          which mean onset, mean outermost depth, and mean transmurality are computed.
+          This is the finest-grained descriptor: it characterises how deeply each individual
+          scar island penetrates the wall, independently of other fragments in the same
+          patient.
+\end{itemize}
+
 This decomposition distinguishes three clinically relevant scar profiles: thin subendocardial
 scars (low onset, low transmurality), transmural scars (low onset, high transmurality), and
 midwall scars (high onset, variable transmurality). These profiles differ in their
@@ -151,6 +186,7 @@ electrophysiological consequences: transmural scars create complete conduction b
 while thin subendocardial or midwall scars may support slow conduction and re-entry.
 
 \section{Fragment-Level Characterisation}
+\label{sec:fragments}
 
 Connected-component labelling was applied to each patient's 3D core-zone mesh to identify
 spatially distinct scar fragments (minimum 50 vertices). Each fragment is projected to the
