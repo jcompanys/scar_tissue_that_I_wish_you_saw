@@ -1,33 +1,77 @@
 \chapter{Supplementary Material}
 \label{app:supplementary}
 
+\section{Transmurality Aggregation Levels}
+\label{app:transmuralagg}
+
+Bin-level onset and transmurality values (Equations~\ref{eq:depthfrac}--\ref{eq:transmurality})
+are aggregated over scar-positive bins at three levels:
+
+\begin{itemize}
+    \item \textbf{Segment level.} Mean onset and transmurality over scar-positive bins within
+          each AHA segment's polar boundaries, producing a 17-element per-patient vector
+          comparable to the extent vector.
+    \item \textbf{Territory level.} Same aggregation pooled across all scar-positive bins of
+          a coronary territory's constituent segments (LAD, RCA, or LCX), characterising
+          mean wall-depth penetration per territory.
+    \item \textbf{Fragment level.} Each 3D connected component's polar footprint defines
+          the aggregation domain, giving the finest-grained descriptor: wall-depth
+          penetration per individual scar island, independently of other fragments in the
+          same patient.
+\end{itemize}
+
+\section{Distance Metric Comparison}
+\label{app:distmetric}
+
+Four distance metrics were evaluated on the full descriptor vector under leave-one-out
+conditions. Weighted Euclidean and standard Euclidean produced identical results (mean
+$|\Delta\text{CZ}| = 0.016$, segment Dice $= 0.539$, polar-map Dice $= 0.095$), as both
+reduce to the same computation on $z$-score normalised features. Manhattan distance
+outperformed both (mean $|\Delta\text{CZ}| = 0.015$, segment Dice $= 0.597$, polar-map
+Dice $= 0.106$). Cosine distance performed substantially worse (mean $|\Delta\text{CZ}| =
+0.044$, segment Dice $= 0.282$, polar-map Dice $= 0.042$), consistent with its
+insensitivity to vector magnitude: patients with similar scar geometry but different total
+burdens appear artificially close. Manhattan distance was adopted as the primary metric.
+
+\section{Leave-One-Out Retrieval Summary Statistics}
+
+\begin{table}[htbp]
+    \centering
+    \caption{Leave-one-out retrieval summary statistics (full vector, Manhattan distance, $n = 105$).}
+    \label{tab:loostats}
+    \begin{tabular}{lrrrrr}
+        \toprule
+        Metric & Mean & SD & Median & IQR & Max \\
+        \midrule
+        $|\Delta\text{CZ}|$ & 0.015 & 0.019 & 0.009 & --- & 0.106 \\
+        Segment Dice & 0.597 & 0.314 & 0.667 & [0.500, 0.800] & --- \\
+        Polar-map Dice & 0.106 & 0.145 & 0.032 & --- & 0.529 \\
+        \bottomrule
+    \end{tabular}
+\end{table}
+
 \section{Additional Figures}
 
-\begin{figure}[htbp]
+\begin{figure}[ht]
     \centering
-    \includegraphics[width=\textwidth]{figures/territory_threshold_sensitivity}
-    \caption{Territory involvement threshold sensitivity analysis. Each candidate threshold (1\%--10\% of polar bins scar-positive) is evaluated by the resulting fractions of patients classified as no-territory, single-territory, two-territory, and three-territory involvement. The 2\% threshold (dashed line) is the earliest stable point where single-territory classification reaches its plateau without over-assigning multi-territory status.}
+    \includegraphics[width=0.85\textwidth]{figures/territory_threshold_sensitivity}
+    \caption{Territory threshold sensitivity (1\%--10\% of polar bins): fractions classified as no-territory, single-, two-, and three-territory. The 2\% threshold (dashed) is the earliest stable point.}
     \label{fig:app_territory_threshold}
 \end{figure}
 
-\begin{figure}[htbp]
-    \centering
-    \includegraphics[width=\textwidth]{figures/fig3_population_superposition}
-    \caption{Population-level superposition maps for all three projection methods (vertex-based, area-based, and LV surface coverage) across the 105-patient cohort. Spatial patterns are consistent across methods; the coverage method reveals higher local scar density in the RCA territory, obscured in the vertex-based map by that territory's smaller absolute surface area.}
-    \label{fig:app_superposition}
-\end{figure}
+% Population superposition maps moved to main Results (Figure~\ref{fig:superposition}).
 
-\begin{figure}[htbp]
+\begin{figure}[ht]
     \centering
-    \includegraphics[width=\textwidth]{figures/fig4_resolution_exploration}
-    \caption{Grid resolution sensitivity analysis. Population mean scar frequency maps computed at three resolutions: $32\times64$ (coarse, ${\sim}24$ LV vertices/bin), $64\times128$ (operational, ${\sim}6$/bin), and $128\times256$ (fine, ${\sim}1.5$/bin). The spatial pattern of the inferior-to-apical hotspot is consistent across all three configurations, confirming that reported findings are not an artefact of the chosen grid density.}
+    \includegraphics[width=0.90\textwidth]{figures/fig4_resolution_exploration}
+    \caption{Grid resolution sensitivity: population mean scar maps at $32\times64$, $64\times128$, and $128\times256$. The inferior-to-apical hotspot is consistent across all three.}
     \label{fig:app_gridres}
 \end{figure}
 
-\begin{figure}[htbp]
+\begin{figure}[p]
     \centering
-    \includegraphics[width=\textwidth]{figures/fig2_axis_winner_vs_pc1}
-    \caption{Per-patient comparison of apex-defining direction selected by the multi-candidate algorithm versus a forced LV~PC1 baseline. Cases where the algorithm selects RV~PC1 or LV~PC2 correspond to failures of the single-direction approach, visible as incorrect apex locations shifted toward the lateral wall or base. All 105 cases are shown.}
+    \includegraphics[width=\textwidth, height=0.88\textheight, keepaspectratio]{figures/fig2_axis_winner_vs_pc1}
+    \caption{Axis selection: multi-candidate algorithm vs.\ forced LV~PC1 ($n=105$). Cases selecting RV~PC1 or LV~PC2 show incorrect apex locations under the forced baseline.}
     \label{fig:app_axis_winner}
 \end{figure}
 
@@ -39,84 +83,35 @@ with the automated scanner's reason for exclusion. Cases with \texttt{no\_lv} la
 recognisable LV reconstruction directory; cases with \texttt{no\_cz} had an LV directory
 but no usable core-zone mesh.
 
-\begin{longtable}{lll}
-\caption{Excluded cases with reason for exclusion.}
-\label{tab:excluded} \\
+\begin{table}[htbp]
+\centering
+\small
+\caption{Excluded cases grouped by exclusion reason (63 total).}
+\label{tab:excluded}
+\begin{tabular}{llcp{8.5cm}}
 \toprule
-Patient ID & Status & Reason \\
+Status & Reason & $n$ & Patient IDs \\
 \midrule
-\endfirsthead
-\multicolumn{3}{c}{\tablename~\thetable{} (continued)} \\
-\toprule
-Patient ID & Status & Reason \\
+no\_lv & No DE-MRI folder & 35 &
+    00021123, 01041694, 02002319, 02011130, 02020684, 03015023, 03031339,
+    04020449, 05001858, 05027445, 05044223, 06040109, 06050540, 07037693,
+    07043391, 07044737, 08022556, 18022861, 18042739, 98027481, 98037676,
+    caso11hsp, CASO12HSP, caso14hsp, caso8hsp, caso9hsp, 00016504, 00050633,
+    01004887, 12805382, 19033528, 2025015442, 50105639, 50149701, 50187501 \\
 \midrule
-\endhead
+no\_lv & No \texttt{Basal/Data} path & 15 &
+    00044761, 02000042, 02045555, 09019007, 12001780, 13018580, 14008873,
+    21058337, 972100446, 987012904, 22004656, 20027330, MLF00254,
+    1111593944, 2491608 \\
+\midrule
+no\_cz & TISSUE, no VTK files & 12 &
+    07039239, 10025183, 13017471, 20023806, 50033820, 50037142, 50042306,
+    50045793, 50052223, 50054988, 50056378, 95025044 \\
+\midrule
+no\_cz & No CZ match & 1 & 96024662 \\
 \bottomrule
-\endfoot
-00021123 & no\_lv & No DE-MRI folder \\
-01041694 & no\_lv & No DE-MRI folder \\
-02002319 & no\_lv & No DE-MRI folder \\
-02011130 & no\_lv & No DE-MRI folder \\
-02020684 & no\_lv & No DE-MRI folder \\
-03015023 & no\_lv & No DE-MRI folder \\
-03031339 & no\_lv & No DE-MRI folder \\
-04020449 & no\_lv & No DE-MRI folder \\
-05001858 & no\_lv & No DE-MRI folder \\
-05027445 & no\_lv & No DE-MRI folder \\
-05044223 & no\_lv & No DE-MRI folder \\
-06040109 & no\_lv & No DE-MRI folder \\
-06050540 & no\_lv & No DE-MRI folder \\
-07037693 & no\_lv & No DE-MRI folder \\
-07043391 & no\_lv & No DE-MRI folder \\
-07044737 & no\_lv & No DE-MRI folder \\
-08022556 & no\_lv & No DE-MRI folder \\
-18022861 & no\_lv & No DE-MRI folder \\
-18042739 & no\_lv & No DE-MRI folder \\
-98027481 & no\_lv & No DE-MRI folder \\
-98037676 & no\_lv & No DE-MRI folder \\
-caso11hsp & no\_lv & No DE-MRI folder \\
-CASO12HSP & no\_lv & No DE-MRI folder \\
-caso14hsp & no\_lv & No DE-MRI folder \\
-caso8hsp  & no\_lv & No DE-MRI folder \\
-caso9hsp  & no\_lv & No DE-MRI folder \\
-00016504  & no\_lv & No DE-MRI folder \\
-00050633  & no\_lv & No DE-MRI folder \\
-01004887  & no\_lv & No DE-MRI folder \\
-12805382  & no\_lv & No DE-MRI folder \\
-19033528  & no\_lv & No DE-MRI folder \\
-2025015442 & no\_lv & No DE-MRI folder \\
-50105639  & no\_lv & No DE-MRI folder \\
-50149701  & no\_lv & No DE-MRI folder \\
-50187501  & no\_lv & No DE-MRI folder \\
-00044761  & no\_lv & No \texttt{Basal/Data} path \\
-02000042  & no\_lv & No \texttt{Basal/Data} path \\
-02045555  & no\_lv & No \texttt{Basal/Data} path \\
-09019007  & no\_lv & No \texttt{Basal/Data} path \\
-12001780  & no\_lv & No \texttt{Basal/Data} path \\
-13018580  & no\_lv & No \texttt{Basal/Data} path \\
-14008873  & no\_lv & No \texttt{Basal/Data} path \\
-21058337  & no\_lv & No \texttt{Basal/Data} path \\
-972100446 & no\_lv & No \texttt{Basal/Data} path \\
-987012904 & no\_lv & No \texttt{Basal/Data} path \\
-22004656  & no\_lv & No \texttt{Basal/Data} path \\
-20027330  & no\_lv & No \texttt{Basal/Data} path \\
-MLF00254  & no\_lv & No \texttt{Basal/Data} path \\
-1111593944 & no\_lv & No \texttt{Basal/Data} path \\
-2491608   & no\_lv & No \texttt{Basal/Data} path \\
-07039239  & no\_cz & TISSUE exists but no VTK files \\
-10025183  & no\_cz & TISSUE exists but no VTK files \\
-13017471  & no\_cz & TISSUE exists but no VTK files \\
-20023806  & no\_cz & TISSUE exists but no VTK files \\
-50033820  & no\_cz & TISSUE exists but no VTK files \\
-50037142  & no\_cz & TISSUE exists but no VTK files \\
-50042306  & no\_cz & TISSUE exists but no VTK files \\
-50045793  & no\_cz & TISSUE exists but no VTK files \\
-50052223  & no\_cz & TISSUE exists but no VTK files \\
-50054988  & no\_cz & TISSUE exists but no VTK files \\
-50056378  & no\_cz & TISSUE exists but no VTK files \\
-95025044  & no\_cz & TISSUE exists but no VTK files \\
-96024662  & no\_cz & No CZ match (only corridor files present) \\
-\end{longtable}
+\end{tabular}
+\end{table}
 
 \section{Clinical Metadata: Field Completeness}
 \label{app:clinicalcsv}
@@ -187,28 +182,28 @@ Category & Field & Complete (\%) \\
 
 \section{Retrieval Descriptor Space: SVD and Patient Scatter Plots}
 
-\begin{figure}[htbp]
+\begin{figure}[p]
     \centering
-    \begin{subfigure}[b]{\textwidth}
+    \begin{subfigure}[b]{0.48\textwidth}
         \includegraphics[width=\textwidth]{figures/svd_full_scree_scatter}
-        \caption{\texttt{full} (39 features). PC1 25.5\%; 16 PCs for 90\% variance. Patients cluster by CZ burden along PC1.}
-    \end{subfigure}\\[0.5em]
-    \begin{subfigure}[b]{\textwidth}
+        \caption{\texttt{full} (39 feat). PC1 25.5\%.}
+    \end{subfigure}\hfill
+    \begin{subfigure}[b]{0.48\textwidth}
         \includegraphics[width=\textwidth]{figures/svd_full_noseg_scree_scatter}
-        \caption{\texttt{full\_no\_seg} (22 features). PC1 34.3\%; 11 PCs for 90\%. Cleaner CZ burden gradient.}
-    \end{subfigure}\\[0.5em]
-    \begin{subfigure}[b]{\textwidth}
+        \caption{\texttt{full\_no\_seg} (22 feat). PC1 34.3\%.}
+    \end{subfigure}\\[0.4em]
+    \begin{subfigure}[b]{0.48\textwidth}
         \includegraphics[width=\textwidth]{figures/svd_full_pruned}
-        \caption{\texttt{full\_pruned} (29 features). PC1 18.5\%; 14 PCs for 90\%. Scatter similar to full vector.}
-    \end{subfigure}\\[0.5em]
-    \begin{subfigure}[b]{\textwidth}
+        \caption{\texttt{full\_pruned} (29 feat). PC1 18.5\%.}
+    \end{subfigure}\hfill
+    \begin{subfigure}[b]{0.48\textwidth}
         \includegraphics[width=\textwidth]{figures/svd_full_ns_pruned}
-        \caption{\texttt{full\_ns\_pruned} (16 features). PC1 27.5\%; 10 PCs for 90\%. Disorganised scatter, no CZ burden gradient --- consistent with inferior retrieval.}
-    \end{subfigure}\\[0.5em]
-    \begin{subfigure}[b]{\textwidth}
+        \caption{\texttt{full\_ns\_pruned} (16 feat). PC1 27.5\%. No CZ gradient.}
+    \end{subfigure}\\[0.4em]
+    \begin{subfigure}[b]{0.48\textwidth}
         \includegraphics[width=\textwidth]{figures/svd_pmap_only}
-        \caption{\texttt{pmap\_only} (8 features). Polar-map PCA scores only.}
+        \caption{\texttt{pmap\_only} (8 feat). PCA scores only.}
     \end{subfigure}
-    \caption{SVD scree plots (left: cumulative explained variance) and PC1--PC2 patient scatter coloured by CZ burden (right) for five descriptor vectors. \texttt{full\_ns\_pruned} is the only vector without a coherent CZ burden gradient in PC space, consistent with its inferior retrieval performance (Table~\ref{tab:featurevectors}).}
+    \caption{SVD scree plots and PC1--PC2 scatter (coloured by CZ burden) for five descriptor vectors. \texttt{full\_ns\_pruned} is the only vector without a coherent CZ burden gradient.}
     \label{fig:app_svd_plots}
 \end{figure}

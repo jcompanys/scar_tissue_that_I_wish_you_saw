@@ -41,6 +41,11 @@
 % Tables
 \usepackage{booktabs}
 \usepackage{longtable}
+\usepackage{multirow}
+
+% Force figure placement
+\usepackage{float}
+\usepackage{placeins}
 
 % Figures
 \usepackage{subcaption}
@@ -59,10 +64,9 @@
 % THESIS METADATA
 % ============================================================
 \title{Population-Level Analysis of Post-Infarction Scar Geometry Using Standardised Polar Maps}
-\subtitle{A Geometric Pipeline for Population-Level Analysis and Retrieval-Based Generation}
 \author{Joan Company Company}
 \thyear{Academic Year 2025--2026}
-\supervisor{\`{O}scar C\`{a}mara and Juli\`{a} Camps}
+\supervisor{Prof.\ Oscar Camara Rey \\ Dr.\ Juli\`{a} Camps}
 \grau{Grau en Enginyeria Matem\`{a}tica en Ci\`{e}ncia de Dades}
 
 % ============================================================
@@ -86,8 +90,7 @@
 
 \input{chapters/01_introduction}
 
-\input{chapters/02_background}
-\label{chap:background}
+\addcontentsline{toc}{part}{Methodology}
 
 \input{chapters/03_data}
 \label{chap:data}
@@ -100,6 +103,8 @@
 
 \input{chapters/06_retrieval}
 \label{chap:retrieval}
+
+\addcontentsline{toc}{part}{Results, Discussion and Conclusions}
 
 \input{chapters/07_results}
 

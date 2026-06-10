@@ -215,11 +215,15 @@
   \begin{flushleft}%
   \begin{center}   {\LARGE \sffamily \@title \par}% 
   \end{center} 
-    \vspace*{2cm}
+    \vspace*{0.8cm}
     \begin{center}   {\Large \sffamily \@subtitle \par}
      \end{center}
-    \vskip 4cm%
-   \begin{center} {\Large TREBALL DE FI DE GRAU DE} \par \end{center} 
+    \vskip 0.6cm%
+    \begin{center}
+      \includegraphics[width=0.62\textwidth]{shells_no_lines.png}
+    \end{center}
+    \vskip 0.6cm%
+   \begin{center} {\Large TREBALL DE FI DE GRAU DE} \par \end{center}
     {\Large
      \lineskip .75em}%
       \begin{center} 

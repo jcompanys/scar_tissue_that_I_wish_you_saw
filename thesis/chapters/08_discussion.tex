@@ -2,16 +2,13 @@
 
 \section{Spatial Non-Uniformity and Its Anatomical Interpretation}
 
-The statistically confirmed non-uniform distribution of scar burden across the AHA segments
-is anatomically expected: ischaemic infarction follows coronary territory boundaries, making
-a spatially uniform distribution implausible a priori. The value of the formal test is therefore
-not surprise but documentation---it establishes that the data are internally consistent with
-anatomical priors and provides a quantitative benchmark against which any generative
-model must be evaluated. The concentration of burden in the inferior-to-apical
-mid-ventricular wall, straddling the RCA--LCX boundary, aligns with the known vulnerability
-of this region to multi-territory watershed ischaemia and with electrophysiological mapping
-studies that consistently identify the inferoseptal and inferolateral walls as common sites for
-re-entrant VT circuits \cite{mahida2017}. The reliable sparing of the basal ring reflects the
+The value of the formal test for spatial non-uniformity is not surprise but
+documentation---it establishes that the data are internally consistent with anatomical priors
+and provides a quantitative benchmark against which any generative model must be
+evaluated. The concentration of burden in the inferior-to-apical
+mid-ventricular wall, straddling the RCA--LCX boundary, is consistent with
+electrophysiological mapping studies that identify the inferoseptal and inferolateral walls as
+common sites for re-entrant VT circuits \cite{mahida2017}. The reliable sparing of the basal ring reflects the
 lower probability of occlusion at the proximal segments of all three coronary
 territories---basal involvement requires either a proximal occlusion or extensive downstream
 wavefront propagation, both anatomically less frequent than mid-artery occlusion.
@@ -19,12 +16,10 @@ wavefront propagation, both anatomically less frequent than mid-artery occlusion
 The absence of a significant territory-level burden difference should not be read as evidence
 that culprit vessel is geometrically irrelevant. The territory archetype maps demonstrate that
 LAD-, RCA-, and LCX-dominant scars occupy distinct spatial footprints that scalar mean
-burden cannot distinguish. This dissociation between scalar and geometric information is
-precisely the limitation of existing risk stratification approaches highlighted in the
-introduction: global metrics such as total scar burden or ejection fraction compress spatial
-structure that is mechanistically relevant to arrhythmogenesis \cite{mahida2017}. The
-present characterization, by preserving spatial information in the polar-map representation,
-is positioned to contribute features that scalar approaches discard.
+burden cannot distinguish---precisely the spatial structure that the polar-map representation
+preserves and that global markers such as ejection fraction compress \cite{mahida2017}.
+The present characterization, by preserving spatial information in the polar-map
+representation, is positioned to contribute features that scalar approaches discard.
 
 The high dimensionality of the scar pattern space---six PCA components for 72\% of
 variance, PC1 accounting for only 18\%---has a direct mechanistic interpretation: infarct
@@ -41,8 +36,9 @@ necessarily misrepresent this diversity.
 \section{Methodological Choices and Their Consequences}
 
 The need for a multi-candidate apex-detection strategy reflects a broader challenge in
-computational cardiac imaging: post-infarction remodelling alters ventricular geometry in
-ways that invalidate assumptions that hold in healthy cohorts. A fixed-axis approach,
+computational cardiac imaging: patient-specific ventricular geometry varies substantially
+across individuals, invalidating fixed-axis assumptions common in population-averaged
+shape analysis pipelines. A fixed-axis approach,
 standard in many shape analysis pipelines, fails in approximately one quarter of this
 cohort---a non-negligible error rate that would propagate systematically into all downstream
 spatial comparisons. The automated solution developed here trades marginal computational
@@ -62,8 +58,8 @@ arrhythmogenic potential, as deeply penetrating scar creates more complete condu
 barriers and more stable re-entrant pathways \cite{mahida2017, cedilnik2023}. These two
 differences are independent of each other and should not be conflated.
 
-For the goals of this work---population-level characterisation of scar geometry and
-retrieval-based generation---the proposed method's choices are better suited on three
+For the goals of this work---population-level characterisation of scar geometry---the proposed
+method's choices are better suited on three
 counts: the linear $s$ coordinate provides a geometrically faithful and monotonic
 apex-to-base axis directly usable as a statistical descriptor; projecting Core Surface vertices
 preserves the full transmural extent of the scar mass, which is the quantity of interest for
@@ -71,6 +67,8 @@ arrhythmia substrate characterisation; and the fully automated apex and axis det
 eliminates the need for manual landmark selection required by the reference
 method---three seeds per case---making the pipeline applicable at cohort scale without
 operator intervention.
+
+\section{What Retrieval Quality Reveals About the Cohort}
 
 The counter-intuitive degradation of retrieval performance following SVD-based feature
 pruning points to a general property of heterogeneous clinical cohorts: discriminative
@@ -80,8 +78,6 @@ finding argues against aggressive dimensionality reduction prior to nearest-neig
 retrieval in settings where the population is genuinely diverse, and suggests that feature
 selection in such contexts should be guided by retrieval performance rather than by variance
 decomposition alone.
-
-\section{What Retrieval Quality Reveals About the Cohort}
 
 The leave-one-out retrieval results should be read not only as a performance evaluation but
 as a characterisation of cohort structure. The right-skewed distribution of scar burden error
@@ -95,30 +91,22 @@ cases exist among the remaining 104. This is not a failure of the retrieval meth
 faithful reflection of the population: example-based generation is inherently limited by the
 diversity of the library, and its performance ceiling is set by cohort size.
 
-The performance gap between deterministic and probabilistic retrieval modes is small in
-absolute terms, confirming that the nearest neighbour remains the single best match while
-the probabilistic mode adds value by sampling geometric variability among similar
-patients---a distinction that becomes practically relevant when the goal is to generate a
-distribution of plausible substrates rather than a single representative case. In practice, the
-softmax weights are strongly concentrated on the nearest neighbour for most patients: when
-the nearest-neighbour distance is substantially smaller than the second-nearest, the top
-candidate receives sampling probability close to 1.0, making deterministic and probabilistic
-modes effectively equivalent for those cases. Only patients whose top-10 neighbours are
-closely spaced in descriptor space receive meaningfully distributed weights across multiple
-candidates.
+The performance gap between deterministic and probabilistic retrieval modes is small,
+confirming that the nearest neighbour remains the single best match while the probabilistic
+mode adds value for generating diverse plausible alternatives when the query profile is
+well-represented in the case base.
 
 The disparity between segment Dice (mean 0.597, median 0.667) and polar-map Dice
 (mean 0.106, median 0.032) warrants explicit interpretation rather than dismissal. Two
 patients can share the same set of involved AHA segments---and therefore score perfectly on
-segment Dice---while differing substantially in the precise circumferential boundaries, local
-density, and transmural depth of scar within those segments. The polar-map Dice penalises
-any such sub-segment misalignment. The large gap between the two metrics therefore
+segment Dice---while differing substantially in the precise sub-segment location,
+circumferential boundaries, and local extent of scar within those segments. The polar-map
+Dice penalises any such sub-segment misalignment. The large gap between the two metrics therefore
 quantifies the amount of geometric information that lies below the resolution of the AHA
 17-segment model: it is substantial, and it is precisely the information that the polar-map
-representation is designed to preserve. The long right tail of polar-map Dice values (75th
-percentile 0.189, maximum 0.529) confirms that geometrically close matches do exist within
-the cohort for a meaningful subset of patients, and that retrieval performance would improve
-with a larger case base.
+representation is designed to preserve. The long right tail of polar-map Dice values (75th percentile 0.189, maximum 0.529)
+confirms that geometrically close matches exist within the cohort for a meaningful subset
+of patients.
 
 \section{Transmurality and Fragment Geometry as Independent Descriptors}
 \label{sec:transmurality_discussion}
@@ -128,63 +116,41 @@ cohort, with mean fragment onset near 30\% of wall thickness and mean transmural
 approximately 19\%. This is anatomically expected for ischaemic infarction, where occlusion
 of epicardial coronary arteries produces a wavefront of necrosis that propagates from the
 subendocardium outward, and complete transmural replacement requires sustained
-ischaemia. The dense-core / thin-edge transmural gradient confirms that the central scar
-mass is more deeply intramural than its periphery---a pattern consistent with the
-inward-to-outward wavefront of ischaemic necrosis, where the subendocardial core is the
-longest-ischaemic zone and the peripheral border is the last tissue reached by the necrotic
-front.
+ischaemia. The dense-core / thin-edge transmural gradient confirms that the central core-zone mass is
+more deeply intramural than its periphery---a pattern consistent with the inward-to-outward
+wavefront of ischaemic necrosis, where the subendocardial core is the longest-ischaemic
+zone and the peripheral border is the last tissue reached by the necrotic front. This gradient
+characterises the core zone alone; the border zone, which occupies the peripheral transition
+region, was not included in the transmurality computation.
 
 The territory-level transmurality differences deserve attention. RCA-dominant scar
 presenting both the highest onset depth and the highest transmurality in this cohort indicates
 that inferior infarcts tend to penetrate more deeply through the wall than anterior or lateral
-ones. One anatomical explanation is that the inferior wall is thinner than the anterior wall, so
+ones. One anatomical explanation is that the inferior wall is thinner than the anterior wall on average, so
 a necrotic wavefront of the same absolute depth represents a higher fractional
 transmurality---making inferolateral infarcts geometrically more transmural even without
 greater absolute ischaemic depth. This interpretation cannot be confirmed without outcome
 data, but it is consistent with the observation that RCA-dominant patients also showed more
 circumferential spread across adjacent territories in the archetype maps.
 
-The within-patient Spearman correlation between segment-level extent and transmurality
-(median $\rho = 0.57$, IQR [0.36, 0.80], $n = 97$ patients) confirms partial but incomplete
-association: in most patients, more-burdened segments tend to penetrate more deeply, but
-the relationship is far from deterministic. At the population level, the cross-segment
-correlation between mean extent and mean transmurality per AHA segment is near-zero
-($\rho = 0.14$, $p = 0.59$), indicating that segments with high average burden across the
-cohort are not systematically more transmural. A minority of patients (4/97) show negative
-within-patient correlation, consistent with co-occurrence of extensive subendocardial scar in
-one territory and focal but deeply transmural scar in another. The two descriptors are
-therefore not interchangeable, and their joint inclusion in the retrieval feature vector is
-justified by the retrieval performance results, which showed that pruning features with low
-individual variance contributions consistently degraded rather than improved matching
-quality.
 
-Fragment shape descriptors capture a further dimension of scar geometry not encoded by
-either territory assignment or transmurality. The predominance of irregular, non-compact
-lesions (compactness below 0.4 in most patients) reflects the morphological complexity that
-makes direct 3D-to-3D scar comparison across patients impractical without a common
-coordinate frame. The association between higher total burden and wider circumferential
-spread---with the mid-cavity ring showing the greatest tangential extent at the population
-level---indicates that large scars tend to wrap around the ventricular wall rather than penetrate
-deeply through it at any single location, consistent with the subendocardial wavefront model
-of ischaemic injury. This characterises individual scar morphology along the circumferential
-axis and is distinct from the inter-segment correlation structure, which concerns the
-longitudinal axis: within a territory, segments at different ring levels co-vary more strongly
-than circumferentially adjacent segments across territory boundaries, reflecting contiguous
-propagation along the apex-to-base direction rather than lateral spread. The two findings
-together suggest that scar geometry is organised differently along each spatial axis---circumferential
-extent scales with total burden, longitudinal extent is constrained by vascular territory, and
-transmural depth remains relatively limited in most patients.
+The partial within-patient correlation between segment-level extent and transmurality (median
+$\rho = 0.57$) confirms that both descriptors are needed: a patient may present extensive but
+shallow scar in one territory and focal but deeply transmural scar in another, and neither
+measure substitutes for the other.
 
-The apex-to-base gradient, with near-zero population mean but extreme individual variability
-(slopes ranging from $-0.82$ to $+0.20$), illustrates a recurring theme of this analysis:
-population-level averages conceal individual-level structure that is precisely the information a
-generative model must reproduce. A generative model that samples each descriptor
-independently from its marginal distribution---generating total burden, territory, and gradient
-direction without constraint---would produce cases that violate the joint dependencies
-observed in real patients: for example, a case assigned high LAD burden but a
-base-dominant gradient, or high RCA burden with an anteroseptal spatial footprint. These
-combinations do not occur in clinical data because coronary territory, scar location, and
-longitudinal distribution are not independent.
+Most patients present irregular, non-compact scar lesions (median compactness 0.39).
+Circumferential spread is greatest at the mid-cavity ring and is not encoded in segment-level
+or transmurality descriptors, representing an independent geometric axis of scar
+organisation.
+
+The apex-to-base gradient (population mean $\approx 0$, individual slopes $-0.82$ to
+$+0.20$) illustrates a recurring theme: population averages mask individual-level structure
+that any generative model must reproduce. Because coronary territory, scar location, and
+longitudinal distribution are not independent, descriptors cannot be sampled from
+independent marginals---doing so would produce anatomically implausible combinations
+such as high LAD burden with a base-dominant gradient or high RCA burden with an
+anteroseptal spatial footprint.
 
 \section{Limitations}
 
@@ -198,10 +164,11 @@ representation or generative framework must accommodate this range rather than a
 more homogeneous distribution.
 
 The cohort of 105 patients, while sufficient for the population-level characterisation
-conducted here, constrains the retrieval-based generation framework in two ways: rare scar
+conducted here, constrains the retrieval-based generation framework in two ways: uncommon scar
 phenotypes are underrepresented in the case base, and the leave-one-out evaluation is
 optimistic relative to prospective deployment where query patients may fall outside the
-observed distribution entirely. The subgroup analyses involving age ($n = 48$) and sex
+observed distribution entirely. A larger case base would improve coverage of uncommon
+scar phenotypes and is expected to raise retrieval performance. The subgroup analyses involving age ($n = 48$) and sex
 ($n = 48$, with severe male skew) are explicitly exploratory and should not be interpreted as
 establishing the absence of demographic associations; they establish only that the present
 cohort is underpowered to detect them.

@@ -3,7 +3,11 @@
 
 \section{Cohort and Data Availability}
 
+This section describes cohort composition, scar morphology heterogeneity across the
+105 valid cases, and available clinical metadata.
+
 \subsection{Scar morphology and inter-patient heterogeneity}
+\label{sec:scarmorph}
 
 Visual inspection of the full-cohort 3D grid confirmed that all 105 cases produce
 geometrically coherent LV reconstructions with identifiable core-zone surfaces. Beyond
@@ -11,52 +15,26 @@ confirming quality, the grid reveals the amplitude of scar morphology present in
 Scar extent ranges from small, focal lesions occupying a single wall segment to large,
 multi-territory scars covering a substantial fraction of the myocardium. Spatial organisation
 varies from compact, contiguous surfaces to fragmented geometries with disconnected
-components distributed across different wall regions. Infarction location spans all major
-coronary territories---inferior, anterior, lateral, and septal---at basal, mid-ventricular, and
+components distributed across different wall regions. Infarction location spans all three coronary territories (LAD, RCA, LCX)---with scar
+affecting inferior, anterior, lateral, and septal walls---at basal, mid-ventricular, and
 apical levels, with variable wall-depth involvement from subendocardial to near-transmural.
 This degree of heterogeneity is a defining characteristic of the cohort and directly motivates
 the need for a shape representation that makes no assumptions about scar location, extent,
 or connectivity.
 
-\subsection{Clinical metadata availability}
+\subsection{Clinical metadata and demographic profile}
 
-The DEVELOP registry CSV contains records for 173 patients. Of these, 88 carry a
-segmentation flag indicating a corresponding ADAS 3D study. This clinical subset does not
-fully overlap with the 105 geometrically valid cases identified from the disk scan: identifier
-gaps between the two sources mean that some segmented cases lack a clinical record and
-vice versa. The operative consequence is that clinical labels can only be linked to geometry
-for the cases present in both sources.
-
-Variable completeness within the CSV is highly uneven. MRI-derived scar metrics---LV
-mass, border zone, core zone, and channel mass---are the most complete, available for
-166--167 patients (96--96.5\%). Demographic and follow-up variables are substantially more
-incomplete: sex is recorded for 94 patients and age for 95 out of 173 in the full registry.
-However, these figures reflect completeness within the CSV registry alone.
-Cross-referencing with the available ADAS 3D segmentations reduces the usable labelled
-subset to 48 patients with age data and 48 patients with sex data. Expanding demographic
-coverage through registry completion is identified as a priority for future work.
-
-\subsection{Demographic profile}
-
-Among the 48 patients with available demographic labels (out of 105 in the analysis cohort),
-38 are male (79.2\%) and 10 are female (20.8\%). This distribution is consistent with the
-known epidemiology of myocardial infarction, in which men present roughly a decade earlier
-than women, and a predominantly male composition is therefore expected in any post-MI
-cohort of this age range.
-
-The mean age of the labelled subset is $63.0 \pm 11.5$ years (median 63.0 years,
-IQR 54.8--72.0, range 31--84). The female subgroup shows a slightly lower mean age
-($60.3 \pm 11.0$ years) compared to males ($63.7 \pm 11.7$ years), but with only 10 female
-patients this difference carries no interpretable signal.
-
-\subsection{Implications for downstream analysis}
-
-The high missingness of demographic and outcome variables---sex available in only 54\% of
-the full registry, follow-up outcomes in fewer still---makes any form of supervised clinical
-outcome modelling infeasible at the current cohort size. All subsequent geometric analyses therefore proceed on the full 105-case cohort without
-clinical sub-grouping.
+Cross-referencing the DEVELOP registry CSV (173 records, 88 with segmentation flag) with
+the geometrically valid cases yields 48 patients with usable age and sex labels. Among
+these, 38 are male (79.2\%), mean age $63.0 \pm 11.5$ years (median 63.0, IQR 54.8--72.0).
+The high missingness of demographic and outcome variables makes supervised clinical
+outcome modelling infeasible; all geometric analyses proceed on the full 105-case cohort.
 
 \section{Polar Map Construction and Orientation Verification}
+
+This section reports pipeline performance across the 105-case cohort: apex detection
+outcomes, projection method consistency, grid resolution sensitivity, and comparison
+against a reference flattening method.
 
 \subsection{Apex and axis detection}
 
@@ -76,60 +54,31 @@ insufficient for this cohort (Figure~\ref{fig:app_axis_winner} in Appendix). A q
 comparison against the reference flattening method of N\'{u}\~{n}ez Garc\'{i}a
 \cite{nunez2018} is presented in Section~\ref{sec:polarmapverif}.
 
-\begin{figure}[htbp]
+\begin{figure}[ht]
     \centering
-    \includegraphics[width=\textwidth]{figures/d6_long_axis_candidates}
-    \caption{Apex-defining direction selected per patient across the 105-case cohort. LV~PC1 was selected in 74\% of cases, RV~PC1 in 21\%, and LV~PC2 in 5\%, confirming that a single fixed direction is insufficient for post-infarction cohorts with heterogeneous ventricular geometry.}
+    \includegraphics[width=0.68\textwidth]{figures/d6_long_axis_candidates}
+    \caption{Apex-defining direction selected per patient ($n=105$): LV~PC1 in 74\%, RV~PC1 in 21\%, LV~PC2 in 5\%.}
     \label{fig:apexdirection}
 \end{figure}
 
-\subsection{Per-patient polar map examples}
-
-Figure~\ref{fig:polarmapsteps} illustrates the full projection pipeline for a selection of cases
-spanning different scar locations and extents. The five-step sequence proceeds as follows:
-the LV (right) and RV (left) are shown in their original three-dimensional orientation; the long
-axis is detected and the mesh is re-oriented apex-down; the longitudinal coordinate $s$ is
-computed from apex (top) to base (bottom); the circumferential coordinate $\theta$ is
-anchored to the septal reference; and the resulting cylindrical coordinates are unrolled into
-the two-dimensional bull's-eye grid.
-
-Visual inspection of these examples confirms several properties of the projection. The
-apex-to-base gradient is correctly encoded in the radial coordinate, with apical scar
-appearing near the centre of the bull's-eye and basal scar at the periphery. The
-circumferential position of the scar is preserved: anterior scar maps to the expected angular
-sector and the RV insertion points appear at the correct septal position. The binary representation captures the spatial footprint of the scar faithfully; the only
-systematic distortion is the compression of the apical region inherent to any cylindrical
-projection, where the apex occupies proportionally fewer bins than its true surface area ---
-a known trade-off of the bull's-eye representation discussed in Section~\ref{sec:polarmapverif}.
-
-% Figure removed: identical to Figure~\ref{fig:polarmaps2} in Chapter~\ref{chap:polarmaps}.
-
+\vspace{-0.8em}
 \subsection{Projection method comparison}
 \label{sec:projmethods}
 
 Three complementary projection methods were evaluated at the population level: the
 vertex-based method (binary scar presence per polar bin), the area-based method
 (projected core-zone surface area in mm$^2$ per bin), and the coverage method
-(core-zone area divided by total LV area per bin). Population-level superposition maps for
-all three methods are shown in Figure~\ref{fig:projmethods}. The spatial pattern of scar
-concentration is consistent across methods: all three identify the same high-burden regions
-and the same low-burden regions, with differences confined to relative intensity rather than
-spatial location.
+(core-zone area divided by total LV area per bin). The spatial pattern of scar concentration is consistent across methods: all three identify
+the same high-burden regions and the same low-burden regions, with differences confined
+to relative intensity rather than spatial location. Population-level superposition maps for
+all three methods are shown in Figure~\ref{fig:superposition}.
 
-Segment-level and territory-level Spearman rank correlations between the vertex-based and
-area-based metrics across all 105 patients confirm that the binary vertex representation---which
-is the primary representation throughout this thesis because of its reversibility and
-interpretability---captures equivalent spatial information to the continuous area-weighted
-representation. The sole additional insight from the coverage method (CZ area divided by LV surface area
-per bin) was the detection of higher local surface density in the RCA territory, obscured in
-the vertex-based analysis by that territory's smaller absolute surface area. This does not
-contradict the vertex-based territory burden reported in Section~\ref{sec:terrburden}: fewer
-RCA bins are affected overall, but those that are carry higher local scar density per bin ---
-consistent with RCA infarcts producing focal, concentrated involvement rather than diffuse
-spread. Population-level superposition maps for all three methods are shown in
-Figure~\ref{fig:app_superposition} in the Appendix.
-
-% Figure removed per revision.
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\textwidth]{figures/fig3_population_superposition}
+    \caption{Population superposition maps ($n=105$) for vertex-based, area-based, and LV coverage methods. Spatial patterns are consistent; the coverage method reveals higher RCA density obscured in vertex-based by that territory's smaller surface area.}
+    \label{fig:superposition}
+\end{figure}
 
 \subsection{Grid resolution sensitivity}
 
@@ -152,27 +101,21 @@ their vertex density per bin (Table~\ref{tab:grid}).
     \end{tabular}
 \end{table}
 
-The coarse grid, with ${\sim}24$ vertices per bin, creates a discrete representation in which
-scar fragments are easily identified but spatial detail is lost, and adjacent anatomical
-structures may be merged into a single bin. The fine grid recovers spatial detail but, with
-fewer than 2 vertices per bin on average, many bins are sparsely populated or empty, which
-introduces noise into connectivity-based metrics such as fragment counting. The
-$64 \times 128$ grid provides the best trade-off: approximately 6 vertices per bin is sufficient
-for stable binary scar detection while preserving enough resolution to distinguish all 17 AHA
-segments. The spatial pattern of scar concentration in the population mean map is consistent
-across all three resolutions (Figure~\ref{fig:app_gridres} in Appendix), confirming that
-the reported findings are not an artefact of the chosen grid density.
+The $64 \times 128$ grid provides the best trade-off: ${\sim}6$ vertices per bin gives stable
+binary scar detection with sufficient resolution to distinguish all 17 AHA segments. Population
+mean maps are consistent across all three resolutions (Figure~\ref{fig:app_gridres} in Appendix).
 
 \subsection{Verification of polar maps}
 \label{sec:polarmapverif}
 
-Visual inspection across the four cases shows that scar localisation is broadly consistent
+Visual inspection of representative cases shows that scar localisation is broadly consistent
 between the two methods in both circumferential and longitudinal coordinates. The primary
 discrepancy concerns radial density: the $r^{1/3}$ radial displacement applied by the
-reference method \cite{paun2017} concentrates scar representations toward the basal ring,
-whereas the linear mapping used here distributes coverage more uniformly along the
-apex-to-base axis; as a consequence, the proposed method recovers scar points near the
-apex with greater completeness, an advantage most visible in
+reference method concentrates scar representations toward the basal ring, whereas the
+linear mapping used here distributes coverage more uniformly along the apex-to-base axis;
+as a consequence, the proposed method recovers scar points near the apex with greater
+completeness. The 3D LV reconstruction for the representative case is shown in
+Figure~\ref{fig:verif3d}, with the corresponding polar map comparison in
 Figure~\ref{fig:polarmapverif}. More generally, the longitudinal coordinate $s$ of the
 proposed method encodes apex-to-base position directly as the normalised projection onto
 the long axis, providing a monotonic and geometrically interpretable representation of the
@@ -187,41 +130,48 @@ represents the full transmural extent of the scar mass. Taken together, the two 
 are complementary: differences in radial density and transmural sampling reflect distinct
 mapping choices rather than errors in anatomical localisation.
 
-\begin{figure}[htbp]
+\begin{figure}[ht]
     \centering
-    \fbox{\begin{minipage}{0.85\textwidth}\centering\vspace{2.5cm}[Figure placeholder: polar map verification]\vspace{2.5cm}\end{minipage}}
-    \caption{[Caption to be added.]}
-    \label{fig:polarmapverif}
+    \begin{subfigure}[b]{0.42\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{figures/M06_3d_scar_2024_07009967}
+        \caption{3D LV with core-zone scar (red).}
+        \label{fig:verif3d}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}[b]{0.52\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{figures/M06_polar_comparison_2024_07009967}
+        \caption{Polar map: proposed (left) vs.\ N\'{u}\~{n}ez Garc\'{i}a \cite{nunez2018} (right).}
+        \label{fig:verifpolar}
+    \end{subfigure}
+    \caption{Verification for case 2024\_07009967. Scar localisation is consistent; differences reflect distinct mapping choices.}
+    \label{fig:verif_combined}
 \end{figure}
 
+\FloatBarrier
 \section{Population-Level Scar Analysis}
 
-All analyses were conducted on vertex-based binary polar maps unless otherwise noted.
-The cohort consists of 105 patients; clinical metadata was available for a subset of 48
-patients. All inferential tests are non-parametric, justified by the distributional diagnostics
-presented first.
+All analyses used vertex-based binary polar maps on the full 105-case cohort with
+non-parametric methods, as justified by the normality diagnostics below.
 
 \subsection{Normality diagnostics}
 
-Univariate normality was assessed via QQ plots, with the Pearson correlation coefficient
-between sample and theoretical normal quantiles compared against the critical values of the
-QQ correlation coefficient test at $\alpha = 0.05$. Of all variables examined, only age
-satisfied the normality criterion. Since univariate normality is a necessary condition for
-multivariate normality, the failure of all scar-related variables already precludes a
-multivariate normal joint distribution analytically; a chi-squared QQ plot of the squared
-Mahalanobis distances of the full 17-segment burden vector was nonetheless computed to
-corroborate this visually.
+Univariate normality was assessed via QQ plots, comparing the Pearson correlation
+between sample and theoretical normal quantiles against critical values at $\alpha = 0.05$.
+Only age satisfied the normality criterion. Since univariate normality is a necessary
+condition for multivariate normality, the failure of all scar-related variables precludes a
+multivariate normal joint distribution analytically; a chi-squared QQ plot of squared
+Mahalanobis distances of the full 17-segment burden vector was computed to corroborate
+this visually.
 
-All scar-related variables showed clear departures from normality. At the AHA segment
-level, burden distributions exhibited strong zero-inflation (70--75\% of patients had zero scar
-in most segments) and right skewness, with the mean exceeding the median by a factor of
-2.4--3.7 and standard-deviation-to-mean ratios of 2--4. Territory-level and global burden
-variables showed similar patterns, though with less extreme zero-inflation due to bin
-aggregation across segments.
-
-Based on these diagnostics, all subsequent analyses relied on non-parametric methods
-(Friedman test, Wilcoxon signed-rank, Spearman rank correlation) and resampling-based
-confidence intervals (patient-level bootstrap, 2000 resamples).
+All scar-related variables showed strong zero-inflation and right skewness: at the AHA
+segment level, 70--75\% of patients had zero scar in most segments, with mean/median
+ratios of 2.4--3.7 and SD/mean ratios of 2--4. Territory-level and global burden variables
+showed similar patterns, with less extreme zero-inflation due to bin aggregation. All
+subsequent analyses therefore used non-parametric methods (Friedman test, Wilcoxon
+signed-rank, Spearman rank correlation) and patient-level bootstrap confidence intervals
+(2\,000 resamples).
 
 \subsection{AHA-17 segment burden and population atlas}
 
@@ -237,11 +187,11 @@ similar proportion of patients (41.0\%) but, when involved, carries a conditiona
 of 0.190---nearly six times higher.
 
 The Friedman test confirmed that scar burden is non-uniformly distributed across the 17 AHA
-segments within patients ($\chi^2 = 115.94$, $p = 3.3 \times 10^{-17}$, $n = 105$). Although
+segments within patients ($p = 3.3 \times 10^{-17}$, $n = 105$). Although
 this result is anatomically expected---ischaemic infarction follows coronary territory
 boundaries, making uniform distribution implausible a priori---the formal test establishes that
-the data are internally consistent with anatomical priors and provides a documented
-benchmark for subsequent comparisons. Post-hoc pairwise Wilcoxon signed-rank tests with
+the data are internally consistent with anatomical priors and establishes a reference point
+for subsequent comparisons. Post-hoc pairwise Wilcoxon signed-rank tests with
 Bonferroni correction (136 comparisons, adjusted threshold $\alpha = 0.000368$) identified
 20 segment pairs with statistically significant burden differences. The significant pairs were
 not distributed uniformly across the LV: they were concentrated between the inferior and
@@ -264,14 +214,13 @@ right-skewed distributions. The population atlas identifies a robust inferior-to
 centred on the mid-inferolateral and mid-inferior segments (AHA 11 and 10), straddling the
 RCA--LCX boundary, with basal segments consistently spared.
 
-% [FIGURE PLACEHOLDER — archetype/atlas map to be inserted]
+% [FIGURE PLACEHOLDER --- archetype/atlas map to be inserted]
 
 \subsection{Coronary territory burden and archetype maps}
 \label{sec:terrburden}
 
 LCX showed the numerically highest mean territory burden (0.055), followed by LAD (0.051)
-and RCA (0.047). These differences were not statistically significant (Friedman
-$\chi^2 = 3.82$, $p = 0.148$), indicating no systematic coronary territory preference at the
+and RCA (0.047). These differences were not statistically significant ($p = 0.148$), indicating no systematic coronary territory preference at the
 population level. Ring-level analysis showed that the apical and mid-cavity rings carry the
 highest scar involvement, with the basal ring consistently spared.
 
@@ -291,8 +240,8 @@ LAD.
 
 The area-based and vertex-based analyses produced concordant spatial rankings at both
 segment and territory levels (Spearman $\rho > 0.85$ across all 17 segments and all three
-territories), and both Friedman tests reached the same inferential conclusions, validating
-robustness across methodologically independent quantification approaches.
+territories), and both Friedman tests reached the same inferential conclusions, supporting
+consistency across methodologically independent quantification approaches.
 
 \subsection{Inter-segment correlation structure and PCA}
 
@@ -315,21 +264,11 @@ the diversity of infarct locations and extents across the cohort.
 
 \subsection{Age and sex associations}
 
-Spearman correlations between age and segment-level burden were computed for the 48
-patients with available age data (mean age $63.0 \pm 11.5$ years). No segment reached
-significance after Bonferroni correction ($\alpha = 0.05/17 = 0.0029$). The numerically
-strongest associations were a positive trend in the mid-inferior segment
-(seg 10: $\rho = 0.345$, $p_\text{uncorrected} = 0.016$) and a negative trend at the apex
-(seg 17: $\rho = -0.307$, $p_\text{uncorrected} = 0.034$); both became non-significant after
-correction ($p_\text{Bonferroni} = 0.280$ and $0.575$, respectively). At the territory level, RCA
-showed the numerically highest correlation with age ($\rho = 0.285$, $p = 0.050$), but this
-did not reach statistical significance. Age showed no significant correlation with total
-vertex-based scar burden (Spearman $\rho = -0.220$, $p = 0.132$, $n = 48$).
-
-Sex-stratified analysis was not performed: only 10 female patients among the 48 patients
-with available age data, against 38 male patients. This degree of imbalance renders any
-formal comparison uninformative, and the predominantly male composition reflects the
-known epidemiology of myocardial infarction---a real data limitation.
+No segment reached significance after Bonferroni correction ($\alpha = 0.05/17$, $n = 48$).
+Numerically strongest trends: mid-inferior seg~10 ($\rho = 0.345$, $p_\text{Bonf} = 0.280$)
+and apex seg~17 ($\rho = -0.307$, $p_\text{Bonf} = 0.575$); RCA territory $\rho = 0.285$
+($p = 0.050$, n.s.). Sex-stratified analysis was not performed due to severe imbalance
+(38 male / 10 female).
 
 \subsection{Transmurality}
 
@@ -353,24 +292,35 @@ The transmurality gradient analysis shows a positive population-mean core-to-edg
 difference, confirming a dense-core / thin-edge transmural structure: the central scar mass is
 thicker in the wall-depth dimension than its periphery.
 
-Endocardial dominance was confirmed at the cohort level: the large majority of scar-positive
-bins showed onset $\leq 30\%$ of wall thickness. Midwall onset was present in a minority of
-bins; epicardial-dominant onset was uncommon.
+Endocardial dominance was confirmed at the cohort level: on average 65\% of scar-positive
+bins per patient showed onset $\leq 30\%$ of wall thickness (endocardial), 20\% fell in the
+midwall range (30--60\%), and 15\% showed epicardial-dominant onset ($> 60\%$).
 
-\begin{figure}[htbp]
+Within-patient Spearman correlation between the 17-element segment-level extent vector
+and the 17-element per-segment mean transmurality vector yielded a median $\rho = 0.57$
+($n = 97$ patients with computable correlation), confirming partial but incomplete association:
+in most patients more-burdened segments tend to penetrate more deeply, but the
+relationship is far from deterministic. Both descriptors therefore carry independent
+information about the scar phenotype.
+
+\begin{figure}[tb]
     \centering
-    \includegraphics[width=\textwidth]{figures/fragment_onset_transmurality_by_ring}
-    \caption{Fragment-level onset and transmurality stratified by apex-to-base ring zone (apex, apical, mid, basal). Onset is lowest in the apical and mid rings; the basal ring shows the highest onset, reflecting greater distance from the occlusion site.}
-    \label{fig:transmurality_ring}
+    \begin{subfigure}[t]{0.48\textwidth}
+        \includegraphics[width=\textwidth]{figures/fragment_onset_transmurality_by_ring}
+        \caption{By ring zone.}
+        \label{fig:transmurality_ring}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}[t]{0.48\textwidth}
+        \includegraphics[width=\textwidth]{figures/fragment_onset_transmurality_by_territory}
+        \caption{By coronary territory.}
+        \label{fig:transmurality_territory}
+    \end{subfigure}
+    \caption{Fragment-level onset and transmurality stratified by (a) ring zone and (b) coronary territory.}
+    \label{fig:transmurality_combined}
 \end{figure}
 
-\begin{figure}[htbp]
-    \centering
-    \includegraphics[width=\textwidth]{figures/fragment_onset_transmurality_by_territory}
-    \caption{Fragment-level onset and transmurality stratified by coronary territory (LAD, RCA, LCX). RCA-dominant fragments present the highest onset and transmurality, consistent with the thinner inferior wall producing higher fractional wall-depth penetration.}
-    \label{fig:transmurality_territory}
-\end{figure}
-
+\vspace{-0.8em}
 \subsection{Geometric descriptors and fragment shape}
 
 The apex-to-base scar gradient showed near-zero population means (linear slope:
@@ -381,12 +331,15 @@ the gradient is a highly informative individual descriptor not encoded in segmen
 or territory assignment alone.
 
 Shape analysis of the largest scar fragment showed that most patients present irregular,
-non-compact lesions (compactness $< 0.4$), with higher total scar burden associated with
-wider circumferential spread and lower aspect ratio---suggesting that extensive infarcts grow
-preferentially around the ventricular wall rather than radially through it. The mid ring is where
-scar appears most circumferentially spread.
+non-compact lesions (median compactness 0.39). The mid ring is where scar appears most
+circumferentially spread.
 
+\FloatBarrier
 \section{Retrieval-Based Scar Generation}
+
+This section reports the leave-one-out retrieval evaluation: feature vector comparison,
+distance metric selection, and performance statistics under deterministic and probabilistic
+modes.
 
 \subsection{Feature vector comparison and selection}
 
@@ -397,111 +350,59 @@ scatter plots for all vectors are provided in Figure~\ref{fig:app_svd_plots} in 
 
 \begin{table}[htbp]
     \centering
-    \caption{Leave-one-out retrieval performance for the six descriptor vectors (Manhattan distance, $n=105$). $|\Delta\text{CZ}|$: mean absolute scar burden error (lower better). Seg Dice: mean segment-level Dice. Polar Dice: mean pixel-level polar-map Dice (higher better).}
+    \caption{Leave-one-out retrieval performance, six descriptor vectors (Manhattan distance, $n=105$). Mean and median $|\Delta\text{CZ}|$ lower is better; Seg/Polar Dice higher is better. Score = mean of normalised metrics.}
     \label{tab:featurevectors}
     \small
-    \begin{tabular}{lrrrr}
+    \begin{tabular}{lrrrrrr}
         \toprule
-        Vector & Feats & $|\Delta\text{CZ}|$ & Seg Dice & Polar Dice \\
+        Vector & Feats & Mean $|\Delta\text{CZ}|$ & Med $|\Delta\text{CZ}|$ & Seg Dice & Polar Dice & Score \\
         \midrule
-        \textbf{full}        & \textbf{39} & \textbf{0.0148} & \textbf{0.597} & 0.106 \\
-        full\_no\_seg        & 22 & 0.0130 & 0.489 & 0.099 \\
-        full\_pruned         & 29 & 0.0188 & 0.545 & 0.109 \\
-        full\_ns\_pruned     & 16 & 0.0189 & 0.474 & 0.093 \\
-        pmap\_only           &  8 & 0.0188 & 0.359 & \textbf{0.214} \\
-        full\_ns+pmap        & 30 & 0.0136 & 0.484 & 0.155 \\
+        \textbf{full}        & \textbf{39} & 0.0148 & 0.0093 & \textbf{0.597} & 0.106 & \textbf{0.337} \\
+        full\_no\_seg        & 22 & \textbf{0.0130} & \textbf{0.0079} & 0.489 & 0.100 & 0.282 \\
+        full\_pruned         & 29 & 0.0188 & 0.0105 & 0.545 & 0.109 & 0.309 \\
+        full\_ns\_pruned     & 16 & 0.0189 & 0.0115 & 0.474 & 0.093 & 0.264 \\
+        pmap\_only           &  8 & 0.0188 & 0.0087 & 0.359 & \textbf{0.214} & 0.268 \\
+        full\_ns+pmap        & 30 & 0.0136 & 0.0076 & 0.484 & 0.155 & 0.306 \\
         \bottomrule
     \end{tabular}
 \end{table}
 
-\begin{figure}[htbp]
+\begin{figure}[tb]
     \centering
-    \includegraphics[width=\textwidth]{figures/retrieval_six_vectors}
-    \caption{Leave-one-out retrieval performance for the six candidate descriptor vectors under Manhattan distance. Three metrics reported: scar burden error $|\Delta\text{CZ}|$ (lower is better), segment Dice, and polar-map Dice (higher is better). The full 39-feature vector achieves best segment Dice and lowest burden error; \texttt{pmap\_only} achieves highest polar-map Dice but performs worst on the other metrics.}
+    \includegraphics[width=0.80\textwidth]{figures/retrieval_six_vectors}
+    \caption{LOO retrieval performance for the six descriptor vectors (Manhattan, $n=105$). \texttt{full} achieves best segment Dice; \texttt{full\_no\_seg} lowest burden error; \texttt{pmap\_only} highest polar-map Dice.}
     \label{fig:featurevectors}
 \end{figure}
 
-SVD analysis of the full vector showed that AHA segment burden features account for the
-largest share of variance: 16 principal components are required to explain 90\% of the total
-variance, compared to 11 for the segment-free variant, reflecting the higher redundancy
-introduced by the 17 correlated segment columns. SVD contribution analysis identified ten
-features with contributions below the 25th percentile---including global CZ burden, number
-of involved territories, circumferential extent at mid and apical rings, compactness,
-apex-to-base gradient, fragment count, and third and fourth fragment depth descriptors---which
-were dropped to produce the pruned variants.
+SVD analysis showed AHA segment features dominate variance (16 vs.\ 11 components for
+90\% coverage in the segment-free variant). Feature pruning degraded performance on two
+of three metrics (burden error 0.015$\to$0.019; segment Dice 0.597$\to$0.545), indicating
+discriminative information is distributed across low-variance dimensions.
+\textbf{pmap\_only} achieved highest polar-map Dice (0.214) but lowest segment Dice (0.359)
+and worst burden error. The full 39-feature vector achieved the best segment-level Dice and
+was selected as the primary descriptor because segment-level anatomical overlap was
+prioritised and the features remain interpretable. However, it did not achieve the best value
+on every metric: \textbf{full\_no\_seg} had the lowest scar burden error (0.0130
+vs.\ 0.0148), and \textbf{pmap\_only} achieved the highest polar-map Dice (0.214
+vs.\ 0.106). This shows that descriptor choice depends on the intended retrieval target.
 
-Contrary to the expectation that removing low-contribution features would reduce noise and
-improve retrieval, pruning degraded performance on two of the three metrics: mean scar
-burden error increased from 0.015 to 0.019 and mean segment Dice fell from 0.597 to 0.545,
-with only a marginal gain in polar-map Dice (0.106 to 0.109). The same pattern held for the
-segment-free variants: full\_ns\_pruned performed worse than full\_no\_seg on all three
-metrics (scar error 0.019 vs 0.013; segment Dice 0.474 vs 0.489; polar Dice 0.093 vs
-0.099). The SVD contribution threshold therefore does not identify genuinely redundant
-features in this cohort---the dropped features, despite low individual variance contributions,
-carry complementary discriminative information that improves retrieval when retained.
-
-PC1 vs PC2 scatter plots of the $z$-score normalised vectors showed that all structured
-vectors except full\_ns\_pruned produce a PC space where patients cluster coherently by CZ
-burden, with higher-burden cases separating progressively along PC1. full\_ns\_pruned was
-the only exception, producing a disorganised scatter with no clear burden gradient,
-consistent with its inferior retrieval performance and suggesting that its 16 retained features
-are insufficient to capture the dominant axis of scar variation in this cohort.
-
-\textbf{pmap\_only} achieved the highest mean polar-map Dice (0.214) among all vectors but
-the lowest segment Dice (0.359) and tied-worst scar burden error (0.019), reflecting the fact
-that polar-map PCA scores encode spatial configuration but carry limited information about
-total scar amount. The \textbf{full\_ns+pmap} hybrid achieved the second-lowest scar burden
-error (0.014) and intermediate performance on both Dice metrics (segment Dice 0.484, polar
-Dice 0.155), but did not outperform the full vector on any individual metric.
-
-The full vector was selected as the primary descriptor for all subsequent analyses, as it
-achieved the best segment Dice (0.597) and the lowest scar burden error among vectors
-that also maintain reasonable polar-map overlap.
-
+\vspace{-0.8em}
 \subsection{Distance metric comparison}
 
-Four distance metrics were evaluated on the full vector under leave-one-out conditions.
-Weighted Euclidean and standard Euclidean produced identical results (mean
-$|\Delta\text{CZ}| = 0.016$, mean segment Dice $= 0.539$, mean polar-map Dice $= 0.095$),
-as expected given that both reduce to the same computation on $z$-score normalised
-features. Manhattan distance outperformed both across all three measures (mean
-$|\Delta\text{CZ}| = 0.015$, mean segment Dice $= 0.597$, mean polar-map Dice $= 0.106$).
-Cosine distance performed substantially worse (mean $|\Delta\text{CZ}| = 0.044$, mean
-segment Dice $= 0.282$, mean polar-map Dice $= 0.042$), consistent with its insensitivity to
-vector magnitude: patients with similar scar geometry but very different total burdens appear
-artificially close under cosine distance.
+Manhattan distance on $z$-score normalised features outperformed Euclidean (segment Dice
+0.597 vs.\ 0.539) and substantially outperformed cosine (segment Dice 0.282), which is
+insensitive to vector magnitude. Full results in Appendix~\ref{app:distmetric}.
 
-The superior performance of Manhattan distance is interpretable in this setting: because it
-aggregates per-dimension differences linearly rather than quadratically, it is less sensitive to
-large mismatches on individual features and better able to identify patients that are broadly
-similar across the full descriptor. Manhattan distance on $z$-score normalised features was
-adopted as the primary metric for all remaining analyses.
+\subsection{Deterministic and Probabilistic Retrieval}
 
-\subsection{Deterministic retrieval}
-
-Figure~\ref{fig:deterministic} shows illustrative examples of deterministic retrieval under
-leave-one-out conditions, selected to span different scar locations and extents: anterior,
-inferior, lateral, and diffuse patterns. In the best-matched cases, the retrieved scar occupies
-the same coronary territory, extends over a similar number of AHA segments, and shows
-comparable circumferential and apex-to-base spread. In more challenging cases---typically
-patients with unusual multi-territory patterns or small scars---the retrieved patient captures
-the correct dominant territory but may differ in peripheral extent. These discrepancies reflect
-the fundamental constraint of the framework: rare or atypical profiles may not be well
-represented among the 104 remaining patients.
-
-\begin{figure}[htbp]
-    \centering
-    \fbox{\begin{minipage}{0.85\textwidth}\centering\vspace{2.5cm}[Figure placeholder: deterministic retrieval examples]\vspace{2.5cm}\end{minipage}}
-    \caption{[Caption to be added.]}
-    \label{fig:deterministic}
-\end{figure}
-
-For one representative pair, a 3D LV mesh comparison is also shown, with each shell vertex
-painted as scar or healthy by nearest-neighbour projection from the CZ mesh. This
-visualisation confirms that polar-map-level agreement translates to a spatially coherent 3D
-scar pattern on the target LV anatomy.
-
-\subsection{Probabilistic retrieval}
+Deterministic retrieval under leave-one-out consistently recovered the correct dominant
+coronary territory, with the retrieved scar occupying the same territory, extending over a
+similar number of AHA segments, and showing comparable circumferential and apex-to-base
+spread. In more challenging cases---typically patients with unusual multi-territory patterns or
+small scars---the retrieved patient captures the correct dominant territory but may differ in
+peripheral extent. These discrepancies reflect the fundamental constraint of the framework:
+uncommon or atypical profiles may not be well represented among the 104 remaining
+patients.
 
 In practice, the softmax weights are strongly concentrated on the nearest neighbour when its
 distance is substantially smaller than the second-nearest. This was observed for several
@@ -523,48 +424,23 @@ patients with similar scar profiles.
 \subsection{Leave-one-out validation: population-level statistics}
 
 The full leave-one-out evaluation was performed across all 105 patients using the full vector
-and Manhattan distance. Summary statistics are reported in Table~\ref{tab:loostats} and the
-metric distributions are shown in Figure~\ref{fig:loostats}.
+and Manhattan distance. Full summary statistics are reported in Table~\ref{tab:loostats} in
+the Appendix; metric distributions are shown in Figure~\ref{fig:loostats}.
 
-The distribution of $|\Delta\text{CZ}|$ is right-skewed, with most retrievals showing small
-discrepancies between target and retrieved scar amount. The mean absolute error was 0.015
-(SD 0.019) and the median was 0.009, indicating that the central tendency of the cohort is
-well matched. The right tail---cases with errors up to 0.106---corresponds to patients at the
-extremes of the scar burden distribution, where few sufficiently similar patients exist in the
-remaining 104.
+The $|\Delta\text{CZ}|$ distribution is right-skewed (mean 0.015, SD 0.019, median 0.009):
+most retrievals show small burden discrepancies, but the right tail (up to 0.106) corresponds
+to patients at the extremes of the scar burden distribution where few similar cases remain.
+Segment Dice (mean 0.597, median 0.667, IQR [0.500, 0.800]) confirms that on average
+two thirds of the target's involved segments are correctly identified; cases with low overlap
+tend to correspond to multi-territory or diffuse patterns underrepresented in the cohort.
+Polar-map Dice (mean 0.106, median 0.032) is lower by construction---two patients can
+share the same involved segments while differing in sub-segment location and local
+extent---but the right tail (75th percentile 0.189, max 0.529) reflects the subset of patients
+for whom a geometrically close match exists in the case base.
 
-The segment Dice had a mean of 0.597 (SD 0.314) and a median of 0.667, indicating that
-on average two thirds of the target's involved segments are correctly identified by the
-nearest neighbour. The interquartile range [0.500, 0.800] shows that the majority of
-retrievals achieve segment-level spatial overlap above chance. Cases with low segment Dice
-tend to correspond to multi-territory or diffuse scar patterns that are underrepresented in the
-cohort.
-
-The polar-map Dice had a mean of 0.106 (SD 0.145) and a median of 0.032. The lower
-absolute values relative to segment Dice are expected: two patients can share the same set
-of involved AHA segments while differing in the precise circumferential boundaries and
-transmural depth of scar within those segments, and the polar-map Dice penalises any such
-pixel-level misalignment. The long right tail (maximum 0.529, 75th percentile 0.189) reflects
-the subset of patients for whom a geometrically close match exists in the case base.
-
-\begin{figure}[htbp]
+\begin{figure}[ht]
     \centering
-    \includegraphics[width=\textwidth]{figures/loo_error_distributions}
-    \caption{Leave-one-out retrieval metric distributions across all 105 patients (full vector, Manhattan distance). Top: scar burden error $|\Delta\text{CZ}|$ (mean 0.015, median 0.009). Middle: segment Dice (mean 0.597, median 0.667). Bottom: polar-map Dice (mean 0.106, median 0.032). Right-skewed tails correspond to rare multi-territory or atypical scar profiles underrepresented in the cohort.}
+    \includegraphics[width=0.70\textwidth]{figures/loo_error_distributions}
+    \caption{LOO metric distributions ($n=105$, full vector, Manhattan). Top: $|\Delta\text{CZ}|$ (mean 0.015, median 0.009). Middle: segment Dice (mean 0.597, median 0.667). Bottom: polar-map Dice (mean 0.106, median 0.032).}
     \label{fig:loostats}
 \end{figure}
-
-\begin{table}[htbp]
-    \centering
-    \caption{Leave-one-out retrieval summary statistics (full vector, Manhattan distance, $n = 105$).}
-    \label{tab:loostats}
-    \begin{tabular}{lrrrrr}
-        \toprule
-        Metric & Mean & SD & Median & IQR & Max \\
-        \midrule
-        $|\Delta\text{CZ}|$ & 0.015 & 0.019 & 0.009 & --- & 0.106 \\
-        Segment Dice & 0.597 & 0.314 & 0.667 & [0.500, 0.800] & --- \\
-        Polar-map Dice & 0.106 & 0.145 & 0.032 & --- & 0.529 \\
-        \bottomrule
-    \end{tabular}
-\end{table}
