@@ -223,7 +223,7 @@
       \includegraphics[width=0.62\textwidth]{shells_no_lines.png}
     \end{center}
     \vskip 0.6cm%
-   \begin{center} {\Large TREBALL DE FI DE GRAU DE} \par \end{center}
+   \begin{center} {\Large Bachelor's Thesis by} \par \end{center}
     {\Large
      \lineskip .75em}%
       \begin{center} 

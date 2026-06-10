@@ -62,25 +62,19 @@ stratification and data augmentation studies.
 L'infart de miocardi deixa una cicatriu fibr\`{o}tica permanent al ventr\'{i}cle esquerre, un
 substrat estructural important de la taquic\`{a}rdia ventricular (TV). L'estratificaci\'{o} de risc
 actual es basa gaireb\'{e} exclusivament en la fracci\'{o} d'ejecci\'{o} del ventr\'{i}cle esquerre (FEVE),
-un marcador global que no captura l'organitzaci\'{o} geom\`{e}trica de la cicatriu. Aquest treball,
-desenvolupat en col$\cdot$laboraci\'{o} amb el Centro M\'{e}dico Teknon, dissenya i aplica un
-pipeline totalment automatitzat per a la caracteritzaci\'{o} geom\`{e}trica de la cicatriu postinfart
-a escala poblacional mitjan\c{c}ant mapes polars estandarditzats.
+un marcador global que no captura l'organitzaci\'{o} geom\`{e}trica de la cicatriu. Aquest treball
+dissenya i aplica un pipeline totalment automatitzat per a la caracteritzaci\'{o} geom\`{e}trica
+de la cicatriu postinfart a escala poblacional mitjan\c{c}ant mapes polars estandarditzats,
+desenvolupat en col$\cdot$laboraci\'{o} amb el Centro M\'{e}dico Teknon.
 
-El pipeline s'aplica al conjunt de dades DEVELOP-VT (105 pacients amb segmentaci\'{o} de
-zona central v\`{a}lida a partir d'imatges LGE-CMR processades amb ADAS~3D). Les
-distribucions tridimensionals de cicatriu es projecten sobre una graella $64{\times}128$
-alineada al model AHA de 17 segments, facilitant la comparaci\'{o} entre pacients de la
-localitzaci\'{o}, la transmural\'{i}tat i la geometria dels fragments. L'an\`{a}lisi poblacional
-identifica els segments inferolateral i inferior mitjans com a zona de m\`{a}xima afectaci\'{o},
-confirma l'escassa afectaci\'{o} basal, i mostra que sis components principals s\'{o}n necessaris
-per explicar el 72\% de la vari\`{a}ncia---reflex de l'alta dimensionalitat intr\'{i}nseca de l'espai
-de patrons. Un marc de generaci\'{o} basat en recuperaci\'{o} s'avalua amb validaci\'{o} deixant-un-fora,
-obtenint un Dice de segments mitj\`{a} de 0{,}597.
-
-El pipeline proporciona una eina reproduïble per a l'an\`{a}lisi de la geometria de cicatriu a
-escala de cohort, establint una base descriptiva per a futurs estudis d'estratificaci\'{o} de risc
-arritmog\`{e}nic i augmentaci\'{o} de dades.
+Aplicat a 105 pacients del conjunt de dades DEVELOP-VT (LGE-CMR, ADAS~3D), les
+distribucions de cicatriu es projecten sobre una graella $64{\times}128$ alineada al model
+AHA de 17 segments. L'an\`{a}lisi poblacional identifica els segments inferolateral i inferior
+mitjans com a zona de m\`{a}xima afectaci\'{o}, confirma l'escassa afectaci\'{o} basal, i mostra que
+sis components principals expliquen el 72\% de la vari\`{a}ncia---reflex de l'alta dimensionalitat
+intr\'{i}nseca de l'espai de patrons. Un marc basat en recuperaci\'{o} obt\'{e} un Dice de segments
+mitj\`{a} de 0{,}597 sota validaci\'{o} deixant-un-fora, proporcionant una base reproductible per a
+futurs estudis d'estratificaci\'{o} de risc arritmog\`{e}nic i augmentaci\'{o} de dades.
 }
 
 \vspace{1.5em}
@@ -94,24 +88,19 @@ El infarto de miocardio deja una cicatriz fibr\'{o}tica permanente en el ventr\'
 un sustrato estructural importante de la taquicardia ventricular (TV). La estratificaci\'{o}n de
 riesgo actual se basa casi exclusivamente en la fracci\'{o}n de eyecci\'{o}n del ventr\'{i}culo izquierdo
 (FEVI), un marcador global que no captura la organizaci\'{o}n geom\'{e}trica de la cicatriz. Este
-trabajo, desarrollado en colaboraci\'{o}n con el Centro M\'{e}dico Teknon, dise\~{n}a y aplica un
-pipeline totalmente automatizado para la caracterizaci\'{o}n geom\'{e}trica de la cicatriz
-postinfarto a escala poblacional mediante mapas polares estandarizados.
+trabajo dise\~{n}a y aplica un pipeline totalmente automatizado para la caracterizaci\'{o}n
+geom\'{e}trica de la cicatriz postinfarto a escala poblacional mediante mapas polares
+estandarizados, desarrollado en colaboraci\'{o}n con el Centro M\'{e}dico Teknon.
 
-El pipeline se aplica al conjunto de datos DEVELOP-VT (105 pacientes con segmentaci\'{o}n
-de zona central v\'{a}lida a partir de im\'{a}genes LGE-CMR procesadas con ADAS~3D). Las
-distribuciones tridimensionales de cicatriz se proyectan sobre una cuadr\'{i}cula $64{\times}128$
-alineada al modelo AHA de 17 segmentos, facilitando la comparaci\'{o}n entre pacientes de la
-localizaci\'{o}n, la transmural\'{i}dad y la geometr\'{i}a de los fragmentos. El an\'{a}lisis poblacional
-identifica los segmentos inferolateral e inferior medios como zona de m\'{a}xima afectaci\'{o}n,
-confirma el escaso compromiso basal, y muestra que seis componentes principales son
-necesarios para explicar el 72\% de la varianza---reflejo de la alta dimensionalidad
-intr\'{i}nseca del espacio de patrones. Un marco de generaci\'{o}n basado en recuperaci\'{o}n se
-eval\'{u}a con validaci\'{o}n dejando-uno-fuera, obteniendo un Dice de segmentos medio de 0{,}597.
-
-El pipeline proporciona una herramienta reproducible para el an\'{a}lisis de la geometr\'{i}a de
-cicatriz a escala de cohorte, estableciendo una base descriptiva para futuros estudios de
-estratificaci\'{o}n de riesgo arritmog\'{e}nico y aumento de datos.
+Aplicado a 105 pacientes del conjunto de datos DEVELOP-VT (LGE-CMR, ADAS~3D), las
+distribuciones de cicatriz se proyectan sobre una cuadr\'{i}cula $64{\times}128$ alineada al
+modelo AHA de 17 segmentos. El an\'{a}lisis poblacional identifica los segmentos inferolateral
+e inferior medios como zona de m\'{a}xima afectaci\'{o}n, confirma el escaso compromiso basal,
+y muestra que seis componentes principales explican el 72\% de la varianza---reflejo de la
+alta dimensionalidad intr\'{i}nseca del espacio de patrones. Un marco basado en recuperaci\'{o}n
+obtiene un Dice de segmentos medio de 0{,}597 bajo validaci\'{o}n dejando-uno-fuera,
+proporcionando una base reproducible para futuros estudios de estratificaci\'{o}n de riesgo
+arritmog\'{e}nico y aumento de datos.
 }
 
 \selectlanguage{english}
