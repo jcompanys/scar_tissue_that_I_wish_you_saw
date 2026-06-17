@@ -57,6 +57,13 @@
 % To match Word template: chapter number in smaller font, title in larger
 % The cls already does: \huge "Chapter N" then \Huge TITLE — acceptable
 
+% Cover page inclusion
+\usepackage{pdfpages}
+
+% Colors
+\usepackage{xcolor}
+\definecolor{upforange}{RGB}{232,119,34}
+
 % Hyperlinks (load last)
 \usepackage[hidelinks]{hyperref}
 
@@ -66,14 +73,21 @@
 \title{Population-Level Analysis of Post-Infarction Scar Geometry Using Standardised Polar Maps}
 \author{Joan Company Company}
 \thyear{Academic Year 2025--2026}
-\supervisor{Prof.\ Oscar Camara Rey \\ Dr.\ Juli\`{a} Camps}
+\supervisor{UPF Tutor: Prof.\ Oscar Camara Rey \\ Supervisor: Dr.\ Juli\`{a} Camps}
 \grau{Grau en Enginyeria Matem\`{a}tica en Ci\`{e}ncia de Dades}
 
 % ============================================================
 \begin{document}
 
+% UPF cover page (Word template, converted to PDF)
+\includepdf[pages=1]{CoverTFG2025_filled.pdf}
+
+% Suppress blank page that twoside+cleardoublepage would insert between cover and title
+\let\origcleardoublepage\cleardoublepage
+\let\cleardoublepage\clearpage
 \frontmatter
 \maketitle
+\let\cleardoublepage\origcleardoublepage
 
 \input{chapters/00_frontmatter}
 
@@ -90,21 +104,16 @@
 
 \input{chapters/01_introduction}
 
-\addcontentsline{toc}{part}{Methodology}
+\chapter{Methods}
+\label{chap:methods}
 
 \input{chapters/03_data}
-\label{chap:data}
 
 \input{chapters/04_polarmaps}
-\label{chap:polarmaps}
 
 \input{chapters/05_statistical}
-\label{chap:statistical}
 
 \input{chapters/06_retrieval}
-\label{chap:retrieval}
-
-\addcontentsline{toc}{part}{Results, Discussion and Conclusions}
 
 \input{chapters/07_results}
 

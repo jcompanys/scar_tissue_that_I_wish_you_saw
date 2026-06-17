@@ -5,33 +5,11 @@
 \label{app:transmuralagg}
 
 Bin-level onset and transmurality values (Equations~\ref{eq:depthfrac}--\ref{eq:transmurality})
-are aggregated over scar-positive bins at three levels:
+are aggregated over scar-positive bins at three levels.
+\textbf{Segment:} mean over scar-positive bins within each AHA segment's polar boundaries (17-element per-patient vector).
+\textbf{Territory:} same aggregation pooled across a territory's constituent segments (LAD, RCA, or LCX).
+\textbf{Fragment:} each 3D connected component's polar footprint, giving per-scar-island wall-depth penetration.
 
-\begin{itemize}
-    \item \textbf{Segment level.} Mean onset and transmurality over scar-positive bins within
-          each AHA segment's polar boundaries, producing a 17-element per-patient vector
-          comparable to the extent vector.
-    \item \textbf{Territory level.} Same aggregation pooled across all scar-positive bins of
-          a coronary territory's constituent segments (LAD, RCA, or LCX), characterising
-          mean wall-depth penetration per territory.
-    \item \textbf{Fragment level.} Each 3D connected component's polar footprint defines
-          the aggregation domain, giving the finest-grained descriptor: wall-depth
-          penetration per individual scar island, independently of other fragments in the
-          same patient.
-\end{itemize}
-
-\section{Distance Metric Comparison}
-\label{app:distmetric}
-
-Four distance metrics were evaluated on the full descriptor vector under leave-one-out
-conditions. Weighted Euclidean and standard Euclidean produced identical results (mean
-$|\Delta\text{CZ}| = 0.016$, segment Dice $= 0.539$, polar-map Dice $= 0.095$), as both
-reduce to the same computation on $z$-score normalised features. Manhattan distance
-outperformed both (mean $|\Delta\text{CZ}| = 0.015$, segment Dice $= 0.597$, polar-map
-Dice $= 0.106$). Cosine distance performed substantially worse (mean $|\Delta\text{CZ}| =
-0.044$, segment Dice $= 0.282$, polar-map Dice $= 0.042$), consistent with its
-insensitivity to vector magnitude: patients with similar scar geometry but different total
-burdens appear artificially close. Manhattan distance was adopted as the primary metric.
 
 \section{Leave-One-Out Retrieval Summary Statistics}
 
@@ -52,6 +30,20 @@ burdens appear artificially close. Manhattan distance was adopted as the primary
 
 \section{Additional Figures}
 
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.90\textwidth]{aha17_population_scar_atlas_bootstrap_ci}
+    \caption{Bootstrap population mean polar map ($n=105$, 1000 resamples). Each cell shows mean scar extent with 95\% bootstrap confidence interval. Segment numbering follows the AHA 17-segment model.}
+    \label{app:atlas}
+\end{figure}
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=\textwidth]{vertex_archetype_maps_by_dominant_territory}
+    \caption{Population mean polar maps stratified by dominant coronary territory (LAD, RCA, LCX). Only patients with a single dominant territory are included in each panel.}
+    \label{app:archetypes}
+\end{figure}
+
 \begin{figure}[ht]
     \centering
     \includegraphics[width=0.85\textwidth]{figures/territory_threshold_sensitivity}
@@ -70,7 +62,7 @@ burdens appear artificially close. Manhattan distance was adopted as the primary
 
 \begin{figure}[p]
     \centering
-    \includegraphics[width=\textwidth, height=0.88\textheight, keepaspectratio]{figures/fig2_axis_winner_vs_pc1}
+    \includegraphics[width=\textwidth, height=0.94\textheight, keepaspectratio]{figures/fig2_axis_winner_vs_pc1}
     \caption{Axis selection: multi-candidate algorithm vs.\ forced LV~PC1 ($n=105$). Cases selecting RV~PC1 or LV~PC2 show incorrect apex locations under the forced baseline.}
     \label{fig:app_axis_winner}
 \end{figure}
@@ -92,14 +84,13 @@ but no usable core-zone mesh.
 \toprule
 Status & Reason & $n$ & Patient IDs \\
 \midrule
-no\_lv & No DE-MRI folder & 35 &
+no\_lv & No DE-MRI folder$^{a}$ & 35 &
     00021123, 01041694, 02002319, 02011130, 02020684, 03015023, 03031339,
     04020449, 05001858, 05027445, 05044223, 06040109, 06050540, 07037693,
     07043391, 07044737, 08022556, 18022861, 18042739, 98027481, 98037676,
     caso11hsp, CASO12HSP, caso14hsp, caso8hsp, caso9hsp, 00016504, 00050633,
     01004887, 12805382, 19033528, 2025015442, 50105639, 50149701, 50187501 \\
-\midrule
-no\_lv & No \texttt{Basal/Data} path & 15 &
+no\_lv & No \texttt{Basal/Data}$^b$ & 15 &
     00044761, 02000042, 02045555, 09019007, 12001780, 13018580, 14008873,
     21058337, 972100446, 987012904, 22004656, 20027330, MLF00254,
     1111593944, 2491608 \\
@@ -112,6 +103,7 @@ no\_cz & No CZ match & 1 & 96024662 \\
 \bottomrule
 \end{tabular}
 \end{table}
+\noindent{\footnotesize $^{a}$\texttt{Basal/Data} present but no recognised DE-MRI folder.\quad $^{b}$No \texttt{Basal/Data} path found.}
 
 \section{Clinical Metadata: Field Completeness}
 \label{app:clinicalcsv}
@@ -126,7 +118,7 @@ sub-grouping.
 \centering
 \caption{DEVELOP registry CSV field completeness, grouped by category.}
 \label{tab:clinicalcsv}
-\small
+\footnotesize
 \begin{tabular}{llr}
 \toprule
 Category & Field & Complete (\%) \\
@@ -186,24 +178,24 @@ Category & Field & Complete (\%) \\
     \centering
     \begin{subfigure}[b]{0.48\textwidth}
         \includegraphics[width=\textwidth]{figures/svd_full_scree_scatter}
-        \caption{\texttt{full} (39 feat). PC1 25.5\%.}
     \end{subfigure}\hfill
     \begin{subfigure}[b]{0.48\textwidth}
         \includegraphics[width=\textwidth]{figures/svd_full_noseg_scree_scatter}
-        \caption{\texttt{full\_no\_seg} (22 feat). PC1 34.3\%.}
-    \end{subfigure}\\[0.4em]
+    \end{subfigure}\\[0.6em]
     \begin{subfigure}[b]{0.48\textwidth}
         \includegraphics[width=\textwidth]{figures/svd_full_pruned}
-        \caption{\texttt{full\_pruned} (29 feat). PC1 18.5\%.}
     \end{subfigure}\hfill
     \begin{subfigure}[b]{0.48\textwidth}
         \includegraphics[width=\textwidth]{figures/svd_full_ns_pruned}
-        \caption{\texttt{full\_ns\_pruned} (16 feat). PC1 27.5\%. No CZ gradient.}
-    \end{subfigure}\\[0.4em]
+    \end{subfigure}\\[0.6em]
     \begin{subfigure}[b]{0.48\textwidth}
         \includegraphics[width=\textwidth]{figures/svd_pmap_only}
-        \caption{\texttt{pmap\_only} (8 feat). PCA scores only.}
     \end{subfigure}
-    \caption{SVD scree plots and PC1--PC2 scatter (coloured by CZ burden) for five descriptor vectors. \texttt{full\_ns\_pruned} is the only vector without a coherent CZ burden gradient.}
+    \caption{SVD scree plots and PC1--PC2 scatter (coloured by CZ burden) for five descriptor vectors:
+    (a)~\texttt{full} (39 feat., PC1 25.5\%);
+    (b)~\texttt{full\_no\_seg} (22 feat., PC1 34.3\%);
+    (c)~\texttt{full\_pruned} (29 feat., PC1 18.5\%);
+    (d)~\texttt{full\_ns\_pruned} (16 feat., PC1 27.5\%; only vector without a coherent CZ burden gradient);
+    (e)~\texttt{pmap\_only} (8 feat., PCA scores only).}
     \label{fig:app_svd_plots}
 \end{figure}

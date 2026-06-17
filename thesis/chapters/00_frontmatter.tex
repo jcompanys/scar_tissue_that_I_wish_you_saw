@@ -7,7 +7,18 @@
 % DEDICATION (optional) — size 12 per template
 % ============================================================
 {\fontsize{12}{14}\selectfont
-\noindent [Dedication text here, or comment out this block.]
+A la meva fam\'{i}lia que, malgrat la dist\`{a}ncia, ha estat sempre al meu costat i que mai no ha
+deixat de donar el suport i l'estima que necessitava. Als meus amics i companys de vida
+que m'han fet gaudir, divertir-me i aprofundir-me en altres disciplines del coneixement.
+
+Al Centro M\'{e}dico Teknon per obrir les portes i ensenyar el m\'{e}s bonic d'aquesta
+professi\'{o}: que all\`{o} que desenvolupa el coneixement no sols existeix en el paper sin\'{o} que
+t\'{e} un impacte directe a les vides de les persones, i que de veritat, a trav\'{e}s del treball
+escrupul\'{o}s i ferm, es pot contribuir a un aven\c{c} cap a un futur esperan\c{c}ador.
+
+Aquest treball no marca el final del grau sin\'{o} el d'una etapa enriquidora, preciosa i plena
+de canvis on el desenvolupament acad\`{e}mic ha anat lligat al personal. A m\'{e}s, marca el
+comen\c{c}ament de nous canvis, noves experi\`{e}ncies i nous aprenentatges.
 }
 
 \cleardoublepage
@@ -20,7 +31,23 @@
 \vspace{0.5em}
 
 {\fontsize{11}{13.5}\selectfont
-\noindent [Acknowledgment text here.]
+\noindent
+I would like to express my sincere gratitude to Oscar Camara for giving me the opportunity
+to work under his supervision, for trusting in me and helping me understand my interests
+and give them direction, and for opening the doors to the clinical world, which I have
+greatly enjoyed. I am equally grateful to Juli\`{a} Camps for making me think, and for his
+commitment to conveying not only how to answer, but how to ask, how to adopt good
+working practices and clear ways of framing a problem, to stop for a moment and take a
+step back to see the full picture. I would also like to thank the cardiologists and
+technicians at Centro M\'{e}dico Teknon for their help in making me understand the clinical
+problem, for showing me their current pipeline, for teaching me how to use ADAS 3D and
+for their feedback and advice on this work.
+
+This work also builds on the contributions of students and researchers who have previously
+worked within this clinical environment, and I am grateful for the foundation they laid.
+Finally, I would like to express my gratitude to my family and friends, those from the
+Mathematical Engineering in Data Science programme and from other paths, for their
+companionship and support throughout my time at UPF.
 }
 
 \cleardoublepage
@@ -35,49 +62,36 @@
 
 {\fontsize{11}{13.5}\selectfont
 \noindent
-Myocardial infarction leaves permanent fibrotic scar in the left ventricle, an important
-structural substrate for ventricular tachycardia (VT). Current risk stratification relies almost
-exclusively on left ventricular ejection fraction (LVEF), a global marker that fails to capture
-the geometric organisation of scar. This work designs and applies a fully automated
-pipeline for population-level geometric characterisation of post-infarction scar using
-standardised polar maps, developed in collaboration with Centro M\'{e}dico Teknon.
-
-Applied to 105 patients from the DEVELOP-VT dataset (LGE-CMR, ADAS~3D), scar
-distributions are projected onto a $64{\times}128$ bull's-eye grid aligned to the AHA
-17-segment model. Population-level analysis identifies the mid-inferolateral and mid-inferior
-segments as the dominant hotspot, confirms basal sparing, and shows six principal
-components explain 72\% of variance---reflecting intrinsic high-dimensionality of the scar
-space. A retrieval-based framework achieves mean segment Dice of 0.597 under
-leave-one-out cross-validation, providing a reproducible foundation for arrhythmia risk
-stratification and data augmentation studies.
+Myocardial infarction leaves permanent fibrotic scar in the left ventricle, a key substrate
+for ventricular tachycardia (VT). Current risk stratification relies on global markers such as
+LVEF, failing to capture scar geometry. This work presents a fully automated pipeline for
+population-level scar characterisation via standardised polar maps and ADAS~3D on
+LGE-CMR, developed with Centro M\'{e}dico Teknon.
+Applied to 105 patients from the DEVELOP-VT dataset, scar is projected onto a bull's-eye
+grid (AHA 17-segment model). Population-level analysis identifies mid-inferolateral and
+mid-inferior segments as the dominant hotspot, confirms basal preservation, and reveals
+high intrinsic dimensionality (six components, 72\% variance). A retrieval-based framework
+achieves high segment-level geometric overlap under leave-one-out cross-validation,
+providing a reproducible foundation for arrhythmia risk stratification and data augmentation.
 }
-
-\vspace{1.5em}
 
 \selectlanguage{catalan}
 \section*{\Large \sffamily Resum}
 
 {\fontsize{11}{13.5}\selectfont
 \noindent
-L'infart de miocardi deixa una cicatriu fibr\`{o}tica permanent al ventr\'{i}cle esquerre, un
-substrat estructural important de la taquic\`{a}rdia ventricular (TV). L'estratificaci\'{o} de risc
-actual es basa gaireb\'{e} exclusivament en la fracci\'{o} d'ejecci\'{o} del ventr\'{i}cle esquerre (FEVE),
-un marcador global que no captura l'organitzaci\'{o} geom\`{e}trica de la cicatriu. Aquest treball
-dissenya i aplica un pipeline totalment automatitzat per a la caracteritzaci\'{o} geom\`{e}trica
-de la cicatriu postinfart a escala poblacional mitjan\c{c}ant mapes polars estandarditzats,
-desenvolupat en col$\cdot$laboraci\'{o} amb el Centro M\'{e}dico Teknon.
-
-Aplicat a 105 pacients del conjunt de dades DEVELOP-VT (LGE-CMR, ADAS~3D), les
-distribucions de cicatriu es projecten sobre una graella $64{\times}128$ alineada al model
-AHA de 17 segments. L'an\`{a}lisi poblacional identifica els segments inferolateral i inferior
-mitjans com a zona de m\`{a}xima afectaci\'{o}, confirma l'escassa afectaci\'{o} basal, i mostra que
-sis components principals expliquen el 72\% de la vari\`{a}ncia---reflex de l'alta dimensionalitat
-intr\'{i}nseca de l'espai de patrons. Un marc basat en recuperaci\'{o} obt\'{e} un Dice de segments
-mitj\`{a} de 0{,}597 sota validaci\'{o} deixant-un-fora, proporcionant una base reproductible per a
-futurs estudis d'estratificaci\'{o} de risc arritmog\`{e}nic i augmentaci\'{o} de dades.
+L'infart de miocardi deixa una cicatriu fibr\`{o}tica permanent al ventr\'{i}cle esquerre, substrat
+clau de la taquic\`{a}rdia ventricular (TV). L'estratificaci\'{o} de risc es basa en marcadors globals
+com la FEVE, sense capturar la geometria de la cicatriu. Aquest treball presenta un pipeline
+totalment automatitzat per a la caracteritzaci\'{o} pob\-la\-cio\-nal de la cicatriu mitjan\c{c}ant
+mapes polars estandarditzats i ADAS~3D sobre LGE-CMR, desenvolupat amb el Centro M\'{e}dico Teknon.
+Aplicat a 105 pacients del conjunt de dades DEVELOP-VT, la cicatriu es projecta sobre una
+graella en ull de bou (model AHA de 17 segments). L'an\`{a}lisi poblacional identifica els
+segments inferolateral i inferior mitjans com a zona dominant, confirma la preservaci\'{o} basal,
+i revela alta dimensionalitat intr\'{i}nseca (sis components, 72\% de vari\`{a}ncia). Un marc basat
+en recuperaci\'{o} obt\'{e} una superposici\'{o} geom\`{e}trica elevada a nivell de segment sota validaci\'{o}
+deixant-un-fora, proporcionant una base reproductible per a l'estratificaci\'{o} de risc arritmog\`{e}nic i augmentaci\'{o} de dades.
 }
-
-\vspace{1.5em}
 
 \selectlanguage{spanish}
 \section*{\Large \sffamily Resumen}
@@ -85,24 +99,57 @@ futurs estudis d'estratificaci\'{o} de risc arritmog\`{e}nic i augmentaci\'{o} d
 {\fontsize{11}{13.5}\selectfont
 \noindent
 El infarto de miocardio deja una cicatriz fibr\'{o}tica permanente en el ventr\'{i}culo izquierdo,
-un sustrato estructural importante de la taquicardia ventricular (TV). La estratificaci\'{o}n de
-riesgo actual se basa casi exclusivamente en la fracci\'{o}n de eyecci\'{o}n del ventr\'{i}culo izquierdo
-(FEVI), un marcador global que no captura la organizaci\'{o}n geom\'{e}trica de la cicatriz. Este
-trabajo dise\~{n}a y aplica un pipeline totalmente automatizado para la caracterizaci\'{o}n
-geom\'{e}trica de la cicatriz postinfarto a escala poblacional mediante mapas polares
-estandarizados, desarrollado en colaboraci\'{o}n con el Centro M\'{e}dico Teknon.
-
-Aplicado a 105 pacientes del conjunto de datos DEVELOP-VT (LGE-CMR, ADAS~3D), las
-distribuciones de cicatriz se proyectan sobre una cuadr\'{i}cula $64{\times}128$ alineada al
-modelo AHA de 17 segmentos. El an\'{a}lisis poblacional identifica los segmentos inferolateral
-e inferior medios como zona de m\'{a}xima afectaci\'{o}n, confirma el escaso compromiso basal,
-y muestra que seis componentes principales explican el 72\% de la varianza---reflejo de la
-alta dimensionalidad intr\'{i}nseca del espacio de patrones. Un marco basado en recuperaci\'{o}n
-obtiene un Dice de segmentos medio de 0{,}597 bajo validaci\'{o}n dejando-uno-fuera,
-proporcionando una base reproducible para futuros estudios de estratificaci\'{o}n de riesgo
-arritmog\'{e}nico y aumento de datos.
+sustrato clave de la taquicardia ventricular (TV). La estratificaci\'{o}n de riesgo se basa en
+marcadores globales como la FEVI, sin capturar la geometr\'{i}a de la cicatriz. Este trabajo
+presenta un pipeline totalmente automatizado para la caracterizaci\'{o}n poblacional de la
+cicatriz mediante mapas polares y ADAS~3D sobre LGE-CMR, desarrollado con el Centro M\'{e}dico Teknon.
+Aplicado a 105 pacientes del conjunto de datos DEVELOP-VT, la cicatriz se proyecta sobre
+una cuadr\'{i}cula ojo de buey (modelo AHA de 17 segmentos). El an\'{a}lisis poblacional identifica
+los segmentos inferolateral e inferior medios como zona dominante, confirma la preservaci\'{o}n
+basal, y revela alta dimensionalidad intr\'{i}nseca (seis componentes, 72\% de varianza). Un
+marco basado en recuperaci\'{o}n obtiene una superposici\'{o}n geom\'{e}trica elevada a nivel de
+segmento bajo validaci\'{o}n dejando-uno-fuera, proporcionando una base reproducible para
+la estratificaci\'{o}n de riesgo arritmog\'{e}nico y el aumento de datos.
 }
 
+\vspace{1.0em}
 \selectlanguage{english}
+\noindent {\fontsize{11}{13.5}\selectfont \textbf{Keywords:} myocardial infarction, cardiac scar, polar maps, AHA bull's-eye, LGE-CMR, principal component analysis, re-entrant ventricular tachycardia, retrieval-based generation, geometric characterisation, ADAS~3D, DEVELOP-VT, transmurality, coronary territory.}
+
+\cleardoublepage
+
+% ============================================================
+% PREFACE AND AI DISCLOSURE
+% ============================================================
+\selectlanguage{english}
+\section*{\Large \sffamily Preface}
+
+This thesis was completed during the 2025--2026 academic year in partial fulfilment of the
+Bachelor's Degree in Mathematical Engineering in Data Science at Universitat Pompeu
+Fabra. The work was conducted in collaboration with Centro M\'{e}dico Teknon, Barcelona,
+which provided access to the clinical dataset and domain expertise. The report is written
+in English, following common practice in the cardiac imaging field.
+
+\vspace{0.8em}
+\noindent\textbf{Generative AI disclosure.}
+In accordance with UPF guidelines on the use of AI in assessable work, the author
+Joan Company Company discloses that generative AI tools --- Claude Code and NotebookLM
+--- were used during the preparation of this thesis. Their use was limited to language
+editing and proofreading, \LaTeX{} typesetting assistance, and programming support
+(code suggestions, debugging). All AI-generated content was critically reviewed and
+revised by the author before inclusion. The intellectual core of the work --- problem
+formulation, methodological design, experimental decisions, result interpretation, and
+written argumentation --- was produced independently by the author under the guidance
+of Prof.\ Oscar Camara Rey and Dr.\ Juli\`{a} Camps.
+
+\vspace{0.8em}
+\noindent\textbf{Cited sources.}
+Every reference listed in the bibliography has been directly consulted by the author
+and is considered sufficiently reliable and contrasted.
+
+\vspace{0.8em}
+\noindent\textbf{Figures and experimental data.}
+All plots, polar maps, and visualisations in this thesis were produced by the author
+using the DEVELOP-VT dataset and the pipeline developed in this work.
 
 \cleardoublepage

@@ -1,10 +1,11 @@
-\chapter{Retrieval-Based Scar Generation}
+\section{Retrieval-Based Scar Generation}
+\label{sec:retrieval}
 
-The previous chapters established a compact geometric characterization of post-infarction
-scar. This chapter presents a retrieval-based generation (RBG) framework that leverages
+The previous sections established a compact geometric characterization of post-infarction
+scar. This section presents a retrieval-based generation (RBG) framework that leverages
 these descriptors to retrieve plausible scar patterns from the available patient cohort.
 
-\section{Problem Formulation}
+\subsection{Problem Formulation}
 
 Given a target specification---which may be a partial clinical profile, a set of desired scar
 properties, or an existing patient to be matched---the goal is to produce a plausible scar
@@ -23,7 +24,7 @@ geometry of the retrieved patient can be inspected directly. The main limitation
 method cannot synthesize completely new scar shapes outside the observed cohort; this is
 partially addressed through probabilistic retrieval.
 
-\section{Scar Descriptor Space}
+\subsection{Scar Descriptor Space}
 
 The retrieval engine operates in a descriptor space where each patient is represented by a
 fixed-length feature vector $\mathbf{v} \in \mathbb{R}^d$. Six candidate descriptor vectors
@@ -44,7 +45,7 @@ maps, capturing pixel-level spatial variation without manually designed features
 \textbf{full\_ns+pmap} hybrid (30 features) combines the non-segment structured features
 with the polar-map PCA scores.
 
-\section{Similarity Metric and Retrieval Strategy}
+\subsection{Similarity Metric, Retrieval Strategy, and Evaluation Framework}
 
 Three distance metrics were evaluated on the selected descriptor: standard Euclidean,
 Manhattan, and cosine. Manhattan distance on $z$-score normalised features was selected
@@ -73,8 +74,6 @@ probability mass on non-close cases; a smaller $\tau$ would have further reduced
 without meaningful gain in retrieval quality. Every output remains a real patient scar,
 but repeated calls with the same query can return different plausible cases.
 
-\section{Evaluation Framework}
-
 Retrieval quality was assessed using leave-one-out cross-validation across the full cohort.
 For each patient, that patient was temporarily removed from the case base and used as the
 query. Three complementary metrics were computed: scar amount error $|\Delta\text{CZ}|$
@@ -82,5 +81,3 @@ query. Three complementary metrics were computed: scar amount error $|\Delta\tex
 Dice (binarised overlap over the AHA 17-segment model), and polar-map Dice (pixel-level
 overlap on the $64 \times 128$ polar grid). All six candidate vectors were evaluated using this
 protocol with the same distance metric.
-
-% Figure removed per revision.

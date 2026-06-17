@@ -1,30 +1,35 @@
-\chapter{Statistical Characterisation of Scar}
+\section{Statistical Framework for Scar Characterisation}
+\label{sec:statistical}
 
-\section{AHA-17 Segmentation, Territory Assignment, and Normality Diagnostics}
+This section describes the statistical methods used to characterise scar geometry at the
+population level. The analyses proceed in three stages: (i) segment- and territory-level scar
+burden quantification using the AHA 17-segment model; (ii) dimensionality reduction and
+spatial correlation analysis; and (iii) transmurality and fragment-level geometric
+characterisation. All methods assume non-parametric distributions, as motivated by the
+normality diagnostics reported in Section~\ref{sec:normality}.
+
+\subsection{AHA-17 Segmentation, Territory Assignment, and Normality Diagnostics}
+\label{sec:normality}
 
 Scar burden per segment was defined as the fraction of polar-map bins classified as
-scar-positive. Territory burden was defined analogously over LAD (segments 1, 2, 7, 8, 13,
-14, 17; 4\,448 bins, 54.3\%), RCA (segments 3, 4, 9, 10, 15; 1\,888 bins, 23.0\%), and LCX
-(segments 5, 6, 11, 12, 16; 1\,856 bins, 22.7\%). A territory was considered involved when
-at least 2\% of its polar bins were scar-positive. This threshold was selected via sensitivity
-analysis across candidate values (1\%, 2\%, 3\%, 5\%, 10\%); the full sensitivity curve is
-shown in Figure~\ref{fig:app_territory_threshold} in the Appendix. At 1\% the multi-territory
-fraction exceeded 60\%, implausibly high for a focal-infarct cohort; thresholds above 3\%
-progressively assigned no-scar classification to patients with minor genuine involvement.
-The 2\% value represents the earliest stable point at which single-territory classification
-reaches its plateau and the no-scar fraction remains low (${\sim}10\%$).
+scar-positive within that segment. Territory burden was defined analogously over LAD
+(segments 1, 2, 7, 8, 13, 14, 17; 4\,448 bins, 54.3\%), RCA (segments 3, 4, 9, 10, 15;
+1\,888 bins, 23.0\%), and LCX (segments 5, 6, 11, 12, 16; 1\,856 bins, 22.7\%). A territory
+was considered involved when at least 2\% of its polar bins were scar-positive. This
+threshold was selected via sensitivity analysis across candidate values (1\%, 2\%, 3\%, 5\%,
+10\%); the choice and sensitivity curve are discussed in the Results
+(Section~\ref{sec:terrburden}).
 
 Prior to selecting inferential methods, the distributional properties of all analysis variables
 were assessed using quantile--quantile plots and chi-squared goodness-of-fit plots. Of all
 variables examined, only age satisfied the normality criterion; all scar-related variables
 showed strong zero-inflation and right skewness. All subsequent analyses therefore relied on
 non-parametric methods and resampling-based confidence intervals.
-
 Table~\ref{tab:aha17summary} reports prevalence and conditional extent for all 17 AHA segments.
 
 \begin{table}[htbp]
     \centering
-    \caption{AHA 17-segment scar burden summary ($n=105$). Segments ordered by ring (basal, mid, apical, apex). Extent = fraction of polar-map bins classified as scar-positive.}
+    \caption{AHA 17-segment scar burden summary ($n=105$). Segments ordered by ring (basal, mid, apical, apex).}
     \label{tab:aha17summary}
     \small
     \begin{tabular}{rllrrrr}
@@ -55,28 +60,31 @@ Table~\ref{tab:aha17summary} reports prevalence and conditional extent for all 1
     \end{tabular}
 \end{table}
 
-\section{Within-Patient Spatial Tests and Bootstrap Confidence Intervals}
+\subsection{Within-Patient Spatial Tests and Bootstrap Confidence Intervals}
 
 Whether scar burden varies systematically across AHA segments within the same patient
-was tested using the Friedman test, a non-parametric analogue of one-way
-repeated-measures ANOVA. Each of the 105 patients contributed a vector of 17 paired
-segment-burden values. Pairwise post-hoc comparisons were conducted using Wilcoxon
-signed-rank tests with Bonferroni correction for the 136 pairwise comparisons.
+was tested using the Friedman test, a non-parametric analogue of one-way repeated-measures
+ANOVA (a test that compares distributions across multiple related groups---here, the 17 AHA
+segments measured within the same patients). Each of the 105 patients contributed a vector
+of 17 paired segment-burden values. Pairwise post-hoc comparisons were conducted using
+Wilcoxon signed-rank tests with Bonferroni correction for the 136 pairwise comparisons.
 
-Population-level confidence intervals for the mean scar burden in each AHA segment were
-estimated via patient-level bootstrap resampling. In each of 2\,000 iterations, 105 patients
-were sampled with replacement---preserving each patient's full 17-segment vector---and the
-mean burden per segment was recomputed. The 2.5th and 97.5th percentiles defined the
-95\% confidence interval. The primary purpose of this procedure is not to establish
-statistical significance of individual segment means, but to quantify the uncertainty around
-population estimates for the atlas and archetype maps. Because the underlying distributions
-are zero-inflated and heavily skewed, symmetric normal-theory intervals would systematically
-misrepresent the sampling distribution: they produce symmetric error bars around means
-that are, in reality, bounded below by zero and pulled by long positive tails. The bootstrap
-intervals are asymmetric by construction and therefore faithfully reflect the shape of the
-sampling distribution, providing honest uncertainty bounds for the population scar atlas.
+Population-level confidence intervals for the mean scar burden in each AHA segment
+(defined as the mean fraction of polar-map bins classified as scar-positive within that segment
+across patients) were estimated via patient-level bootstrap resampling. In each of 2\,000
+iterations, 105 patients were sampled with replacement---preserving each patient's full
+17-segment vector---and the mean burden per segment was recomputed. The 2.5th and
+97.5th percentiles defined the 95\% confidence interval. The primary purpose of this
+procedure is not to establish statistical significance of individual segment means, but to
+quantify the uncertainty around population estimates for the atlas and archetype maps.
+Because the underlying distributions are zero-inflated and heavily skewed, symmetric
+normal-theory intervals would systematically misrepresent the sampling distribution: they
+produce symmetric error bars around means that are, in reality, bounded below by zero and
+pulled by long positive tails. The bootstrap intervals are asymmetric by construction and
+therefore faithfully reflect the shape of the sampling distribution, providing honest
+uncertainty bounds for the population scar atlas.
 
-\section{Age and Sex Associations}
+\subsection{Age and Sex Associations}
 
 Association between age and segment-level scar burden was assessed using Spearman
 rank correlation in the 48 patients with available age labels (mean age $63.0 \pm 11.5$
@@ -84,12 +92,12 @@ years). Bonferroni correction was applied across the 17 segments, yielding an ad
 significance threshold of $\alpha = 0.05/17 = 0.0029$. Sex-stratified analysis was limited by
 severe label imbalance (38 male, 10 female among patients with sex information).
 
-\section{Dimensionality Reduction and Correlation Structure}
+\subsection{Dimensionality Reduction and Correlation Structure}
 
 PCA was applied to the 17-dimensional scar-burden vectors after $z$-score standardisation
 (zero mean, unit variance per segment). The aim was to identify the dominant spatial modes
 of scar variability and assess the intrinsic dimensionality of the scar-pattern space.
-Component loadings were mapped back onto the AHA bullseye representation to visualise
+Component loadings were mapped back onto the AHA bull's-eye representation to visualise
 the spatial scar phenotype associated with each PC.
 
 Two correlation analyses complement the PCA. First, the inter-segment correlation matrix
@@ -98,18 +106,18 @@ burdens across patients. Second, the territory burden correlation matrix
 computes the $3 \times 3$ Spearman correlation matrix between LAD, RCA, and LCX burden.
 This determines whether territory burdens are effectively independent dimensions---weak
 correlations would support treating territories as orthogonal axes of scar phenotype---or
-whether multi-territory involvement is the norm, implying that a single ``core zone burden''
-scalar captures most of the territory-level information.
+whether multi-territory involvement is the norm.
 
-\section{Population Variability and Archetype Maps}
+\subsection{Population Variability and Archetype Maps}
 
 Population variability maps were computed across the polar maps. Archetype maps were
 constructed by grouping patients according to their dominant coronary territory and
 computing the mean polar map within each group. Ring-level and territory-level coverage
 summaries, bootstrap confidence intervals, and variability maps were recomputed using the
-area-based and coverage projections.
+area-based and coverage projections. Population-level archetype maps stratified by dominant
+territory are provided in Appendix~\ref{app:archetypes}.
 
-\section{Transmurality: Continuous Vertex-Depth Computation}
+\subsection{Transmurality: Continuous Vertex-Depth Computation}
 
 The analyses above characterise scar extent on the LV surface but do not capture how
 deeply scar penetrates through the ventricular wall. Transmurality---the fraction of wall
@@ -119,16 +127,17 @@ electrophysiological consequences than subendocardial scar.
 An initial approach used the nine layer-specific scar meshes exported by ADAS 3D
 (Layer\_10 through Layer\_90), projecting each layer mesh onto the $64 \times 128$ polar
 grid and computing onset and elongation as the shallowest and span of scar-containing
-layers. However, the discrete layer resolution proved too coarse: the resulting transmurality
+layers. However, the discrete layer resolution proved too limited: the resulting transmurality
 values were nearly uniform across the cohort, with insufficient variation to differentiate scar
 profiles meaningfully.
 
 To overcome this limitation, a continuous vertex-depth approach was developed. For each
 patient, the endocardial and epicardial surfaces of the LV wall are loaded, and a cKDTree
-spatial index is built for each. Every vertex of the core-zone scar mesh is then located in 3D
-space, and its Euclidean distances to the nearest point on the endocardial surface ($d_\text{endo}$)
-and the epicardial surface ($d_\text{epi}$) are computed. The fractional wall depth of that vertex
-is defined as:
+spatial index (a k-d tree data structure enabling efficient nearest-neighbour queries in
+three-dimensional space) is built for each surface. Every vertex of the core-zone scar mesh
+is then located in 3D space, and its Euclidean distances to the nearest point on the
+endocardial surface ($d_\text{endo}$) and the epicardial surface ($d_\text{epi}$) are
+computed. The fractional wall depth of that vertex is defined as:
 \begin{equation}
     \text{depth\_frac} = \frac{d_\text{endo}}{d_\text{endo} + d_\text{epi}}.
     \label{eq:depthfrac}
@@ -150,7 +159,7 @@ Appendix~\ref{app:transmuralagg}. This decomposition distinguishes three clinica
 relevant scar profiles: thin subendocardial (low onset, low transmurality), transmural (low
 onset, high transmurality), and midwall (high onset, variable transmurality).
 
-\section{Fragment-Level Characterisation}
+\subsection{Fragment-Level Characterisation}
 \label{sec:fragments}
 
 Connected-component labelling was applied to each patient's 3D core-zone mesh to identify
@@ -161,27 +170,25 @@ mean outermost depth, and mean transmurality are computed from the continuous
 vertex-depth grids over the fragment's polar footprint. Fragment size (number of polar bins),
 ring position, and territory assignment complete the per-fragment descriptor set.
 
-\section{Within-Patient Consistency Between Extent and Transmurality}
+\subsection{Geometric Shape and Transmurality Gradient Descriptors}
 
 For each patient, the 17-element segment-level extent vector (fraction of bins that are
 scar-positive per AHA segment) is correlated with the 17-element per-segment mean
 transmurality vector (mean transmurality over scar-positive bins in each segment) using
 Spearman rank correlation. Values near zero indicate that extent and transmurality carry
 independent information about the scar phenotype---a patient may have extensive but
-shallow scar, or focal but deeply penetrating scar---and that both descriptors are needed.
+shallow scar, or focal but deeply penetrating scar.
 Values near $+1$ indicate redundancy, where one measure largely substitutes for the other.
-
-\section{Transmurality Gradient Within Fragments}
 
 For each 2D polar-map fragment with at least 20 bins, each bin is classified as \emph{core}
 (three or more scar-positive 4-connected neighbours) or \emph{edge} (fewer than three).
 The fragment gradient is then defined as the difference between the mean transmurality of
 core bins and the mean transmurality of edge bins. A positive population-mean gradient
-indicates that scar has a dense-core / thin-edge transmural structure, which is relevant for
+indicates that scar has a dense-core / thin-edge transmural structure, relevant for
 arrhythmogenesis because the gradient zone---where transmurality transitions from thick to
-thin---is precisely where conduction slows and re-entry circuits may form.
-
-\section{Geometric Shape Descriptors}
+thin---is consistent with the zone where conduction heterogeneity is maximal, noting that
+the border zone surrounding the core---not analysed here---is the primary substrate for slow
+conduction channels.
 
 Four additional per-patient descriptors capture aspects of scar geometry not encoded in
 segment-level or transmurality analyses. \textbf{Circumferential extent} is the fraction of
@@ -190,9 +197,9 @@ basal), quantifying tangential spread around the ventricular wall. \textbf{Scar 
 is $4\pi \cdot \text{area}/\text{perimeter}^2$ of the largest 2D connected component (1 for
 a perfect circle, lower for elongated or irregular shapes), supplemented by aspect ratio and
 fragment count; these metrics are independent of total scar burden and capture whether scar
-forms a single compact lesion or a fragmented pattern. \textbf{Endocardial--epicardial
-dominance} classifies each scar-positive bin by onset depth: endocardial ($\leq 30\%$),
-midwall (30--60\%), or epicardial ($> 60\%$ of wall thickness), distinguishing ischaemic
-from non-ischaemic onset patterns. \textbf{Apex-to-base gradient} fits a first-order
-polynomial to row-level mean burden ($s \in [0,1]$, apex to base), with Spearman
-correlation as a non-parametric summary of longitudinal scar organisation.
+forms a single compact lesion or a dispersed, multi-component distribution.
+\textbf{Endocardial--epicardial dominance} classifies each scar-positive bin by onset depth:
+endocardial ($\leq 30\%$), midwall (30--60\%), or epicardial ($> 60\%$ of wall thickness),
+distinguishing ischaemic from non-ischaemic onset patterns. \textbf{Apex-to-base gradient}
+fits a first-order polynomial to row-level mean burden ($s \in [0,1]$, apex to base), with
+Spearman correlation as a non-parametric summary of longitudinal scar organisation.

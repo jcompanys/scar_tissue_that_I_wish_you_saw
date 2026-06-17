@@ -1,12 +1,14 @@
-\chapter{Data and Cohort Description}
+\section{Data and Cohort Description}
+\label{sec:data}
 
-This chapter describes the clinical and imaging-derived dataset used throughout this project,
+This section describes the clinical and imaging-derived dataset used throughout this work,
 the selection criteria applied to obtain the analysis cohort, and the data structures available
-for each patient case. All cases originate from the DEVELOP registry, a prospective
-collection of post-myocardial infarction patients studied at Centro M\'{e}dico Teknon (Barcelona,
-Spain) in the context of ventricular tachycardia (VT) risk assessment.
+for each patient case. All cases originate from the DEVELOP-VT registry, a multicentre
+prospective collection of post-myocardial infarction patients undergoing ventricular
+tachycardia (VT) risk assessment. The primary acquisition and processing centre is
+Centro M\'{e}dico Teknon (Barcelona, Spain).
 
-\section{The DEVELOP Registry and Clinical Context}
+\subsection{The DEVELOP-VT Registry and Clinical Context}
 
 The source data consist of anonymised late gadolinium enhancement cardiac magnetic
 resonance (LGE-CMR) studies from the DEVELOP registry. The original DICOM acquisitions
@@ -24,7 +26,7 @@ dense scar (core zone, CZ), heterogeneous peri-infarct tissue (border zone, BZ),
 healthy myocardium. The resulting surfaces are exported as VTK meshes, which constitute
 the primary geometric input to the analyses in this work.
 
-\section{Data Acquisition and Processing at Teknon}
+\subsection{Data Acquisition and Processing at Teknon}
 
 Data extraction was performed on-site at Centro M\'{e}dico Teknon's computer system.
 Building on prior familiarity with ADAS 3D acquired before the collaboration, the
@@ -47,7 +49,7 @@ DE-MRI variants in order, locates anatomical meshes (Endo Layer, Epi Layer, Left
 Ventricle, Myocardium), and searches the \texttt{LV/TISSUE/} subdirectory using ordered
 glob patterns for core zone, border zone, healthy, scar, layer, and corridor files.
 
-\section{Cohort Selection and Exclusion Criteria}
+\subsection{Cohort Selection and Exclusion Criteria}
 
 A case was considered valid only if it contained both a valid LV reconstruction directory and
 a core zone mesh found inside \texttt{LV/TISSUE/}. An automated scan of the dataset was
@@ -84,10 +86,12 @@ than to train a predictive model.
     \end{tabular}
 \end{table}
 
-\section{Available Data per Patient}
+\subsection{Available Data per Patient}
 
 Each valid case provides: (i) LV shell meshes representing the endocardial and epicardial
-boundaries; (ii) tissue classification surfaces from ADAS 3D, primarily the core zone, with
+boundaries derived from the late gadolinium enhancement cardiac magnetic resonance
+(LGE-CMR) study; (ii) LGE-CMR-derived tissue classification surfaces from ADAS 3D,
+primarily the core zone, with
 additional border zone, healthy, and corridor meshes when available; (iii) transmural layer
 meshes (Layer\_10 through Layer\_90), representing concentric wall-depth levels at 10\%
 increments from the endocardial surface; and (iv) clinical metadata from the DEVELOP
@@ -103,7 +107,7 @@ infarction. Age was available for a subset of 48 patients (mean $63.0 \pm 11.5$ 
 degree of missingness makes supervised clinical outcome modelling infeasible at the current
 scale and motivates the use of the full cohort without clinical sub-grouping.
 
-\section{Quality Control}
+\subsection{Quality Control}
 
 An automated three-dimensional rendering pipeline was implemented using PyVista. For
 each case, the LV shell is displayed as a semi-transparent surface with the core zone

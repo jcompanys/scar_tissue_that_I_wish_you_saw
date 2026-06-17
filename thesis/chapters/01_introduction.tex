@@ -5,7 +5,7 @@
 \addcontentsline{toc}{section}{Clinical motivation: post-infarction scar as an arrhythmogenic substrate}
 
 Myocardial infarction (MI) produces permanent structural remodeling of the left ventricular
-myocardium. Following the acute ischemic event, prolonged oxygen deprivation causes
+myocardium. Following the acute ischemic event, prolonged oxygen shortage causes
 irreversible cardiomyocyte necrosis. Because adult myocardial tissue has limited
 regenerative capacity, the damaged region is progressively replaced by fibrotic scar.
 Although this reparative process preserves the mechanical integrity of the ventricular wall, it
@@ -15,7 +15,9 @@ promote ventricular arrhythmias.
 In chronic post-MI patients, ventricular tachycardia (VT) is commonly sustained by re-entrant
 circuits associated with the infarct scar. Dense fibrotic tissue, usually referred to as the core
 zone, is largely unexcitable. In contrast, the surrounding peri-infarct or border zone contains
-a mixture of surviving myocytes, collagen deposition, and altered cell-to-cell coupling. This
+a mixture of surviving myocytes, collagen deposition (accumulation of fibrous connective
+tissue between cells), and altered cell-to-cell coupling (disrupted electrical connections
+between cardiomyocytes due to gap-junction remodelling). This
 heterogeneous tissue organization can generate slow conduction, conduction block, and
 spatial dispersion of refractoriness, which together create the conditions required for
 re-entry.
@@ -30,7 +32,8 @@ structure embedded within the left ventricle.
 
 Despite this mechanistic understanding, clinical risk stratification after MI remains limited.
 Current strategies rely heavily on global functional markers, particularly left ventricular
-ejection fraction (LVEF). Although reduced LVEF is associated with increased arrhythmic
+ejection fraction (LVEF), the fraction of blood pumped out of the left ventricle with each
+heartbeat. Although reduced LVEF is associated with increased arrhythmic
 risk, it does not directly describe the substrate responsible for re-entry. Many patients with
 severely reduced LVEF never develop malignant ventricular arrhythmias, while sudden
 cardiac death may also occur in patients with moderately reduced or preserved LVEF. These
@@ -40,7 +43,10 @@ particular attention to its geometry.
 \begin{figure}[htbp]
     \centering
     \includegraphics[width=0.48\textwidth]{figures/fig1_representative_lv}
-    \caption{Representative 3D LV reconstruction with core-zone scar (red). DEVELOP-VT cohort.}
+    \caption{Representative three-dimensional (3D) left ventricular (LV) reconstruction with
+    core-zone scar (red). From the DEVELOP-VT cohort (prospective registry of post-myocardial
+    infarction patients undergoing ventricular tachycardia risk assessment at Centro
+    M\'{e}dico Teknon, Barcelona).}
     \label{fig:intro1}
 \end{figure}
 
@@ -99,12 +105,18 @@ extension, apex-to-base distribution, and transmurality.
 \addcontentsline{toc}{section}{Data curation and the need for scalable pipelines}
 
 Population-level scar geometry analysis requires patient-specific data to be collected,
-curated, and transformed into a consistent computational format. This thesis was developed
-in collaboration with Centro M\'{e}dico Teknon using the DEVELOP-VT dataset; the data
-curation process and its practical challenges are described in Chapter~2. The goal is to
-build a reproducible Python pipeline that transforms patient-specific three-dimensional scar
-segmentations into standardized polar-map representations suitable for cohort-level
-geometric analysis.
+organised, curated, and transformed into a consistent computational format. This thesis
+was developed in collaboration with Centro M\'{e}dico Teknon using data from the
+DEVELOP-VT dataset. A practical part of the project involved working directly with the
+clinical and image-processing workflow at Teknon. This included reviewing available cases,
+assisting with the segmentation of new cases, centralising the dataset, and extracting the
+necessary files for each patient. Because ADAS~3D exports are case-specific and not
+designed for large-scale batch extraction, this required substantial manual and
+semi-automatic organisation before any population-level analysis could be performed.
+More broadly, scalable computational cardiology increasingly requires automated pipelines;
+the goal of this thesis is therefore to build a reproducible Python pipeline that transforms
+patient-specific three-dimensional scar segmentations into standardised polar-map
+representations suitable for cohort-level geometric analysis.
 
 \section*{From scalar scar biomarkers to population-level geometry}
 \addcontentsline{toc}{section}{From scalar scar biomarkers to population-level geometry}
@@ -118,9 +130,10 @@ location, shape, spatial extension, transmurality, and relationship with anatomi
 Patient-specific simulation studies incorporate scar geometry but do not describe how it
 varies across a population. Machine learning and generative imaging methods such as
 CLAIM \cite{ramzan2025} and LGESynthNet \cite{jacob2024} have been proposed for scar
-synthesis, but they operate at the two-dimensional image and segmentation-mask level, targeting image
-augmentation and segmentation performance rather than three-dimensional geometric
-characterization. In contrast, this thesis analyzes the scar itself as a geometric object defined
+synthesis; while CLAIM uses a three-dimensional template to guide anatomically plausible scar
+mask generation, both methods operate at the two-dimensional image and segmentation-mask level,
+targeting image augmentation and segmentation performance rather than explicit population-level
+geometric characterisation of scar shape. In contrast, this thesis analyzes the scar itself as a geometric object defined
 on three-dimensional meshes, emphasizing shape properties---such as extent and
 transmurality---over pixel-level position in imaging slices. Although the present work
 prioritizes geometry, scar position within the ventricle remains important because the
@@ -157,38 +170,28 @@ clinically meaningful structure?
 
 The main objective of this thesis is to develop and apply a reproducible computational
 pipeline for the geometric characterisation of post-infarction scar across a patient cohort.
-The specific objectives are:
+Specifically, the work aims to curate and organise the DEVELOP-VT dataset, including
+patient-specific ADAS~3D outputs and VTK mesh files, and to design and implement a
+Python pipeline for processing three-dimensional scar segmentations obtained from
+LGE-CMR data. It further aims to project scar distributions onto standardised
+two-dimensional left ventricular polar maps aligned with the AHA 17-segment model,
+enabling cross-patient comparison of scar location, shape, and transmurality in a common
+anatomical reference frame. The pipeline is applied to the DEVELOP-VT cohort, comprising
+168 post-MI patients of whom 105 presented usable core-zone segmentations, to perform
+population-level analysis of scar geometry, assess how scar location conditions apparent
+scar shape and spatial organisation, and determine the intrinsic dimensionality of the
+scar-pattern space. Finally, the work proposes and evaluates a retrieval-based generative
+framework that exploits the standardised polar-map representation to produce spatially
+coherent synthetic scar cases from existing population patterns.
 
-\begin{enumerate}
-    \item Curate and organise the DEVELOP-VT data, including patient-specific ADAS 3D
-          outputs and VTK mesh files.
-    \item Design and implement a Python pipeline for processing post-infarction scar
-          segmentations obtained from LGE-CMR data.
-    \item Project three-dimensional scar distributions onto standardised two-dimensional left
-          ventricular polar maps aligned with the AHA 17-segment model.
-    \item Enable cross-patient comparison of scar geometry by representing scar location,
-          shape, and transmurality in a common anatomical reference frame.
-    \item Apply the pipeline to the DEVELOP-VT dataset, comprising 168 post-MI patients,
-          of which 105 presented usable core zone segmentations.
-    \item Perform population-level visualisation and analysis of scar geometry, assessing how
-          scar location conditions apparent scar shape and spatial organisation, and
-          determining the intrinsic dimensionality of the scar-pattern space.
-    \item Propose and evaluate a retrieval-based generative framework that builds on the
-          standardised polar-map representation to produce spatially coherent synthetic scar
-          cases from existing population patterns.
-\end{enumerate}
+\section*{Main Contributions}
+\addcontentsline{toc}{section}{Main Contributions}
 
-\section*{Main contributions}
-\addcontentsline{toc}{section}{Main contributions}
-
-\begin{itemize}
-    \item Curated and organised the DEVELOP-VT clinical dataset, centralising records
-          distributed across five acquisition years.
-    \item Assisted with the segmentation of approximately 40 additional cases at Centro
-          M\'{e}dico Teknon.
-    \item Implemented a fully automated, reproducible polar-map pipeline for cohort-scale scar
-          projection.
-    \item Performed population-level geometric characterisation of post-infarction scar anatomy.
-    \item Proposed a retrieval-based generation baseline preserving realistic scar patterns,
-          suitable for future simulation or data-augmentation studies.
-\end{itemize}
+The DEVELOP-VT clinical dataset was curated and organised, centralising records
+distributed across five acquisition years. Approximately 40 additional cases were
+segmented at Centro M\'{e}dico Teknon as part of this work, expanding the usable cohort.
+A fully automated, reproducible polar-map pipeline was implemented for cohort-scale scar
+projection, enabling population-level geometric characterisation of post-infarction scar
+anatomy. A retrieval-based generation baseline was proposed and evaluated, preserving
+realistic scar patterns and providing a foundation for future simulation or data-augmentation
+studies.

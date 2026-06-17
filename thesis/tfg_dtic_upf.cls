@@ -211,42 +211,34 @@
   \let\footnoterule\relax
   \let \footnote \thanks
   \null\vfil
-%  \vskip 60\p@
   \begin{flushleft}%
-  \begin{center}   {\LARGE \sffamily \@title \par}% 
-  \end{center} 
-    \vspace*{0.8cm}
+  \begin{center}   {\LARGE \sffamily \@title \par}%
+  \end{center}
+    \vspace*{2cm}
     \begin{center}   {\Large \sffamily \@subtitle \par}
      \end{center}
-    \vskip 0.6cm%
-    \begin{center}
-      \includegraphics[width=0.62\textwidth]{shells_no_lines.png}
-    \end{center}
-    \vskip 0.6cm%
-   \begin{center} {\Large Bachelor's Thesis by} \par \end{center}
-    {\Large
-     \lineskip .75em}%
-      \begin{center} 
-      \begin{tabular}[t]{c}%
-       {\LARGE  \@author}
-      \end{tabular}\par%
-   \end{center} 
-      %\rule{\linewidth}{1mm} \par
+    \vskip 4cm%
+   \begin{center} {\large \textsc{Bachelor's Thesis by}} \par \end{center}
+    \vskip 0.5cm%
+      \begin{center}
+       {\LARGE \@author}\par
+      \end{center}
       \vskip 1cm%
-   % {\normalsize Director}\par
-     \begin{center} 
+     \begin{center}
     {\large \@supervisor}\par
-      \end{center} 
-  %  {\large \@department} \par
-  \begin{center} 
+      \end{center}
+  \vskip 0.4cm%
+  \begin{center}
   {\large \@grau} \par
   \end{center}
- \begin{center} 
+  \vskip 0.4cm%
+ \begin{center}
 	{\large \@thyear} \par
 \end{center}
     \vspace{3cm}
-   \centering  
-    \includegraphics[scale=0.4]{logo_upf.png}
+    \noindent\includegraphics[height=2cm]{logo_upf.png}%
+    \hfill%
+    \includegraphics[height=2cm]{figures/logo_teknon.png}\par
    \end{flushleft}\par
 %  \@thanks
 % \vfil\null

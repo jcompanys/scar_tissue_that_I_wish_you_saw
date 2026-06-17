@@ -1,17 +1,19 @@
-\chapter{Polar Map Construction}
+\section{Polar Map Construction}
+\label{sec:polarmaps}
 
 To enable population-level statistical analysis of post-infarction scar geometry, individual
 three-dimensional scar surfaces must be projected onto a common two-dimensional
-representation that preserves anatomical meaning across patients. This chapter describes
+representation that preserves anatomical meaning across patients. This section describes
 the pipeline that constructs this projection.
 
-\section{Rationale: Why Flatten to 2D}
+\subsection{Rationale: Why Flatten to 2D}
 
 A statistical shape model of scar requires point-to-point correspondence across patients:
 every patient's scar must be represented in a common coordinate frame so that
 corresponding locations can be compared. An initial approach would be to establish this
 correspondence directly on the three-dimensional LV surface, for instance by registering all
-LV meshes to a common template and mapping scar labels through the deformation field \cite{doste2026}.
+LV meshes to a common template and mapping scar labels through the deformation
+field \cite{doste2026}.
 However, exploratory analysis of the cohort revealed that post-infarction scar is extremely
 variable in position, extent, and shape. Scar can appear in any coronary territory, at any
 longitudinal level, and with transmural extent ranging from thin subendocardial ribbons to
@@ -29,16 +31,49 @@ three-dimensional LV surface onto a two-dimensional disk using cylindrical coord
 anchored to the long axis and the septal reference, every patient's scar is expressed in the
 same $(s, \theta)$ frame regardless of ventricular size, shape, or orientation. This
 representation naturally provides inter-patient correspondence and reduces the problem to a
-two-dimensional image amenable to standard statistical analysis.
+two-dimensional image suited to standard statistical analysis.
 
 \begin{figure}[htbp]
     \centering
     \includegraphics[width=0.75\textwidth]{figures/polar_map_steps}
-    \caption{Polar map projection pipeline: 3D mesh input, long-axis detection and apex-down re-orientation, longitudinal coordinate $s$, circumferential angle $\theta$, and final bull's-eye map with AHA 17-segment overlay.}
+    \caption{Polar map projection pipeline converting a 3D left ventricular (LV) mesh to a
+    standardised 2D bull's-eye representation aligned with the American Heart Association
+    (AHA) 17-segment model. From left to right: (1) 3D view with right ventricle (RV) on the
+    left and LV on the right in anatomical orientation (apex inverted); (2) apex-to-base view
+    after long-axis detection and apex-down re-orientation (red dot: detected apex);
+    (3) circumferential angle $\theta$ coordinate coloured on the LV surface;
+    (4) longitudinal coordinate $s$ ($s=0$ at apex, $s=1$ at base) coloured on the LV surface;
+    (5) final bull's-eye map with AHA 17-segment overlay.}
     \label{fig:polarmaps2}
 \end{figure}
 
-\section{Apex Detection via Multi-Candidate Convex-Hull Search}
+\subsection{The Bull's-Eye Polar Map and the AHA 17-Segment Model}
+\label{sec:aha17model}
+
+The bull's-eye (or polar map) is a standard two-dimensional representation of the left
+ventricular wall in which the apex appears at the centre of a disk and the base at the
+periphery. The radial coordinate encodes apex-to-base position ($s = 0$ at apex, $s = 1$
+at base) and the angular coordinate encodes circumferential location around the
+ventricular wall ($\theta$).
+
+The American Heart Association (AHA) 17-segment model \cite{cerqueira2002} divides the
+LV into anatomically standardised regions defined by four concentric rings:
+\begin{itemize}
+    \item \textbf{Apex cap} (segment 17): the apical tip, innermost disk region.
+    \item \textbf{Apical ring} (segments 13--16): four $90^{\circ}$ sectors at the apical level.
+    \item \textbf{Mid-cavity ring} (segments 7--12): six $60^{\circ}$ sectors at the
+          mid-ventricular level.
+    \item \textbf{Basal ring} (segments 1--6): six $60^{\circ}$ sectors at the basal level.
+\end{itemize}
+
+Segments are labelled by their anatomical location: anterior, anteroseptal, inferoseptal,
+inferior, inferolateral, and anterolateral (going clockwise from the septal reference).
+This standardised division enables scar location, extent, and transmurality to be compared
+across patients in an anatomically meaningful common frame, and forms the basis for all
+territory assignments (LAD: segments 1, 2, 7, 8, 13, 14, 17; RCA: 3, 4, 9, 10, 15;
+LCX: 5, 6, 11, 12, 16).
+
+\subsection{Apex Detection via Multi-Candidate Convex-Hull Search}
 
 The apex is the geometric anchor of the entire polar map pipeline. Rather than relying on a
 single principal component direction, the algorithm evaluates multiple candidate search
@@ -61,14 +96,15 @@ eccentricity is then $e = |d_\text{apex}| / H$. The candidate direction yielding
 eccentricity is selected.
 
 LV PC1 captures the apex-to-base elongation in the majority of cases. However, pathological
-ventricular remodelling or mesh truncation can make the LV point cloud nearly isotropic,
-causing PC1 to align with circumferential rather than longitudinal variance. RV PC1 is
+ventricular remodelling or mesh truncation can make the LV point cloud nearly isotropic
+(having similar spread in all directions, with no dominant elongation axis), causing PC1 to
+align with circumferential rather than longitudinal variance. RV PC1 is
 included because the RV's strongly elongated crescent shape reliably recovers the
 base-to-apex direction even when the LV shape is unfavourable. LV PC2 provides an
 additional fallback for the rarer cases where the true long axis is captured by the second
 rather than the first principal direction.
 
-\section{Long-Axis and Septal Reference}
+\subsection{Long-Axis and Septal Reference}
 
 Once the apex has been detected, the long axis is constructed as the unit vector pointing
 from the detected apex toward the LV centroid. This construction guarantees that the axis
@@ -80,11 +116,13 @@ A circumferential zero-angle must be established so that the anterior, septal, i
 lateral walls map to consistent angular positions across patients. The septal direction is
 computed from the spatial relationship between the LV and RV centroids, both restricted to a
 basal band spanning 50 to 90 percent of the apex-to-base distance to avoid bias from the
-apically-extending RV free wall. The raw direction vector from the LV centroid to the RV
+apically-extending RV free wall (the right ventricular wall extends downward toward the apex
+alongside the LV, which would pull the RV centroid away from its true basal position if the
+full mesh were used). The raw direction vector from the LV centroid to the RV
 centroid is projected onto the plane perpendicular to the long axis and normalised to a unit
 vector.
 
-\section{Polar Coordinate Computation}
+\subsection{Polar Coordinate Computation}
 
 Every point on the LV surface is mapped to two cylindrical polar coordinates. The
 longitudinal coordinate $s$ is obtained by projecting the displacement from the apex onto the
@@ -102,7 +140,7 @@ the apical cap ($s \in [0, 0.25]$, segment 17), the apical ring ($s \in [0.25, 0
 $90^{\circ}$ sectors), the mid-cavity ring ($s \in [0.50, 0.75]$, six $60^{\circ}$ sectors), and
 the basal ring ($s \in [0.75, 1.00]$, six $60^{\circ}$ sectors).
 
-\section{Scar Projection Methods}
+\subsection{Scar Projection Methods}
 
 Three complementary methods are used to project scar onto the polar grid. The
 \textbf{vertex-based method} assigns a binary label to each polar bin: a bin is marked as
@@ -119,9 +157,11 @@ specifically to verify that the apical region --- which is compressed toward the
 bull's-eye disk --- does not introduce a systematic underestimation artefact analogous to
 the Antarctic distortion in cylindrical cartographic projections, where polar regions appear
 disproportionately large. Consistency between all three approaches was verified to ensure
-that findings are not artefacts of the binary representation.
+that findings are not artefacts of the binary representation (the vertex-based method assigns
+each bin a value of 0 or 1 (no scar / scar present), which could in principle overstate scar
+extent in sparsely-covered bins or miss graded scar burden captured by area-based methods).
 
-\section{Polar Map Verification}
+\subsection{Polar Map Verification}
 
 To provide an independent qualitative assessment of anatomical plausibility, the polar maps
 produced by the proposed pipeline were compared against those generated by the
@@ -133,8 +173,10 @@ span that is independent of the comparison's primary findings.
 
 One methodological difference concerns scar detection: the proposed method projects Core
 Surface vertices directly onto the polar grid, whereas the reference method proximity-labels
-endocardial surface points within a tolerance derived from the Core Surface mesh spacing,
-then maps those labelled points using the 2D flat coordinates. A further distinction concerns
+endocardial surface points within a search radius (tolerance) derived from the mean edge
+length of the Core Surface mesh, so that endocardial points within that distance of any scar
+vertex are considered scar-positive, then maps those labelled points using the 2D flat
+coordinates. A further distinction concerns
 the radial mapping: the reference method applies a radial displacement transform of the form
 $r_\text{new} = r^{1/3}$ to the conformally flattened disk, which redistributes points
 outward and produces denser coverage near the basal ring. The
