@@ -14,7 +14,8 @@ scar-char-v0.1/
 |   |-- notebooks/
 |   |   |-- M01_scar_exploration.ipynb
 |   |   |-- M02_clinical_eda.ipynb
-|   |   |-- M02_isomaps.ipynb
+|   |   |-- exploratory/
+|   |   |   `-- M02_isomaps.ipynb
 |   |   |-- M03_polar_diagnostics.ipynb
 |   |   |-- M04_scar_analysis.ipynb
 |   |   `-- M05_retrieval_based_generation.ipynb
@@ -48,7 +49,7 @@ Run notebooks from `lv-scar-segmentation/` so imports like `from src...` work.
    full scar cohort. No train/test split is created.
 2. `M02_clinical_eda.ipynb` summarizes the clinical registry and marks patients
    with available MRI segmentation.
-3. `M02_isomaps.ipynb` explores scar fragment shape with Isomap diagnostics.
+3. `exploratory/M02_isomaps.ipynb` explores scar fragment shape with Isomap diagnostics.
 4. `M03_polar_diagnostics.ipynb` validates LV axis, RV/septal reference, and
    polar-map orientation.
 5. `M04_scar_analysis.ipynb` produces cohort-level scar descriptors, regional
