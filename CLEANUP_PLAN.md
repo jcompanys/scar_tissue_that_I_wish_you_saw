@@ -102,6 +102,7 @@ Running all notebooks is slow, so per batch use fast checks; full run once at th
 |---|---|---|
 | every A commit | `tools/check_ast_equiv.py --ref HEAD FILE` | no |
 | every B commit | `tools/check_notebook_imports.py` (names notebooks import still exist) | no |
+| (all tools) | run with `D:/joan/CONDA_ENVS/scar_char/python.exe` (notebook kernel env) | |
 | B on `data_loading` | `tools/check_scan_equiv.py` (old vs new `scan`, field by field) | F: |
 | B on other modules | differential test: old module from tag vs new, same inputs, compare outputs | F: |
 | end of Phase 2 (once) | user re-runs all notebooks, then `python tools/compare_results.py lv-scar-segmentation/results-reference lv-scar-segmentation/results` | F: |
@@ -118,7 +119,7 @@ Refresh `README.md` (tree, notebooks, modules) and `auxiliary/memory`.
 | Reference results | done (`results-reference/`, matches `results/`) |
 | Check scripts (`tools/`) | written |
 | `data_loading.py` | done: B + A committed, imports check OK, `check_scan_equiv.py` IDENTICAL |
-| `mesh_utils.py` | done: B + A committed (`anatomy` -> `lv_anatomy` also in `data_loading.py`, `tools/check_scan_equiv.py`); user to run `check_scan_equiv.py`, `check_notebook_imports.py` |
+| `mesh_utils.py` | done: B + A committed (`anatomy` -> `lv_anatomy` also in `data_loading.py`, `tools/check_scan_equiv.py`); `check_scan_equiv.py` IDENTICAL (168 cases), `check_notebook_imports.py` 0 missing |
 
 ## Flagged issues (level C, not fixed)
 
@@ -129,6 +130,8 @@ Refresh `README.md` (tree, notebooks, modules) and `auxiliary/memory`.
 | `data_loading` | `rv_endo`/`rv_epi` fallbacks `*Endo*Layer*`/`*Epi*Layer*` match LV names; safe only inside RV folder |
 | `data_loading` | LV and RV folders resolved independently, may come from different DE-MRI variants |
 | `data_loading` | which glob pattern matched is not recorded; unknown if fallbacks ever fired |
+
+| M04 | `_connected_fragments` merges all pieces into one when every piece is < 50 points (4 cases); `src.mesh_utils` would keep the largest piece |
 
 ## Phase 2 notes (found during Phase 1)
 
@@ -144,7 +147,9 @@ Refresh `README.md` (tree, notebooks, modules) and `auxiliary/memory`.
     `src` keeps the largest piece;
   - no `RegionId` after `connectivity` (not expected with current pyvista): M04 returns
     the cleaned mesh if >= 50 points else `[]`, `src` returns the raw mesh.
-  Level B only if a differential check (old vs new fragments on every case with a CZ
-  mesh) shows no difference; otherwise level C. This is why `connected_fragments` and
+  Differential check (2026-10-09, 105 cases with CZ): 101 identical, 4 differ
+  (2023/94006904, 2024/02027088, 2024/50139122, 2024/50141810: all pieces < 50, M04
+  keeps the whole mesh, `src` the largest piece). So the swap is **level C**: not done,
+  listed in flagged issues. This is why `connected_fragments` and
   `filter_fragments` stay in `mesh_utils` (their only caller, `cone_bspline_simple.py`,
   was deleted).
