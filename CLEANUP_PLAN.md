@@ -3,6 +3,18 @@
 Branch: `refactor/code-cleanup` (from tag `thesis-final-2026-10`). Never merged back.
 Backups: `backup/thesis-v1` (917f88a), `backup/thesis-final-2026-10` + tag (f6248a6).
 
+> **BLOCKING (2026-10-09): user re-runs F01, M05, M06 before any further cleanup step.**
+> The `lv_geometry` level C change below (default septal reference B -> C) changes their
+> outputs. After the run: compare with `results-reference/`, confirm the differences are
+> the expected rotation of the polar maps, then save the new outputs as the reference
+> for these notebooks. Remove this note once done.
+
+## Level C changes (decided by the user)
+
+| Date | Change | Affects |
+|---|---|---|
+| 2026-10-09 | `lv_geometry`: default `ref_fn` of `prepare_polar_geometry` and `compute_transform` is Method C (LV -> RV centroid, from `rv_mesh`) instead of Method B (`rv_reference_pca`). Raises if `rv_mesh` is missing (every case has an RV, per the user). F01 `_build_pmap` and M05 (2 cells) now also pass `rv_mesh=rv`, which adds RV PC1 as a long-axis candidate. | F01 `_build_pmap`, M05, M06 outputs. M03/M04/F01 no-RV branches now raise instead of using B. M01 `_compute_transform` uses the default but is never called. |
+
 ## Ground rules (decided)
 
 - Results were already presented. Outputs must stay identical to the reference run.
@@ -127,7 +139,7 @@ Refresh `README.md` (tree, notebooks, modules) and `auxiliary/memory`.
 | Check scripts (`tools/`) | written |
 | `data_loading.py` | done: B + A committed, imports check OK, `check_scan_equiv.py` IDENTICAL |
 | `mesh_utils.py` | done: B + A committed (`anatomy` -> `lv_anatomy` also in `data_loading.py`, `tools/check_scan_equiv.py`); `check_scan_equiv.py` IDENTICAL (168 cases), `check_notebook_imports.py` 0 missing |
-| `lv_geometry.py` | B + A ready (not committed): `long_axis_qc` deleted, `EPS`, `rv_mesh_ref_fn` added; old vs new on real data: masks identical (106 cases 36x72, 81 cases 64x128; F: dropped before 64x64), max float diff 9e-16; `check_ast_equiv` A vs B OK, `check_notebook_imports.py` 0 missing |
+| `lv_geometry.py` | B + A committed: `long_axis_qc` deleted, `EPS`, `rv_mesh_ref_fn` added; old vs new on real data: masks identical (106 cases 36x72, 81 cases 64x128), max float diff 9e-16. Then level C: default septal reference = Method C (see top). **Waiting for the user's F01/M05/M06 run.** |
 
 ## Flagged issues (level C, not fixed)
 
@@ -139,7 +151,7 @@ Refresh `README.md` (tree, notebooks, modules) and `auxiliary/memory`.
 | `data_loading` | LV and RV folders resolved independently, may come from different DE-MRI variants |
 | `data_loading` | which glob pattern matched is not recorded; unknown if fallbacks ever fired |
 | `lv_geometry` | `_hull_apex_candidate` picks the end farthest from the centroid; can return the base as apex (M03 noted an RV-proximity fix, never applied) |
-| `lv_geometry` | Method C (`rv_reference_from_rv_mesh`) is the method to use; A (M03 dip) and B (`rv_reference_pca`) are exploratory. But B is the default `ref_fn`, so F01 `_build_pmap`, M05 `_build_polar_map` + scatter cell, M06 and M01 `_compute_transform` use B even with an RV loaded; F01/M04 use B for cases without RV. Marked with comments in F01, M05, M06. Switching to C changes their outputs |
+| `lv_geometry` | Thesis results of F01 `_build_pmap`, M05 and M06 used Method B (then the default `ref_fn`), not C, although the RV was loaded. Fixed by the level C change above; the presented results still reflect B |
 | `lv_geometry` | `compute_transform` keeps `R = I` when the axis is ~ -Z instead of a 180 deg turn |
 | `lv_geometry` | `rv_reference_pca`/`rv_reference_from_rv_mesh` measure the basal band from the apex, `project_points_to_polar` from `s_min` |
 
@@ -152,9 +164,9 @@ Refresh `README.md` (tree, notebooks, modules) and `auxiliary/memory`.
 - ~20 notebook lambdas `(m, ax, ap) -> rv_reference_from_rv_mesh(m, rv, ax, ap)`
   (F01, M03, M04): replace with `lv_geometry.rv_mesh_ref_fn(rv)`. If no notebook ends
   up using it, delete it.
-- Septal reference: check whether F01 `_build_pmap`, M05, M06, M01 can move from Method B
-  (default) to C (`ref_fn=rv_mesh_ref_fn(rv)`). Level C: outputs change, needs new
-  reference results. If all move and every case has an RV, B can be deleted.
+- Septal reference: default is now C. Remove the no-RV `else` branches (F01, M03, M04)
+  and the C lambdas (use the default). Delete M01's unused `_compute_transform`.
+  `rv_reference_pca` stays only for the M03 A/B/C comparison.
 - M05 cell ~2182 adds `AHA_DISPLAY_DEG` to theta directly; `polar_mask` rolls columns.
   Same while the value is 0.
 - M06 has its own `_load_case` (fixed file names, needs flat VTK); compare with `scan`.

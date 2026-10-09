@@ -16,28 +16,27 @@ Pipeline
    - Method A, "dip midpoint" (RV insertion points): exploratory, only in
      M03 (``_rv_reference_dip``), not here.
 
-   Flagged: B is still the default ``ref_fn`` of ``prepare_polar_geometry``
-   and ``compute_transform``, so every caller that does not pass ``ref_fn``
-   uses B even when an RV mesh is loaded: F01 ``_build_pmap``, M05
-   ``_build_polar_map`` and scatter cell, M06, M01 ``_compute_transform``.
-   F01 and M04 also fall back to B for cases without an RV mesh. Kept so
-   outputs stay identical; Phase 2 checks whether these can move to C.
+   C is the default of ``prepare_polar_geometry`` and ``compute_transform``
+   (``ref_fn=None``), built from their ``rv_mesh`` argument; every case has
+   an RV mesh. Pass ``ref_fn=rv_reference_pca`` to get B explicitly.
+   Until 2026-10-09 the default was B, so the thesis results of F01
+   ``_build_pmap``, M05 and M06 were made with B (see CLEANUP_PLAN).
 
 3a. Polar maps: ``prepare_polar_geometry`` -> ``project_points_to_polar``
     -> ``polar_mask``.
 3b. 3-D alignment (apex at origin, axis on +Z, septum on +X):
     ``compute_transform`` -> ``apply_transform``.
 
-A ``ref_fn`` is any callable ``ref_fn(lv_mesh, axis, apex) -> vector``.
-``rv_reference_pca`` already has that shape; ``rv_mesh_ref_fn(rv_mesh)``
-gives Method C that shape.
+``ref_fn`` chooses the septal method: any callable
+``ref_fn(lv_mesh, axis, apex) -> vector``. ``rv_reference_pca`` already has
+that shape; ``rv_mesh_ref_fn(rv_mesh)`` gives Method C that shape.
 
 Used by
 -------
 Polar pipeline: F01, M03, M04_scar_analysis, M05, M06. ``compute_transform``,
 ``apply_transform``, ``rotation_about_z``, ``plane_basis``,
 ``oriented_septal_reference``: M01, M03. ``_hull_apex_candidate``: F01, M03
-(diagnostics of the long axis). ``rv_mesh_ref_fn``: no caller yet; notebooks
+(diagnostics of the long axis). ``rv_mesh_ref_fn``: default ``ref_fn``; notebooks
 are to use it instead of their own lambdas (see CLEANUP_PLAN, Phase 2).
 """
 
@@ -205,8 +204,8 @@ def rv_reference_pca(
     (PC1). Of the two halves of the ring split by PC1, the arrow points to
     the half whose points are farther from the ring centroid on average.
 
-    Method C (``rv_reference_from_rv_mesh``) is the method to use. B is kept
-    only because it is still the default ``ref_fn`` (see module header).
+    Method C (``rv_reference_from_rv_mesh``) is the method to use and the
+    default. B is kept for the M03 A/B/C comparison; pass it as ``ref_fn``.
 
     Parameters
     ----------
@@ -314,8 +313,15 @@ def rv_mesh_ref_fn(rv_mesh):
     -------
     callable
         Pass as ``ref_fn`` to ``compute_transform`` or
-        ``prepare_polar_geometry``.
+        ``prepare_polar_geometry`` (their default when ``ref_fn`` is None).
+
+    Raises
+    ------
+    ValueError
+        If ``rv_mesh`` is None.
     """
+    if rv_mesh is None:
+        raise ValueError("Method C (default septal reference) needs an RV mesh")
     return lambda lv_mesh, axis, apex: rv_reference_from_rv_mesh(lv_mesh, rv_mesh, axis, apex)
 
 
@@ -350,7 +356,7 @@ def compute_transform(
     lv_mesh,
     align_septum: bool = False,
     flip_septal_direction: bool = False,
-    ref_fn=rv_reference_pca,
+    ref_fn=None,
     rv_mesh=None,
 ) -> tuple[np.ndarray, np.ndarray]:
     """Rigid transform putting the LV in a standard 3-D pose.
@@ -367,11 +373,11 @@ def compute_transform(
         Also rotate about Z so the septal reference lands on +X.
     flip_septal_direction : bool
         Reverse the septal reference first (septum on -X).
-    ref_fn : callable
-        ``ref_fn(lv_mesh, axis, apex)``; see module header. Default is
-        Method B; pass ``rv_mesh_ref_fn(rv_mesh)`` for Method C.
-    rv_mesh : pyvista.DataSet, optional
-        Passed to ``long_axis``.
+    ref_fn : callable, optional
+        ``ref_fn(lv_mesh, axis, apex)``; see module header. None (default)
+        means Method C from ``rv_mesh``.
+    rv_mesh : pyvista.DataSet
+        RV surface. Used by ``long_axis`` and by the default Method C.
 
     Returns
     -------
@@ -399,6 +405,8 @@ def compute_transform(
         R = np.eye(3) + vx + vx @ vx * ((1.0 - c) / (s**2))
 
     if align_septum:
+        if ref_fn is None:
+            ref_fn = rv_mesh_ref_fn(rv_mesh)
         ref = oriented_septal_reference(
             ref_fn(lv_mesh, axis, apex),
             flip=flip_septal_direction,
@@ -422,7 +430,7 @@ def prepare_polar_geometry(
     shell,
     reference_points=None,
     flip_septal_direction: bool = False,
-    ref_fn=rv_reference_pca,
+    ref_fn=None,
     rv_mesh=None,
 ) -> dict:
     """Everything ``project_points_to_polar`` needs for one case.
@@ -436,11 +444,11 @@ def prepare_polar_geometry(
         to the LV shell. F01 and M05 pass the RV points here.
     flip_septal_direction : bool
         Reverse the septal reference (theta = 0 on the opposite side).
-    ref_fn : callable
-        ``ref_fn(lv_mesh, axis, apex)``; see module header. Default is
-        Method B; pass ``rv_mesh_ref_fn(rv_mesh)`` for Method C.
-    rv_mesh : pyvista.DataSet, optional
-        Passed to ``long_axis``.
+    ref_fn : callable, optional
+        ``ref_fn(lv_mesh, axis, apex)``; see module header. None (default)
+        means Method C from ``rv_mesh``.
+    rv_mesh : pyvista.DataSet
+        RV surface. Used by ``long_axis`` and by the default Method C.
 
     Returns
     -------
@@ -450,6 +458,8 @@ def prepare_polar_geometry(
         (u, w) plane, rad; ``s_min``, ``s_max``, extent of
         ``reference_points`` along the axis from the apex, mm.
     """
+    if ref_fn is None:
+        ref_fn = rv_mesh_ref_fn(rv_mesh)
     axis, apex = long_axis(shell, rv_mesh=rv_mesh)
     u, w = plane_basis(axis)
     ref = oriented_septal_reference(
