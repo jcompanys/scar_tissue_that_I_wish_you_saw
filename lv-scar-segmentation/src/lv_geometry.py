@@ -1,24 +1,24 @@
 from __future__ import annotations
 
 import numpy as np
+from scipy.spatial import ConvexHull
+
+EPS = 1e-9
 
 
 def _hull_apex_candidate(pts, center, axis):
     """Return (apex, eccentricity) using convex hull vertices along *axis*."""
     try:
-        from scipy.spatial import ConvexHull
-        hull = ConvexHull(pts)
-        cand = pts[hull.vertices]
+        cand = pts[ConvexHull(pts).vertices]
     except Exception:
         cand = pts
 
-    proj = (cand - center) @ axis
-    half_span = (((pts - center) @ axis).max() - ((pts - center) @ axis).min()) / 2.0
-    # apex = hull vertex furthest from centroid (max |projection|)
-    apex = cand[np.argmax(np.abs(proj))]
-    apex_dist = float(np.abs((apex - center) @ axis))
-    eccentricity = apex_dist / (half_span + 1e-9)
-    return apex, eccentricity, half_span
+    proj_all = (pts - center) @ axis
+    half_span = (proj_all.max() - proj_all.min()) / 2.0
+    proj = np.abs((cand - center) @ axis)
+    i = np.argmax(proj)
+    eccentricity = float(proj[i]) / (half_span + EPS)
+    return cand[i], eccentricity, half_span
 
 
 def long_axis(mesh, rv_mesh=None):
@@ -35,9 +35,8 @@ def long_axis(mesh, rv_mesh=None):
     """
     pts = np.asarray(mesh.points)
     center = pts.mean(axis=0)
-    _, sv, vt = np.linalg.svd(pts - center, full_matrices=False)
+    _, _, vt = np.linalg.svd(pts - center, full_matrices=False)
 
-    # Build candidate axes: RV PC1 first (highest priority), then LV PC1 / PC2
     candidates = []
     if rv_mesh is not None:
         try:
@@ -47,78 +46,15 @@ def long_axis(mesh, rv_mesh=None):
             candidates.append(rv_vt[0])
         except Exception:
             pass
-    candidates.append(vt[0])
-    if len(sv) > 1:
-        candidates.append(vt[1])
+    candidates += [vt[0], vt[1]]
 
-    best_apex, best_ecc = pts[0], -1.0
-    for cand in candidates:
-        apex, ecc, _ = _hull_apex_candidate(pts, center, cand)
-        if ecc > best_ecc:
-            best_ecc = ecc
-            best_apex = apex
+    results = [_hull_apex_candidate(pts, center, c) for c in candidates]
+    apex = max(results, key=lambda r: r[1])[0]
 
-    # Force axis through apex: direction = apex → centroid (guaranteed to pass tip)
-    vec = center - best_apex
+    vec = center - apex
     norm = np.linalg.norm(vec)
-    best_axis = vec / norm if norm > 1e-9 else vt[0]
-
-    return best_axis, best_apex
-
-
-def long_axis_qc(mesh):
-    """Compute QC metrics for long-axis detection.
-
-    Returns dict:
-        apex_eccentricity  : ||apex - center|| / half_span  (flag if < 0.35)
-        pc1_pc2_ratio      : sv[0] / sv[1]                  (flag if < 1.4)
-        mesh_completeness  : fraction of faces with inward normals (flag if > 0.15)
-        flag_bad           : True if any threshold triggered
-        reason             : human-readable summary
-    """
-    pts = np.asarray(mesh.points)
-    center = pts.mean(axis=0)
-    _, sv, vt = np.linalg.svd(pts - center, full_matrices=False)
-
-    axis = vt[0]
-    _, apex_ecc, _ = _hull_apex_candidate(pts, center, axis)
-
-    pc1_pc2_ratio = float(sv[0] / (sv[1] + 1e-9)) if len(sv) > 1 else float("inf")
-
-    # mesh_completeness: fraction of faces whose normal points toward centroid
-    mesh_completeness = 0.0
-    try:
-        normals = np.asarray(mesh.face_normals)
-        faces_raw = np.asarray(mesh.faces)
-        if faces_raw.ndim == 1 and len(faces_raw) > 0:
-            # PyVista flat format: [3, i0, i1, i2, 3, i0, ...]
-            n_faces = len(normals)
-            stride = faces_raw[0] + 1  # assume uniform (triangles → 4)
-            face_verts_idx = faces_raw.reshape(n_faces, stride)[:, 1:]
-            face_centers = pts[face_verts_idx].mean(axis=1)
-        else:
-            face_centers = pts[np.asarray(mesh.faces)].mean(axis=1)
-        to_center = center - face_centers
-        dots = np.einsum("ij,ij->i", normals, to_center)
-        mesh_completeness = float((dots > 0).mean())
-    except Exception:
-        pass
-
-    reasons = []
-    if apex_ecc < 0.35:
-        reasons.append(f"apex_eccentricity={apex_ecc:.2f}<0.35")
-    if pc1_pc2_ratio < 1.4:
-        reasons.append(f"pc1_pc2_ratio={pc1_pc2_ratio:.2f}<1.4")
-    if mesh_completeness > 0.15:
-        reasons.append(f"mesh_completeness={mesh_completeness:.2f}>0.15")
-
-    return {
-        "apex_eccentricity": float(apex_ecc),
-        "pc1_pc2_ratio": pc1_pc2_ratio,
-        "mesh_completeness": mesh_completeness,
-        "flag_bad": len(reasons) > 0,
-        "reason": "; ".join(reasons) if reasons else "ok",
-    }
+    axis = vec / norm if norm > EPS else vt[0]
+    return axis, apex
 
 
 def plane_basis(axis):
@@ -181,12 +117,16 @@ def rv_reference_from_rv_mesh(lv_mesh, rv_mesh, axis, apex, z_lo=0.50, z_hi=0.90
     rv_centroid = rv_band.mean(axis=0) if len(rv_band) >= 10 else rv_pts.mean(axis=0)
 
     vec = rv_centroid - lv_centroid
-    u, w = plane_basis(axis)
     vec_perp = vec - np.dot(vec, axis) * axis
     norm = np.linalg.norm(vec_perp)
-    if norm < 1e-9:
-        return u
+    if norm < EPS:
+        return plane_basis(axis)[0]
     return vec_perp / norm
+
+
+def rv_mesh_ref_fn(rv_mesh):
+    """Wrap rv_reference_from_rv_mesh as a ref_fn(lv_mesh, axis, apex)."""
+    return lambda lv_mesh, axis, apex: rv_reference_from_rv_mesh(lv_mesh, rv_mesh, axis, apex)
 
 
 def oriented_septal_reference(ref, flip=False):
@@ -194,7 +134,7 @@ def oriented_septal_reference(ref, flip=False):
     ref = np.asarray(ref, dtype=float)
     if flip:
         ref = -ref
-    return ref / (np.linalg.norm(ref) + 1e-12)
+    return ref / (np.linalg.norm(ref) + EPS)
 
 
 def rotation_about_z(angle_rad):
@@ -217,7 +157,7 @@ def compute_transform(
     v = np.cross(axis, z)
     s = np.linalg.norm(v)
     c = np.dot(axis, z)
-    if s < 1e-9:
+    if s < EPS:
         R = np.eye(3)
     else:
         vx = np.array([[0.0, -v[2], v[1]], [v[2], 0.0, -v[0]], [-v[1], v[0], 0.0]])
@@ -228,12 +168,9 @@ def compute_transform(
             ref_fn(lv_mesh, axis, apex),
             flip=flip_septal_direction,
         )
-        ref_aligned = ref @ R.T
-        ref_aligned = ref_aligned - np.dot(ref_aligned, z) * z
-        ref_norm = np.linalg.norm(ref_aligned)
-        if ref_norm > 1e-9:
-            ref_aligned /= ref_norm
-            R = rotation_about_z(-np.arctan2(ref_aligned[1], ref_aligned[0])) @ R
+        ref_xy = (R @ ref)[:2]
+        if np.linalg.norm(ref_xy) > EPS:
+            R = rotation_about_z(-np.arctan2(ref_xy[1], ref_xy[0])) @ R
 
     return R, apex
 
@@ -286,7 +223,7 @@ def project_points_to_polar(points, geom):
     v = pts - apex
     s_raw = v @ axis
     span = geom["s_max"] - geom["s_min"]
-    s = np.clip((s_raw - geom["s_min"]) / (span + 1e-9), 0.0, 1.0)
+    s = np.clip((s_raw - geom["s_min"]) / (span + EPS), 0.0, 1.0)
     perp = v - np.outer(s_raw, axis)
     theta = (np.arctan2(perp @ w, perp @ u) - ref_angle) % (2.0 * np.pi)
     return theta, s
