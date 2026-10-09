@@ -8,13 +8,20 @@ Pipeline
 --------
 1. ``long_axis``: apex point and unit axis pointing apex -> base.
 2. Septal reference: a unit vector perpendicular to the axis that fixes
-   theta = 0. Two methods live here (a third, Method A "dip midpoint", only
-   exists in M03 as a diagnostic):
+   theta = 0.
 
    - Method C, ``rv_reference_from_rv_mesh``: LV centroid -> RV centroid in
-     the basal band. Used for the thesis results whenever an RV mesh exists.
-   - Method B, ``rv_reference_pca``: LV-only basal-ring PCA. Fallback for
-     cases without an RV mesh, and default ``ref_fn``.
+     the basal band. **The method to use.**
+   - Method B, ``rv_reference_pca``: LV-only basal-ring PCA. Exploratory.
+   - Method A, "dip midpoint" (RV insertion points): exploratory, only in
+     M03 (``_rv_reference_dip``), not here.
+
+   Flagged: B is still the default ``ref_fn`` of ``prepare_polar_geometry``
+   and ``compute_transform``, so every caller that does not pass ``ref_fn``
+   uses B even when an RV mesh is loaded: F01 ``_build_pmap``, M05
+   ``_build_polar_map`` and scatter cell, M06, M01 ``_compute_transform``.
+   F01 and M04 also fall back to B for cases without an RV mesh. Kept so
+   outputs stay identical; Phase 2 checks whether these can move to C.
 
 3a. Polar maps: ``prepare_polar_geometry`` -> ``project_points_to_polar``
     -> ``polar_mask``.
@@ -191,15 +198,15 @@ def plane_basis(axis: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
 def rv_reference_pca(
     lv_mesh, axis: np.ndarray, apex: np.ndarray, z_lo: float = 0.60, z_hi: float = 0.85
 ) -> np.ndarray:
-    """Method B: septal direction from the LV basal ring alone.
+    """Method B (exploratory): septal direction from the LV basal ring alone.
 
     Takes the LV points between ``z_lo`` and ``z_hi`` of the LV height,
     flattens them into the (u, w) plane and finds the ring's main direction
     (PC1). Of the two halves of the ring split by PC1, the arrow points to
     the half whose points are farther from the ring centroid on average.
 
-    Fallback for cases without an RV mesh; Method C
-    (``rv_reference_from_rv_mesh``) is used whenever an RV exists.
+    Method C (``rv_reference_from_rv_mesh``) is the method to use. B is kept
+    only because it is still the default ``ref_fn`` (see module header).
 
     Parameters
     ----------
@@ -250,13 +257,13 @@ def rv_reference_pca(
 def rv_reference_from_rv_mesh(
     lv_mesh, rv_mesh, axis: np.ndarray, apex: np.ndarray, z_lo: float = 0.50, z_hi: float = 0.90
 ) -> np.ndarray:
-    """Method C: septal direction as LV centroid -> RV centroid.
+    """Method C (the method to use): septal direction as LV -> RV centroid.
 
     Both centroids are taken in the basal band ``[z_lo, z_hi]`` of the LV
     height, because the whole RV reaches further towards the apex and would
     tilt the vector. A mesh with fewer than 10 points in the band uses its
-    full-mesh centroid instead. Used for the thesis results whenever an RV
-    mesh exists.
+    full-mesh centroid instead. For ``ref_fn``, wrap it with
+    ``rv_mesh_ref_fn(rv_mesh)``.
 
     Parameters
     ----------
@@ -361,7 +368,8 @@ def compute_transform(
     flip_septal_direction : bool
         Reverse the septal reference first (septum on -X).
     ref_fn : callable
-        ``ref_fn(lv_mesh, axis, apex)``; see module header.
+        ``ref_fn(lv_mesh, axis, apex)``; see module header. Default is
+        Method B; pass ``rv_mesh_ref_fn(rv_mesh)`` for Method C.
     rv_mesh : pyvista.DataSet, optional
         Passed to ``long_axis``.
 
@@ -429,7 +437,8 @@ def prepare_polar_geometry(
     flip_septal_direction : bool
         Reverse the septal reference (theta = 0 on the opposite side).
     ref_fn : callable
-        ``ref_fn(lv_mesh, axis, apex)``; see module header.
+        ``ref_fn(lv_mesh, axis, apex)``; see module header. Default is
+        Method B; pass ``rv_mesh_ref_fn(rv_mesh)`` for Method C.
     rv_mesh : pyvista.DataSet, optional
         Passed to ``long_axis``.
 

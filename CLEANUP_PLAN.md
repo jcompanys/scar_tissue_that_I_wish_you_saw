@@ -139,6 +139,7 @@ Refresh `README.md` (tree, notebooks, modules) and `auxiliary/memory`.
 | `data_loading` | LV and RV folders resolved independently, may come from different DE-MRI variants |
 | `data_loading` | which glob pattern matched is not recorded; unknown if fallbacks ever fired |
 | `lv_geometry` | `_hull_apex_candidate` picks the end farthest from the centroid; can return the base as apex (M03 noted an RV-proximity fix, never applied) |
+| `lv_geometry` | Method C (`rv_reference_from_rv_mesh`) is the method to use; A (M03 dip) and B (`rv_reference_pca`) are exploratory. But B is the default `ref_fn`, so F01 `_build_pmap`, M05 `_build_polar_map` + scatter cell, M06 and M01 `_compute_transform` use B even with an RV loaded; F01/M04 use B for cases without RV. Marked with comments in F01, M05, M06. Switching to C changes their outputs |
 | `lv_geometry` | `compute_transform` keeps `R = I` when the axis is ~ -Z instead of a 180 deg turn |
 | `lv_geometry` | `rv_reference_pca`/`rv_reference_from_rv_mesh` measure the basal band from the apex, `project_points_to_polar` from `s_min` |
 
@@ -151,6 +152,9 @@ Refresh `README.md` (tree, notebooks, modules) and `auxiliary/memory`.
 - ~20 notebook lambdas `(m, ax, ap) -> rv_reference_from_rv_mesh(m, rv, ax, ap)`
   (F01, M03, M04): replace with `lv_geometry.rv_mesh_ref_fn(rv)`. If no notebook ends
   up using it, delete it.
+- Septal reference: check whether F01 `_build_pmap`, M05, M06, M01 can move from Method B
+  (default) to C (`ref_fn=rv_mesh_ref_fn(rv)`). Level C: outputs change, needs new
+  reference results. If all move and every case has an RV, B can be deleted.
 - M05 cell ~2182 adds `AHA_DISPLAY_DEG` to theta directly; `polar_mask` rolls columns.
   Same while the value is 0.
 - M06 has its own `_load_case` (fixed file names, needs flat VTK); compare with `scan`.
