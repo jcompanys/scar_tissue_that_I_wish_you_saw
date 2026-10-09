@@ -9,7 +9,11 @@ Backups: `backup/thesis-v1` (917f88a), `backup/thesis-final-2026-10` + tag (f624
 - Reference outputs: `lv-scar-segmentation/results-reference/`, a copy of the results
   produced by the final thesis code (`backup/thesis-final-2026-10`, tag f6248a6).
 - Public names (functions, classes, constants, modules) are kept. Notebooks import them.
-  Local variables inside a function may get clearer names.
+  Local variables inside a function may get clearer names. Exception, decided by the user:
+  `PatientCase.anatomy` -> `PatientCase.lv_anatomy` (pairs with `rv_anatomy`).
+- `src/` is the main implementation. Notebooks call the `src` function and adapt it
+  through its parameters (e.g. a different threshold) instead of keeping their own copy.
+  Notebook copies of `src` helpers are replaced in Phase 2 (see Phase 2 notes).
 - Claude does not run notebooks. The user runs them; Claude compares the outputs.
 - Bugs or doubtful logic are **reported, not fixed**.
 
@@ -72,7 +76,7 @@ notebooks, copy `results/` again, switch back.
 | 5 | `scar_characterization.py` | F01, M04 |
 | 6 | `scar_analysis.py` | M04 |
 | 7 | `plot_style.py` | most |
-| 8 | `scar_statistics.py`, `cone_bspline_simple.py` | **nothing**: candidates for deletion (level B) |
+| 8 | `scar_statistics.py` | **nothing**: candidate for deletion (level B). `cone_bspline_simple.py` deleted with `mesh_utils` B |
 
 ## Phase 2: notebooks
 
@@ -83,7 +87,9 @@ Per notebook:
 - fix section numbering (M04: 2.3 → 2.4 → 2.2; M05: 4c/4d under section 5)
 - markdown cells and `#` comments explaining each step
 - merge duplicate imports (`scan as _f7_scan`, `long_axis as _la_robust2`, ...)
-- replace local copies of `src` helpers (M02_isomaps, M06) when they are identical
+- replace local copies of `src` helpers with the `src` function, adapted through its
+  parameters (M04, M06). Identical behaviour: level B. Different behaviour:
+  run a differential check first; level C if any case changes
 - remove dead or debug cells
 - clear outputs
 
@@ -111,7 +117,7 @@ Refresh `README.md` (tree, notebooks, modules) and `auxiliary/memory`.
 | Reference results | done (`results-reference/`, matches `results/`) |
 | Check scripts (`tools/`) | written |
 | `data_loading.py` | done: B + A committed, imports check OK, `check_scan_equiv.py` IDENTICAL |
-| `mesh_utils.py` | next |
+| `mesh_utils.py` | done: B + A committed (`anatomy` -> `lv_anatomy` also in `data_loading.py`, `tools/check_scan_equiv.py`); user to run `check_scan_equiv.py`, `check_notebook_imports.py` |
 
 ## Flagged issues (level C, not fixed)
 
@@ -125,5 +131,19 @@ Refresh `README.md` (tree, notebooks, modules) and `auxiliary/memory`.
 
 ## Phase 2 notes (found during Phase 1)
 
+`notebooks/old/` and `notebooks/exploratory/` are archaic: not reviewed, may break.
+
 - M06 has its own `_load_case` (fixed file names, needs flat VTK); compare with `scan`.
 - `notebooks/old/05_inspect_patient_50122488.ipynb` uses fields removed from `PatientCase`.
+- M04 `_connected_fragments` (cell ~line 8504, `_MIN_FRAGMENT_VERTS = 50`) duplicates
+  `src.mesh_utils.connected_fragments` + `filter_fragments`. Replace with
+  `filter_fragments(connected_fragments(cz), min_points=_MIN_FRAGMENT_VERTS)`; the `src`
+  default stays 30. Same result when at least one piece has >= 50 points. Differs when:
+  - all pieces < 50: M04 keeps the whole mesh (or `[]` if the mesh has < 50 points),
+    `src` keeps the largest piece;
+  - no `RegionId` after `connectivity` (not expected with current pyvista): M04 returns
+    the cleaned mesh if >= 50 points else `[]`, `src` returns the raw mesh.
+  Level B only if a differential check (old vs new fragments on every case with a CZ
+  mesh) shows no difference; otherwise level C. This is why `connected_fragments` and
+  `filter_fragments` stay in `mesh_utils` (their only caller, `cone_bspline_simple.py`,
+  was deleted).

@@ -28,6 +28,9 @@ from pathlib import Path
 REPO = Path(__file__).resolve().parents[1]
 MODULE = "lv-scar-segmentation/src/data_loading.py"
 
+# PatientCase fields renamed by the cleanup: new name -> name in the ref.
+RENAMED_FIELDS = {"lv_anatomy": "anatomy"}
+
 
 def _load(path: Path, name: str):
     spec = importlib.util.spec_from_file_location(name, path)
@@ -75,10 +78,11 @@ def main() -> int:
         for o, n in zip(old_cases, new_cases):
             tag = f"{n.year}/{n.patient_id}"
             for name in fields:
-                if not hasattr(o, name):
+                old_name = RENAMED_FIELDS.get(name, name)
+                if not hasattr(o, old_name):
                     problems.append(f"{tag}: field '{name}' is new")
                     continue
-                ov, nv = getattr(o, name), getattr(n, name)
+                ov, nv = getattr(o, old_name), getattr(n, name)
                 if isinstance(nv, dict):
                     extra = set(nv) - set(ov)
                     if extra:

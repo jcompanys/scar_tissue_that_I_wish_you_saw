@@ -66,7 +66,7 @@ from typing import Dict, List, Optional, Tuple
 #
 # Keys are the ones ``mesh_utils.SHELL_PRIORITY`` asks for.
 
-_ANATOMY_FILES: Dict[str, str] = {
+_LV_ANATOMY_FILES: Dict[str, str] = {
     "endo":       "Endo Layer.vtk",
     "epi":        "Epi Layer.vtk",
     "lv":         "Left Ventricle.vtk",
@@ -179,7 +179,7 @@ class PatientCase:
         Patient folder ``<dataset_root>/<year>/<patient_id>``.
     lv_dir : Path or None
         ``Basal/Data/<variant>/LV`` folder, ``None`` if no variant has one.
-    anatomy : dict of str to Path or None
+    lv_anatomy : dict of str to Path or None
         LV anatomy meshes, keys ``"endo"``, ``"epi"``, ``"lv"``,
         ``"myocardium"``. Empty if ``lv_dir`` is ``None``.
     rv_anatomy : dict of str to Path or None
@@ -192,8 +192,8 @@ class PatientCase:
 
     Notes
     -----
-    The LV has no ``lv_anatomy`` field: ``anatomy`` is the LV anatomy (the
-    name predates RV support). A value of ``None`` means the file was not
+    ``lv_anatomy`` was called ``anatomy`` in the thesis code (the name
+    predates RV support). A value of ``None`` means the file was not
     found; callers check this before reading.
     """
 
@@ -202,7 +202,7 @@ class PatientCase:
     root: Path
     lv_dir: Optional[Path]
 
-    anatomy: Dict[str, Optional[Path]]         = field(default_factory=dict)
+    lv_anatomy: Dict[str, Optional[Path]]      = field(default_factory=dict)
     rv_anatomy: Dict[str, Optional[Path]]      = field(default_factory=dict)
     tissue_surfaces: Dict[str, Optional[Path]] = field(default_factory=dict)
 
@@ -300,14 +300,14 @@ def _load_case(year: str, patient_dir: Path) -> PatientCase:
     lv_dir = _find_lv_dir(patient_dir)
     rv_dir = _find_rv_dir(patient_dir)
 
-    anatomy: Dict[str, Optional[Path]] = {}
+    lv_anatomy: Dict[str, Optional[Path]] = {}
     rv_anatomy: Dict[str, Optional[Path]] = {}
     tissue_surfaces: Dict[str, Optional[Path]] = {}
 
     if lv_dir is not None:
-        for key, filename in _ANATOMY_FILES.items():
+        for key, filename in _LV_ANATOMY_FILES.items():
             p = lv_dir / filename
-            anatomy[key] = p if p.exists() else None
+            lv_anatomy[key] = p if p.exists() else None
 
         tissue_dir = lv_dir / "TISSUE"
         if tissue_dir.is_dir():
@@ -323,7 +323,7 @@ def _load_case(year: str, patient_dir: Path) -> PatientCase:
         patient_id=patient_dir.name,
         root=patient_dir,
         lv_dir=lv_dir,
-        anatomy=anatomy,
+        lv_anatomy=lv_anatomy,
         rv_anatomy=rv_anatomy,
         tissue_surfaces=tissue_surfaces,
     )

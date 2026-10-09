@@ -12,7 +12,7 @@ def best_shell(case, shell_priority=SHELL_PRIORITY):
     import pyvista as pv
 
     for key in shell_priority:
-        path = case.anatomy.get(key)
+        path = case.lv_anatomy.get(key)
         if path is not None and path.exists():
             return pv.read(str(path))
     return None
@@ -32,13 +32,8 @@ def best_rv_mesh(case):
     """Load the preferred RV mesh for a patient case, or None."""
     import pyvista as pv
 
-    rv_anatomy = getattr(case, "rv_anatomy", {})
-    if not rv_anatomy:
-        anatomy = getattr(case, "anatomy", {})
-        rv_anatomy = {key: anatomy.get(key) for key in RV_PRIORITY if key in anatomy}
-
     for key in RV_PRIORITY:
-        path = rv_anatomy.get(key)
+        path = case.rv_anatomy.get(key)
         if path is not None and path.exists():
             return pv.read(str(path))
     return None
