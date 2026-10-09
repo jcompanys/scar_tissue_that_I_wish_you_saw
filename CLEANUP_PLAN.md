@@ -17,6 +17,13 @@ Backups: `backup/thesis-v1` (917f88a), `backup/thesis-final-2026-10` + tag (f624
   Notebook copies of `src` helpers are replaced in Phase 2 (see Phase 2 notes).
 - Claude does not run notebooks. The user runs them; Claude compares the outputs.
 - Bugs or doubtful logic are **reported, not fixed**.
+- `src` functions used by no notebook and no other `src` function are deleted.
+- Code is simplified when it reads easier (one way of writing a thing, not a comment
+  explaining two). Accepted only if a differential check on real data shows identical
+  outputs; float noise around 1e-15 is accepted when the derived maps are identical
+  (decided by the user 2026-10-09, `lv_geometry`).
+- One tolerance per module: `lv_geometry.EPS = 1e-9`.
+- Wrong docstrings or comments are corrected.
 
 ## Change levels
 
@@ -120,6 +127,7 @@ Refresh `README.md` (tree, notebooks, modules) and `auxiliary/memory`.
 | Check scripts (`tools/`) | written |
 | `data_loading.py` | done: B + A committed, imports check OK, `check_scan_equiv.py` IDENTICAL |
 | `mesh_utils.py` | done: B + A committed (`anatomy` -> `lv_anatomy` also in `data_loading.py`, `tools/check_scan_equiv.py`); `check_scan_equiv.py` IDENTICAL (168 cases), `check_notebook_imports.py` 0 missing |
+| `lv_geometry.py` | B + A ready (not committed): `long_axis_qc` deleted, `EPS`, `rv_mesh_ref_fn` added; old vs new on real data: masks identical (106 cases 36x72, 81 cases 64x128; F: dropped before 64x64), max float diff 9e-16; `check_ast_equiv` A vs B OK, `check_notebook_imports.py` 0 missing |
 
 ## Flagged issues (level C, not fixed)
 
@@ -130,6 +138,9 @@ Refresh `README.md` (tree, notebooks, modules) and `auxiliary/memory`.
 | `data_loading` | `rv_endo`/`rv_epi` fallbacks `*Endo*Layer*`/`*Epi*Layer*` match LV names; safe only inside RV folder |
 | `data_loading` | LV and RV folders resolved independently, may come from different DE-MRI variants |
 | `data_loading` | which glob pattern matched is not recorded; unknown if fallbacks ever fired |
+| `lv_geometry` | `_hull_apex_candidate` picks the end farthest from the centroid; can return the base as apex (M03 noted an RV-proximity fix, never applied) |
+| `lv_geometry` | `compute_transform` keeps `R = I` when the axis is ~ -Z instead of a 180 deg turn |
+| `lv_geometry` | `rv_reference_pca`/`rv_reference_from_rv_mesh` measure the basal band from the apex, `project_points_to_polar` from `s_min` |
 
 | M04 | `_connected_fragments` merges all pieces into one when every piece is < 50 points (4 cases); `src.mesh_utils` would keep the largest piece |
 
@@ -137,6 +148,11 @@ Refresh `README.md` (tree, notebooks, modules) and `auxiliary/memory`.
 
 `notebooks/old/` and `notebooks/exploratory/` are archaic: not reviewed, may break.
 
+- ~20 notebook lambdas `(m, ax, ap) -> rv_reference_from_rv_mesh(m, rv, ax, ap)`
+  (F01, M03, M04): replace with `lv_geometry.rv_mesh_ref_fn(rv)`. If no notebook ends
+  up using it, delete it.
+- M05 cell ~2182 adds `AHA_DISPLAY_DEG` to theta directly; `polar_mask` rolls columns.
+  Same while the value is 0.
 - M06 has its own `_load_case` (fixed file names, needs flat VTK); compare with `scan`.
 - `notebooks/old/05_inspect_patient_50122488.ipynb` uses fields removed from `PatientCase`.
 - M04 `_connected_fragments` (cell ~line 8504, `_MIN_FRAGMENT_VERTS = 50`) duplicates

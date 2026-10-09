@@ -1,16 +1,99 @@
+"""LV long axis, septal reference and polar (bullseye) projection.
+
+All inputs are PyVista meshes in the ADAS3D (scanner) frame, in mm. Every
+notebook that builds a polar map or aligns an LV in 3-D goes through these
+functions; notebooks only add case-specific wrapping on top.
+
+Pipeline
+--------
+1. ``long_axis``: apex point and unit axis pointing apex -> base.
+2. Septal reference: a unit vector perpendicular to the axis that fixes
+   theta = 0. Two methods live here (a third, Method A "dip midpoint", only
+   exists in M03 as a diagnostic):
+
+   - Method C, ``rv_reference_from_rv_mesh``: LV centroid -> RV centroid in
+     the basal band. Used for the thesis results whenever an RV mesh exists.
+   - Method B, ``rv_reference_pca``: LV-only basal-ring PCA. Fallback for
+     cases without an RV mesh, and default ``ref_fn``.
+
+3a. Polar maps: ``prepare_polar_geometry`` -> ``project_points_to_polar``
+    -> ``polar_mask``.
+3b. 3-D alignment (apex at origin, axis on +Z, septum on +X):
+    ``compute_transform`` -> ``apply_transform``.
+
+A ``ref_fn`` is any callable ``ref_fn(lv_mesh, axis, apex) -> vector``.
+``rv_reference_pca`` already has that shape; ``rv_mesh_ref_fn(rv_mesh)``
+gives Method C that shape.
+
+Used by
+-------
+Polar pipeline: F01, M03, M04_scar_analysis, M05, M06. ``compute_transform``,
+``apply_transform``, ``rotation_about_z``, ``plane_basis``,
+``oriented_septal_reference``: M01, M03. ``_hull_apex_candidate``: F01, M03
+(diagnostics of the long axis). ``rv_mesh_ref_fn``: no caller yet; notebooks
+are to use it instead of their own lambdas (see CLEANUP_PLAN, Phase 2).
+"""
+
 from __future__ import annotations
 
 import numpy as np
 from scipy.spatial import ConvexHull
 
+# Single tolerance for the whole module: guards divisions by a norm or span
+# and decides when a vector counts as zero length.
 EPS = 1e-9
 
 
-def _hull_apex_candidate(pts, center, axis):
-    """Return (apex, eccentricity) using convex hull vertices along *axis*."""
+def _hull_apex_candidate(
+    pts: np.ndarray, center: np.ndarray, axis: np.ndarray
+) -> tuple[np.ndarray, float, float]:
+    """Find the apex along one candidate axis and score how pointed it is.
+
+    Eccentricity, in basic terms: slide along ``axis`` and look at the two
+    ends of the mesh. ``half_span`` is half the mesh length along the axis.
+    The apex is the end point farthest from the centroid. Eccentricity is
+    that distance divided by ``half_span``.
+
+    - Symmetric direction (e.g. across the LV cavity): the centroid sits in
+      the middle, so eccentricity is about 1.
+    - The true long axis: the LV is a cone, so most of its mass, and its
+      centroid, is near the wide base. The apex is far from the centroid and
+      eccentricity is above 1.
+
+    So the candidate with the highest eccentricity is the cone's axis.
+
+    Only convex-hull vertices are tested as apex: the apex is an extreme
+    point, so it is always on the hull, and the hull is far fewer points than
+    the mesh. ``half_span`` still uses every point, since it only needs the
+    min and max projection.
+
+    Parameters
+    ----------
+    pts : (N, 3) ndarray
+        Mesh points, mm.
+    center : (3,) ndarray
+        Centroid of ``pts``.
+    axis : (3,) ndarray
+        Unit candidate axis. Its sign does not matter.
+
+    Returns
+    -------
+    apex : (3,) ndarray
+        Hull vertex with the largest ``|projection|`` on ``axis``.
+    eccentricity : float
+        ``|apex projection| / half_span``.
+    half_span : float
+        Half the extent of ``pts`` along ``axis``, mm.
+
+    Notes
+    -----
+    Not a bug fix, flagged only: ``argmax(|proj|)`` takes whichever end is
+    farther from the centroid, so it can return the base instead of the apex.
+    """
     try:
         cand = pts[ConvexHull(pts).vertices]
     except Exception:
+        # Degenerate (e.g. flat) point set: test every point instead.
         cand = pts
 
     proj_all = (pts - center) @ axis
@@ -21,17 +104,38 @@ def _hull_apex_candidate(pts, center, axis):
     return cand[i], eccentricity, half_span
 
 
-def long_axis(mesh, rv_mesh=None):
-    """Return (axis, apex) for an LV mesh using robust convex-hull apex detection.
+def long_axis(mesh, rv_mesh=None) -> tuple[np.ndarray, np.ndarray]:
+    """Find the LV apex and the long axis through it.
 
-    Algorithm:
-    1. If rv_mesh given: use RV SVD PC1 as primary candidate (cardiac long axis is
-       shared between LV and RV — RV PC1 is often a better estimate when the LV mesh
-       is truncated/holey and its own PC1 is dominated by circumferential variance).
-    2. LV SVD PC1 and PC2 as additional candidates.
-    3. Pick the candidate that yields the highest apex eccentricity
-       (||apex - center|| / half_span).
-    4. Orient axis so it points apex → base (dot(center-apex, axis) > 0).
+    1. Candidate axes: LV PC1 and PC2 (SVD of the LV points) and, if
+       ``rv_mesh`` is given, RV PC1. RV PC1 helps when the LV mesh is
+       truncated and its own PC1 follows the cavity width instead of its
+       length.
+    2. For each candidate, ``_hull_apex_candidate`` gives an apex and an
+       eccentricity. Keep the apex of the most eccentric candidate. The order
+       of candidates only matters for exact ties.
+    3. The returned axis is not the winning candidate. It is the unit vector
+       from the chosen apex to the LV centroid, so it always passes through
+       the apex and points apex -> base.
+
+    Parameters
+    ----------
+    mesh : pyvista.DataSet
+        LV shell.
+    rv_mesh : pyvista.DataSet, optional
+        RV surface; adds RV PC1 as a candidate.
+
+    Returns
+    -------
+    axis : (3,) ndarray
+        Unit vector, apex -> base.
+    apex : (3,) ndarray
+        Apex point, mm.
+
+    Notes
+    -----
+    If the apex coincides with the centroid, the axis falls back to LV PC1,
+    whose sign is arbitrary.
     """
     pts = np.asarray(mesh.points)
     center = pts.mean(axis=0)
@@ -57,8 +161,24 @@ def long_axis(mesh, rv_mesh=None):
     return axis, apex
 
 
-def plane_basis(axis):
-    """Return two orthonormal vectors spanning the plane perpendicular to axis."""
+def plane_basis(axis: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
+    """Orthonormal basis ``(u, w)`` of the plane perpendicular to ``axis``.
+
+    ``(u, w, axis)`` is right-handed, so angles measured from ``u`` towards
+    ``w`` run counter-clockwise when looking from the base down to the apex
+    (``axis`` pointing at the viewer).
+
+    Parameters
+    ----------
+    axis : (3,) ndarray
+        Unit vector.
+
+    Returns
+    -------
+    u, w : (3,) ndarray
+        ``u = axis x Z`` (``axis x X`` if the axis is within ~25 deg of Z,
+        where the cross product would be unstable), ``w = axis x u``.
+    """
     secondary = np.array([0.0, 0.0, 1.0])
     if abs(np.dot(axis, secondary)) > 0.9:
         secondary = np.array([1.0, 0.0, 0.0])
@@ -68,8 +188,39 @@ def plane_basis(axis):
     return u, w
 
 
-def rv_reference_pca(lv_mesh, axis, apex, z_lo=0.60, z_hi=0.85):
-    """Estimate the septal/RV direction from basal-ring PCA."""
+def rv_reference_pca(
+    lv_mesh, axis: np.ndarray, apex: np.ndarray, z_lo: float = 0.60, z_hi: float = 0.85
+) -> np.ndarray:
+    """Method B: septal direction from the LV basal ring alone.
+
+    Takes the LV points between ``z_lo`` and ``z_hi`` of the LV height,
+    flattens them into the (u, w) plane and finds the ring's main direction
+    (PC1). Of the two halves of the ring split by PC1, the arrow points to
+    the half whose points are farther from the ring centroid on average.
+
+    Fallback for cases without an RV mesh; Method C
+    (``rv_reference_from_rv_mesh``) is used whenever an RV exists.
+
+    Parameters
+    ----------
+    lv_mesh : pyvista.DataSet
+        LV shell.
+    axis, apex : (3,) ndarray
+        From ``long_axis``.
+    z_lo, z_hi : float
+        Basal band, as fractions of the LV height measured from the apex.
+
+    Returns
+    -------
+    (3,) ndarray
+        Unit vector perpendicular to ``axis``. ``u`` from ``plane_basis`` if
+        the band has fewer than 20 points.
+
+    Notes
+    -----
+    Flagged only: the band is measured from the apex (``z_lo * span``), not
+    from the lowest point like ``project_points_to_polar``.
+    """
     u, w = plane_basis(axis)
     pts = np.asarray(lv_mesh.points)
     proj = (pts - apex) @ axis
@@ -85,6 +236,7 @@ def rv_reference_pca(lv_mesh, axis, apex, z_lo=0.60, z_hi=0.85):
     _, _, vt = np.linalg.svd(diff, full_matrices=False)
     pc1 = vt[0]
 
+    # Mean radius of each half of the ring; point to the larger one.
     proj_pc1 = diff @ pc1
     mask_pos = proj_pc1 > 0
     mask_neg = proj_pc1 < 0
@@ -95,12 +247,31 @@ def rv_reference_pca(lv_mesh, axis, apex, z_lo=0.60, z_hi=0.85):
     return direction[0] * u + direction[1] * w
 
 
-def rv_reference_from_rv_mesh(lv_mesh, rv_mesh, axis, apex, z_lo=0.50, z_hi=0.90):
-    """Septal direction from RV centroid relative to LV centroid.
+def rv_reference_from_rv_mesh(
+    lv_mesh, rv_mesh, axis: np.ndarray, apex: np.ndarray, z_lo: float = 0.50, z_hi: float = 0.90
+) -> np.ndarray:
+    """Method C: septal direction as LV centroid -> RV centroid.
 
-    Restricts both meshes to the basal band [z_lo, z_hi] of the LV long axis
-    so the full-mesh RV centroid (which extends apically) doesn't bias the direction.
-    Falls back to full-mesh centroids if the band yields too few RV points.
+    Both centroids are taken in the basal band ``[z_lo, z_hi]`` of the LV
+    height, because the whole RV reaches further towards the apex and would
+    tilt the vector. A mesh with fewer than 10 points in the band uses its
+    full-mesh centroid instead. Used for the thesis results whenever an RV
+    mesh exists.
+
+    Parameters
+    ----------
+    lv_mesh, rv_mesh : pyvista.DataSet
+        LV shell and RV surface.
+    axis, apex : (3,) ndarray
+        From ``long_axis``.
+    z_lo, z_hi : float
+        Basal band, as fractions of the LV height measured from the apex.
+
+    Returns
+    -------
+    (3,) ndarray
+        Unit vector perpendicular to ``axis``, pointing towards the RV.
+        ``u`` from ``plane_basis`` if the centroids line up along the axis.
     """
     lv_pts = np.asarray(lv_mesh.points)
     rv_pts = np.asarray(rv_mesh.points)
@@ -125,34 +296,90 @@ def rv_reference_from_rv_mesh(lv_mesh, rv_mesh, axis, apex, z_lo=0.50, z_hi=0.90
 
 
 def rv_mesh_ref_fn(rv_mesh):
-    """Wrap rv_reference_from_rv_mesh as a ref_fn(lv_mesh, axis, apex)."""
+    """Turn Method C into a ``ref_fn(lv_mesh, axis, apex)`` for one RV mesh.
+
+    Parameters
+    ----------
+    rv_mesh : pyvista.DataSet
+        RV surface of the case.
+
+    Returns
+    -------
+    callable
+        Pass as ``ref_fn`` to ``compute_transform`` or
+        ``prepare_polar_geometry``.
+    """
     return lambda lv_mesh, axis, apex: rv_reference_from_rv_mesh(lv_mesh, rv_mesh, axis, apex)
 
 
-def oriented_septal_reference(ref, flip=False):
-    """Normalize a septal reference vector, optionally applying a 180-degree flip."""
+def oriented_septal_reference(ref, flip: bool = False) -> np.ndarray:
+    """Normalise a septal reference vector, optionally reversing it.
+
+    Parameters
+    ----------
+    ref : array_like, shape (3,)
+        Output of a ``ref_fn``.
+    flip : bool
+        Reverse the vector (180 deg turn of the bullseye).
+
+    Returns
+    -------
+    (3,) ndarray
+        Unit vector.
+    """
     ref = np.asarray(ref, dtype=float)
     if flip:
         ref = -ref
     return ref / (np.linalg.norm(ref) + EPS)
 
 
-def rotation_about_z(angle_rad):
-    """Return a 3x3 rotation matrix around world +Z."""
+def rotation_about_z(angle_rad: float) -> np.ndarray:
+    """3x3 matrix rotating counter-clockwise by ``angle_rad`` about world +Z."""
     c, s = np.cos(angle_rad), np.sin(angle_rad)
     return np.array([[c, -s, 0.0], [s, c, 0.0], [0.0, 0.0, 1.0]])
 
 
 def compute_transform(
     lv_mesh,
-    align_septum=False,
-    flip_septal_direction=False,
+    align_septum: bool = False,
+    flip_septal_direction: bool = False,
     ref_fn=rv_reference_pca,
     rv_mesh=None,
-):
-    """Return (R, apex): apex at origin, long axis +Z, optional septal/RV +X."""
+) -> tuple[np.ndarray, np.ndarray]:
+    """Rigid transform putting the LV in a standard 3-D pose.
+
+    After ``apply_transform(mesh, R, apex)``: apex at the origin, long axis
+    on +Z (apex -> base) and, if ``align_septum``, the septal reference on
+    +X.
+
+    Parameters
+    ----------
+    lv_mesh : pyvista.DataSet
+        LV shell.
+    align_septum : bool
+        Also rotate about Z so the septal reference lands on +X.
+    flip_septal_direction : bool
+        Reverse the septal reference first (septum on -X).
+    ref_fn : callable
+        ``ref_fn(lv_mesh, axis, apex)``; see module header.
+    rv_mesh : pyvista.DataSet, optional
+        Passed to ``long_axis``.
+
+    Returns
+    -------
+    R : (3, 3) ndarray
+        Rotation matrix.
+    apex : (3,) ndarray
+        Apex point, mm; subtract it before rotating.
+
+    Notes
+    -----
+    Flagged only: if the axis is already almost -Z, ``R`` stays the identity
+    instead of a 180 deg turn, leaving the LV upside down.
+    """
     axis, apex = long_axis(lv_mesh, rv_mesh=rv_mesh)
 
+    # Rodrigues' formula: rotation taking ``axis`` onto +Z.
     z = np.array([0.0, 0.0, 1.0])
     v = np.cross(axis, z)
     s = np.linalg.norm(v)
@@ -168,6 +395,7 @@ def compute_transform(
             ref_fn(lv_mesh, axis, apex),
             flip=flip_septal_direction,
         )
+        # Septal reference after the first rotation, in the XY plane.
         ref_xy = (R @ ref)[:2]
         if np.linalg.norm(ref_xy) > EPS:
             R = rotation_about_z(-np.arctan2(ref_xy[1], ref_xy[0])) @ R
@@ -175,8 +403,8 @@ def compute_transform(
     return R, apex
 
 
-def apply_transform(mesh, R, apex):
-    """Copy a mesh and transform points with apex translation plus rotation R."""
+def apply_transform(mesh, R: np.ndarray, apex: np.ndarray):
+    """Copy of ``mesh`` with points moved by ``(p - apex)`` then rotated by ``R``."""
     transformed = mesh.copy()
     transformed.points = (np.asarray(mesh.points) - apex) @ R.T
     return transformed
@@ -185,11 +413,34 @@ def apply_transform(mesh, R, apex):
 def prepare_polar_geometry(
     shell,
     reference_points=None,
-    flip_septal_direction=False,
+    flip_septal_direction: bool = False,
     ref_fn=rv_reference_pca,
     rv_mesh=None,
-):
-    """Build reusable geometry for cylindrical LV polar projections."""
+) -> dict:
+    """Everything ``project_points_to_polar`` needs for one case.
+
+    Parameters
+    ----------
+    shell : pyvista.DataSet
+        LV shell.
+    reference_points : (M, 3) array_like, optional
+        Points whose extent along the axis defines s = 0 and s = 1. Defaults
+        to the LV shell. F01 and M05 pass the RV points here.
+    flip_septal_direction : bool
+        Reverse the septal reference (theta = 0 on the opposite side).
+    ref_fn : callable
+        ``ref_fn(lv_mesh, axis, apex)``; see module header.
+    rv_mesh : pyvista.DataSet, optional
+        Passed to ``long_axis``.
+
+    Returns
+    -------
+    dict
+        ``axis``, ``apex``, ``u``, ``w`` as from ``long_axis`` and
+        ``plane_basis``; ``ref_angle``, angle of the septal reference in the
+        (u, w) plane, rad; ``s_min``, ``s_max``, extent of
+        ``reference_points`` along the axis from the apex, mm.
+    """
     axis, apex = long_axis(shell, rv_mesh=rv_mesh)
     u, w = plane_basis(axis)
     ref = oriented_septal_reference(
@@ -211,8 +462,25 @@ def prepare_polar_geometry(
     }
 
 
-def project_points_to_polar(points, geom):
-    """Project 3-D points to circumferential theta and normalized apex-base s."""
+def project_points_to_polar(points, geom: dict) -> tuple[np.ndarray, np.ndarray]:
+    """Cylindrical coordinates of 3-D points around the LV long axis.
+
+    Parameters
+    ----------
+    points : (N, 3) array_like
+        Points to project (e.g. scar mesh), mm.
+    geom : dict
+        From ``prepare_polar_geometry``.
+
+    Returns
+    -------
+    theta : (N,) ndarray
+        Angle around the axis from the septal reference, rad in [0, 2*pi),
+        counter-clockwise in the (u, w) plane.
+    s : (N,) ndarray
+        Height along the axis, 0 at ``s_min`` (apex) to 1 at ``s_max``
+        (base). Points outside are clipped to 0 or 1.
+    """
     axis = geom["axis"]
     apex = geom["apex"]
     u = geom["u"]
@@ -229,13 +497,30 @@ def project_points_to_polar(points, geom):
     return theta, s
 
 
-def polar_mask(theta, s, n_r, n_theta, roll_deg=0.0):
-    """Binary polar map with X-axis orientation correction and optional AHA roll.
+def polar_mask(theta, s, n_r: int, n_theta: int, roll_deg: float = 0.0) -> np.ndarray:
+    """Bin polar points into a binary (s, theta) grid.
 
-    X-flip ([:, ::-1]) corrects the theta mirroring that arises from the
-    clockwise flip applied in callers before binning.
-    roll_deg rotates the bullseye CW to align with AHA display convention
-    (pass AHA_DISPLAY_DEG from the notebook config).
+    Parameters
+    ----------
+    theta, s : (N,) ndarray
+        Polar coordinates, theta in rad, s in [0, 1].
+    n_r, n_theta : int
+        Number of rings (rows, row 0 = apex) and of angular sectors (columns).
+    roll_deg : float
+        Rotates the map by shifting columns; callers pass ``AHA_DISPLAY_DEG``
+        (currently 0, so no shift).
+
+    Returns
+    -------
+    (n_r, n_theta) bool ndarray
+        True where at least one point falls in the bin.
+
+    Notes
+    -----
+    Every caller first applies ``theta -> 2*pi - theta``, and the column
+    reversal ``[:, ::-1]`` here undoes it. Together they equal binning the
+    original counter-clockwise theta (only points exactly on a bin edge can
+    differ). Kept as is so outputs stay identical.
     """
     mask = np.zeros((n_r, n_theta), dtype=bool)
     ri = np.clip((s * n_r).astype(int), 0, n_r - 1)
