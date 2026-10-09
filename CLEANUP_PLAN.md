@@ -89,8 +89,15 @@ Per notebook:
 
 ## Phase 3: verification
 
-After each level B batch: user re-runs the listed notebooks, then
-`python tools/compare_results.py lv-scar-segmentation/results-reference lv-scar-segmentation/results`.
+Running all notebooks is slow, so per batch use fast checks; full run once at the end.
+
+| When | Check | Needs data |
+|---|---|---|
+| every A commit | `tools/check_ast_equiv.py --ref HEAD FILE` | no |
+| every B commit | `tools/check_notebook_imports.py` (names notebooks import still exist) | no |
+| B on `data_loading` | `tools/check_scan_equiv.py` (old vs new `scan`, field by field) | F: |
+| B on other modules | differential test: old module from tag vs new, same inputs, compare outputs | F: |
+| end of Phase 2 (once) | user re-runs all notebooks, then `python tools/compare_results.py lv-scar-segmentation/results-reference lv-scar-segmentation/results` | F: |
 
 ## Phase 4: docs
 
@@ -103,4 +110,20 @@ Refresh `README.md` (tree, notebooks, modules) and `auxiliary/memory`.
 | Phase 0 conventions | agreed |
 | Reference results | done (`results-reference/`, matches `results/`) |
 | Check scripts (`tools/`) | written |
-| `data_loading.py` | next |
+| `data_loading.py` | done: B + A committed, imports check OK, `check_scan_equiv.py` IDENTICAL |
+| `mesh_utils.py` | next |
+
+## Flagged issues (level C, not fixed)
+
+| Module | Issue |
+|---|---|
+| `data_loading` | `border_zone` fallback `*Border*Zone*.vtk` also matches `3D Corridor 3D Border Zone.vtk` |
+| `data_loading` | `scar` fallback `*Scar*.vtk` matches any file with "Scar" in its name |
+| `data_loading` | `rv_endo`/`rv_epi` fallbacks `*Endo*Layer*`/`*Epi*Layer*` match LV names; safe only inside RV folder |
+| `data_loading` | LV and RV folders resolved independently, may come from different DE-MRI variants |
+| `data_loading` | which glob pattern matched is not recorded; unknown if fallbacks ever fired |
+
+## Phase 2 notes (found during Phase 1)
+
+- M06 has its own `_load_case` (fixed file names, needs flat VTK); compare with `scan`.
+- `notebooks/old/05_inspect_patient_50122488.ipynb` uses fields removed from `PatientCase`.
