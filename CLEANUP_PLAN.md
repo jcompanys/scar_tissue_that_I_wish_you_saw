@@ -11,6 +11,7 @@ Backups: `backup/thesis-v1` (917f88a), `backup/thesis-final-2026-10` + tag (f624
 - Public names (functions, classes, constants, modules) are kept. Notebooks import them.
   Local variables inside a function may get clearer names. Exception, decided by the user:
   `PatientCase.anatomy` -> `PatientCase.lv_anatomy` (pairs with `rv_anatomy`).
+  `mesh_utils.SHELL_PRIORITY` -> `LV_PRIORITY` (pairs with `RV_PRIORITY`; no notebook imports it).
 - `src/` is the main implementation. Notebooks call the `src` function and adapt it
   through its parameters (e.g. a different threshold) instead of keeping their own copy.
   Notebook copies of `src` helpers are replaced in Phase 2 (see Phase 2 notes).

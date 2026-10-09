@@ -6,8 +6,8 @@ PyVista, in the ADAS3D (scanner) frame, in mm; nothing is transformed here.
 
 Main API
 --------
-best_shell(case, shell_priority=SHELL_PRIORITY) -> mesh or None
-    LV surface mesh, first available of ``SHELL_PRIORITY``.
+best_shell(case, shell_priority=LV_PRIORITY) -> mesh or None
+    LV surface mesh, first available of ``LV_PRIORITY``.
 get_cz_mesh(case) -> mesh or None
     Core-zone scar surface.
 best_rv_mesh(case) -> mesh or None
@@ -23,28 +23,24 @@ Used by
 M04_scar_analysis, M05. ``best_rv_mesh``: F01, M03, M04_scar_analysis, M05.
 ``connected_fragments``, ``filter_fragments``: no caller yet; M04 is to use
 them instead of its own ``_connected_fragments`` (see CLEANUP_PLAN, Phase 2).
-
-Notes
------
-``pyvista`` is imported inside each loader so that importing this module
-(e.g. for the priority constants) does not need it.
 """
 
 from __future__ import annotations
 
 import numpy as np
+import pyvista as pv
 
 
 # Keys of ``PatientCase.lv_anatomy``, most preferred first. "lv" is the full
 # Left Ventricle surface; the myocardium, endo and epi layers are fallbacks
 # for patients exported without it.
-SHELL_PRIORITY = ("lv", "myocardium", "endo", "epi")
+LV_PRIORITY = ("lv", "myocardium", "endo", "epi")
 
 # Keys of ``PatientCase.rv_anatomy``, most preferred first.
 RV_PRIORITY = ("rv", "rv_endo", "rv_epi")
 
 
-def best_shell(case, shell_priority: tuple[str, ...] = SHELL_PRIORITY):
+def best_shell(case, shell_priority: tuple[str, ...] = LV_PRIORITY):
     """Load the preferred LV shell mesh for a patient case.
 
     Parameters
@@ -65,8 +61,6 @@ def best_shell(case, shell_priority: tuple[str, ...] = SHELL_PRIORITY):
     The fallback is silent: the caller cannot tell which key was used, so a
     patient without ``Left Ventricle.vtk`` gets e.g. the myocardium mesh.
     """
-    import pyvista as pv
-
     for key in shell_priority:
         path = case.lv_anatomy.get(key)
         if path is not None and path.exists():
@@ -88,8 +82,6 @@ def get_cz_mesh(case):
         Mesh at ``case.tissue_surfaces["core"]``, or ``None`` if the path is
         missing or the file does not exist.
     """
-    import pyvista as pv
-
     path = case.tissue_surfaces.get("core")
     if path is None or not path.exists():
         return None
@@ -110,8 +102,6 @@ def best_rv_mesh(case):
         First mesh of ``RV_PRIORITY`` whose file exists, or ``None`` (also
         when the patient has no RV folder and ``case.rv_anatomy`` is empty).
     """
-    import pyvista as pv
-
     for key in RV_PRIORITY:
         path = case.rv_anatomy.get(key)
         if path is not None and path.exists():

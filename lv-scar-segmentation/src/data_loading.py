@@ -64,7 +64,7 @@ from typing import Dict, List, Optional, Tuple
 
 # -- LV anatomy: exact filenames (stable across ADAS3D versions) --------------
 #
-# Keys are the ones ``mesh_utils.SHELL_PRIORITY`` asks for.
+# Keys are the ones ``mesh_utils.LV_PRIORITY`` asks for.
 
 _LV_ANATOMY_FILES: Dict[str, str] = {
     "endo":       "Endo Layer.vtk",
