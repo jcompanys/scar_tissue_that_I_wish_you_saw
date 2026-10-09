@@ -74,6 +74,36 @@ RING_COLORS = {
     "Basal": TFG_COLORS["primary"],
 }
 
+# Standard AHA-17 segment -> myocardial level mapping (segments 1-6 basal,
+# 7-12 mid, 13-16 apical, 17 apex).
+AHA_SEGMENT_RING = {
+    **{s: "Basal" for s in range(1, 7)},
+    **{s: "Mid" for s in range(7, 13)},
+    **{s: "Apical" for s in range(13, 17)},
+    17: "Apex",
+}
+
+
+def color_aha_xticklabels(ax: Any, segments: Any, ring_map: dict | None = None) -> None:
+    """Color AHA-17 x-tick labels by myocardial level (basal/mid/apical/apex)."""
+    ring_map = ring_map or AHA_SEGMENT_RING
+    for tick, seg in zip(ax.get_xticklabels(), segments):
+        ring = ring_map.get(int(seg))
+        if ring:
+            tick.set_color(RING_COLORS[ring])
+            tick.set_fontweight("bold")
+
+
+def add_aha_ring_legend(ax: Any, loc: str = "upper right", **kwargs: Any) -> Any:
+    """Add a legend mapping ring colors to Basal/Mid/Apical/Apex."""
+    import matplotlib.patches as mpatches
+
+    handles = [
+        mpatches.Patch(color=RING_COLORS[r], label=r)
+        for r in ("Basal", "Mid", "Apical", "Apex")
+    ]
+    return ax.legend(handles=handles, fontsize=8, title="AHA level", loc=loc, **kwargs)
+
 SCAR_CMAP = "YlOrRd"
 DIVERGING_CMAP = "RdBu_r"
 

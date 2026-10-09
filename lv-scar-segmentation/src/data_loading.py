@@ -115,6 +115,10 @@ _TISSUE_SURFACE_GLOBS: Dict[str, Tuple[str, ...]] = {
         "3D Corridor Unified Centerlines.vtk",
         "*Corridor*Unified*Centerlines*.vtk",
     ),
+    "corridor_centerlines": (
+        "3D Corridor Centerlines.vtk",
+        "*Corridor*Centerlines*.vtk",
+    ),
     "corridor_bz": (
         "3D Corridor 3D Border Zone.vtk",
         "*Corridor*3D*Border*Zone*.vtk",
