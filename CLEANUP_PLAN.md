@@ -28,6 +28,8 @@ Backups: `backup/thesis-v1` (917f88a), `backup/thesis-final-2026-10` + tag (f624
   through its parameters (e.g. a different threshold) instead of keeping their own copy.
   Notebook copies of `src` helpers are replaced in Phase 2 (see Phase 2 notes).
 - Claude does not run notebooks. The user runs them; Claude compares the outputs.
+- Claude asks the user before touching any notebook, even a one-line change, and says
+  which notebooks and cells. Notebook edits otherwise wait for Phase 2.
 - Bugs or doubtful logic are **reported, not fixed**.
 - `src` functions used by no notebook and no other `src` function are deleted.
 - Code is simplified when it reads easier (one way of writing a thing, not a comment
