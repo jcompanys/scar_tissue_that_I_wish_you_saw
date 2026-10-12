@@ -3,17 +3,18 @@
 Branch: `refactor/code-cleanup` (from tag `thesis-final-2026-10`). Never merged back.
 Backups: `backup/thesis-v1` (917f88a), `backup/thesis-final-2026-10` + tag (f6248a6).
 
-> **BLOCKING (2026-10-09): user re-runs F01, M05, M06 before any further cleanup step.**
-> The `lv_geometry` level C change below (default septal reference B -> C) changes their
-> outputs. After the run: compare with `results-reference/`, confirm the differences are
-> the expected rotation of the polar maps, then save the new outputs as the reference
-> for these notebooks. Remove this note once done.
+> **PENDING (2026-10-12): update `results-reference/` for F01, M05, M06** with the Method C
+> outputs. User re-ran them 2026-10-12 and the differences were checked: only polar-map
+> outputs changed (M05 mean polar Dice 0.095 -> 0.172 weighted_euclidean; scar error and
+> segment Dice unchanged). The user decides when to update the reference; Claude reminds
+> them (at the latest at the end of Phase 1). Until then, `compare_results.py` on these
+> three notebooks is expected to differ. Remove this note once done.
 
 ## Level C changes (decided by the user)
 
 | Date | Change | Affects |
 |---|---|---|
-| 2026-10-09 | `lv_geometry`: default `ref_fn` of `prepare_polar_geometry` and `compute_transform` is Method C (LV -> RV centroid, from `rv_mesh`) instead of Method B (`rv_reference_pca`). Raises if `rv_mesh` is missing (every case has an RV, per the user). F01 `_build_pmap` and M05 (2 cells) now also pass `rv_mesh=rv`, which adds RV PC1 as a long-axis candidate. | F01 `_build_pmap`, M05, M06 outputs. M03/M04/F01 no-RV branches now raise instead of using B. M01 `_compute_transform` uses the default but is never called. |
+| 2026-10-09 | `lv_geometry`: default `ref_fn` of `prepare_polar_geometry` and `compute_transform` is Method C (LV -> RV centroid, from `rv_mesh`) instead of Method B (`rv_reference_pca`). Raises if `rv_mesh` is missing (every case has an RV, per the user). F01 `_build_pmap` and M05 (2 cells) now also pass `rv_mesh=rv`, which adds RV PC1 as a long-axis candidate. | F01 `_build_pmap`, M05, M06 outputs (each call site keeps the thesis Method B call as a comment, marked THESIS). M03/M04/F01 no-RV branches now raise instead of using B. M01 `_compute_transform` uses the default but is never called. |
 
 ## Ground rules (decided)
 
