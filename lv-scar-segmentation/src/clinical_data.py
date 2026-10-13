@@ -35,10 +35,9 @@ CSV, especially ``revasc_type``, ``enhancement_distribution``,
 
 Typical usage::
 
-    from src.clinical_data import load, COLUMN_GROUPS, summary
+    from src.clinical_data import load, COLUMN_GROUPS
 
     df = load("path/to/registry.csv")
-    summary(df)
 
     # Correlation: scar geometry vs demographics
     cols = COLUMN_GROUPS["scar_geometry"] + COLUMN_GROUPS["demographics"]
@@ -375,59 +374,6 @@ def load(
     return df
 
 
-def summary(df: pd.DataFrame) -> None:
-    """Print a structured overview of the loaded DataFrame.
-
-    Covers completeness, scar geometry statistics, demographic breakdown,
-    and echo parameters.
-    """
-    n = len(df)
-    print(f"=== Clinical registry: {n} patients ===\n")
-
-    # -- Completeness per group -----------------------------------------------
-    print("Completeness by column group:")
-    for group, cols in COLUMN_GROUPS.items():
-        present = [c for c in cols if c in df.columns]
-        if not present:
-            continue
-        non_null = df[present].notna().mean().mean() * 100
-        print(f"  {group:<20} {len(present):>2} cols  {non_null:5.1f}% non-null")
-
-    # -- Demographics ---------------------------------------------------------
-    print("\nDemographics:")
-    if "age" in df.columns:
-        print(f"  Age          mean={df['age'].mean():.1f}  "
-              f"sd={df['age'].std():.1f}  "
-              f"[{df['age'].min():.0f}–{df['age'].max():.0f}]")
-    if "sex" in df.columns:
-        counts = df["sex"].value_counts(dropna=False)
-        print(f"  Sex (raw)    {dict(counts)}")
-
-    # -- Scar geometry --------------------------------------------------------
-    print("\nScar geometry (non-null patients):")
-    scar_num = [c for c in ["lv_mass_g", "bz_core_g", "bz_core_pct",
-                             "core_g", "core_pct", "bz_g", "bz_pct"]
-                if c in df.columns]
-    if scar_num:
-        print(df[scar_num].describe().to_string())
-
-    # -- Echo -----------------------------------------------------------------
-    print("\nEchocardiography (non-null patients):")
-    echo_num = [c for c in COLUMN_GROUPS["echo"] if c in df.columns]
-    if echo_num:
-        print(df[echo_num].describe().to_string())
-
-    print()
-
-
-def available_columns(df: pd.DataFrame) -> Dict[str, List[str]]:
-    """Return COLUMN_GROUPS filtered to columns actually present in *df*."""
-    return {
-        group: [c for c in cols if c in df.columns]
-        for group, cols in COLUMN_GROUPS.items()
-    }
-
-
 # ---------------------------------------------------------------------------
 # Internal helpers
 # ---------------------------------------------------------------------------
@@ -497,16 +443,8 @@ def _cast_types(df: pd.DataFrame) -> pd.DataFrame:
                 errors="coerce",
             )
 
-    # Binary / nullable int ------------------------------------------------
-    for col in BINARY_COLS:
-        if col in df.columns:
-            df[col] = (
-                pd.to_numeric(df[col], errors="coerce")
-                .astype("Int64")
-            )
-
-    # Coded categorical / nullable int ------------------------------------
-    for col in CATEGORICAL_CODE_COLS:
+    # Binary flags + coded categoricals → nullable Int64 -------------------
+    for col in BINARY_COLS + CATEGORICAL_CODE_COLS:
         if col in df.columns:
             df[col] = (
                 pd.to_numeric(df[col], errors="coerce")
