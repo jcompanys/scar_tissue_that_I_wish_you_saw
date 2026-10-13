@@ -48,6 +48,23 @@ def region_burden_table(
     2. ``denominator_grid`` summed over the region (one shared denominator grid);
     3. the number of finite cells in the region (plain regional mean).
 
+    The thesis characterized the same scar four ways through this helper, each
+    applied at AHA-17 segment, coronary-territory, and radial-ring scales (set by
+    the ``region_grid`` argument; the ring scale uses only the vertex and
+    coverage forms). The four measures:
+
+    * Vertex occupancy: binary scar-vertex presence per polar bin; with no
+      denominator the burden is scar bins / polar bins in the region (priority 3,
+      region size in grid cells). On the 64x128 grid an AHA segment spans
+      336-2048 bins and a territory ~1.9k-4.4k bins.
+    * Raw CZ area: maps hold triangulated scar (CZ) surface area in mm2 per bin,
+      summed over the region (``normalize_by_region_size=False``).
+    * Scar-normalized area: the CZ-area maps pre-divided by each patient's total
+      scar area, so the region value is that patient's share of scar there.
+    * LV surface coverage: CZ-area maps divided by per-patient LV-area maps given
+      as ``denominator_maps`` (priority 1) -- scar area / available LV area,
+      correcting for unequal bin sizes and LV-size differences.
+
     Args:
         maps: ``key -> polar map`` (2-D array). ``key`` is the ``year/patient``
             key used across the notebooks.
