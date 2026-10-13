@@ -99,7 +99,7 @@ notebooks, copy `results/` again, switch back.
 | 5 | `scar_characterization.py` | F01, M04 |
 | 6 | `scar_analysis.py` | M04 |
 | 7 | `plot_style.py` | most |
-| 8 | `scar_statistics.py` | **nothing**: candidate for deletion (level B). `cone_bspline_simple.py` deleted with `mesh_utils` B |
+| 8 | `scar_statistics.py` | **nothing**: deleted (level B, 2026-10-13) — unused star-import wrapper over `scar_analysis` + `scar_characterization`. `cone_bspline_simple.py` deleted with `mesh_utils` B |
 
 ## Phase 2: notebooks
 
