@@ -436,8 +436,8 @@ def _cast_types(df: pd.DataFrame) -> pd.DataFrame:
     # Floats ---------------------------------------------------------------
     for col in FLOAT_COLS:
         if col in df.columns:
-            # Source uses comma as decimal; already handled by read_csv(decimal=",")
-            # but values read as str may still need coercion.
+            # Source uses comma as decimal; read_csv() loads everything as
+            # str, so swap comma for dot before numeric coercion.
             df[col] = pd.to_numeric(
                 df[col].astype(str).str.replace(",", ".", regex=False),
                 errors="coerce",
