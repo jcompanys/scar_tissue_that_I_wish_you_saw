@@ -8,22 +8,12 @@ not decide whether an association is meaningful; that belongs in
 
 from __future__ import annotations
 
-from dataclasses import dataclass
 from typing import Mapping, Sequence
 
 import numpy as np
 import pandas as pd
 from sklearn.decomposition import PCA
 from sklearn.preprocessing import StandardScaler
-
-
-@dataclass(frozen=True)
-class RegionSpec:
-    """Named masks that partition or label a polar map."""
-
-    name: str
-    labels: Sequence
-    grid: np.ndarray
 
 
 def patient_id_from_key(key: str) -> str:
@@ -80,36 +70,6 @@ def region_burden_table(
         rows.append(row)
 
     return pd.DataFrame(rows)
-
-
-def dominant_region_table(
-    maps: Mapping[str, np.ndarray],
-    region_grid: np.ndarray,
-    labels: Sequence[str],
-    *,
-    threshold: float = 0.02,
-    denominator_maps: Mapping[str, np.ndarray] | None = None,
-    value_prefix: str = "",
-) -> pd.DataFrame:
-    """Compute per-patient regional burden, dominant region, and involvement."""
-
-    table = region_burden_table(
-        maps,
-        region_grid,
-        labels,
-        prefix=value_prefix,
-        denominator_maps=denominator_maps,
-        normalize_by_region_size=True,
-        include_raw=True,
-    )
-    value_cols = [_label_column(value_prefix, label) for label in labels]
-
-    if len(table) == 0:
-        return table
-
-    table["dominant"] = table[value_cols].idxmax(axis=1).str.removeprefix(value_prefix)
-    table["n_involved"] = (table[value_cols] >= threshold).sum(axis=1).astype(int)
-    return table
 
 
 def region_summary(
