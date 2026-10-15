@@ -158,6 +158,7 @@ Refresh `README.md` (tree, notebooks, modules) and `auxiliary/memory`.
 | `lv_geometry` | `rv_reference_pca`/`rv_reference_from_rv_mesh` measure the basal band from the apex, `project_points_to_polar` from `s_min` |
 
 | M04 | `_connected_fragments` merges all pieces into one when every piece is < 50 points (4 cases); `src.mesh_utils` would keep the largest piece |
+| `mesh_utils`, M04 | **Unverified.** `connectivity` runs on the mesh as read; `.clean()` (merges duplicate points) only runs per piece afterwards. VTK links cells by point index, not position, so duplicate points along a seam would split one blob into 2 fragments. Unknown whether ADAS3D exports have duplicates. Fix (`.clean()` before `connectivity`) would change results |
 
 ## Phase 2 notes (found during Phase 1)
 
