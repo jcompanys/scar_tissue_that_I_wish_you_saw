@@ -151,7 +151,6 @@ Refresh `README.md` (tree, notebooks, modules) and `auxiliary/memory`.
 | `data_loading` | `border_zone` fallback `*Border*Zone*.vtk` also matches `3D Corridor 3D Border Zone.vtk` |
 | `data_loading` | `scar` fallback `*Scar*.vtk` matches any file with "Scar" in its name |
 | `data_loading` | `rv_endo`/`rv_epi` fallbacks `*Endo*Layer*`/`*Epi*Layer*` match LV names; safe only inside RV folder |
-| `data_loading` | LV and RV folders resolved independently, may come from different DE-MRI variants |
 | `data_loading` | which glob pattern matched is not recorded; unknown if fallbacks ever fired |
 | `lv_geometry` | `_hull_apex_candidate` picks the end farthest from the centroid; can return the base as apex (M03 noted an RV-proximity fix, never applied) |
 | `lv_geometry` | Thesis results of F01 `_build_pmap`, M05 and M06 used Method B (then the default `ref_fn`), not C, although the RV was loaded. Fixed by the level C change above; the presented results still reflect B |

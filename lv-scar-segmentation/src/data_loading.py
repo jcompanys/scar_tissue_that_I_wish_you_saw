@@ -340,14 +340,7 @@ def _find_lv_dir(patient_dir: Path) -> Optional[Path]:
 
 
 def _find_rv_dir(patient_dir: Path) -> Optional[Path]:
-    """Return the RV folder (``RV`` or ``Right Ventricle``) of the first variant.
-
-    Notes
-    -----
-    Flagged (not fixed): the RV folder is searched independently of the LV
-    one, so LV and RV may come from different DE-MRI variants when a
-    patient has several acquisitions.
-    """
+    """Return the RV folder (``RV`` or ``Right Ventricle``) of the first variant."""
     base = patient_dir / "Basal" / "Data"
     for variant in DE_MRI_VARIANTS:
         variant_dir = base / variant
