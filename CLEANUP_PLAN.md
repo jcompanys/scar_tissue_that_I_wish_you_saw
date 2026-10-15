@@ -154,7 +154,7 @@ Refresh `README.md` (tree, notebooks, modules) and `auxiliary/memory`.
 | `data_loading` | which glob pattern matched is not recorded; unknown if fallbacks ever fired |
 | `lv_geometry` | `_hull_apex_candidate` picks the end farthest from the centroid; can return the base as apex (M03 noted an RV-proximity fix, never applied) |
 | `lv_geometry` | Thesis results of F01 `_build_pmap`, M05 and M06 used Method B (then the default `ref_fn`), not C, although the RV was loaded. Fixed by the level C change above; the presented results still reflect B |
-| M05 | `_scatter_cz_on_ax` (cell 22) draws the scar points mirrored top/bottom (only the first theta flip); thesis retrieval example figures using it (`pipe5_example_target`, `pipe6_example_retrieved`, `prob_retrieval_4d_*`, `retrieval_six_vectors`) show anterior and inferior swapped. Numbers unaffected. Fixed by the Phase 2 orientation change |
+| M05 | `_scatter_cz_on_ax` (cell 22) draws the scar points mirrored top/bottom (only the first theta flip); figures drawn with it (cell 29 `deterministic_retrieval_<vector>_<territory>`, cell 33 `_make_case_figure` case figures) show anterior and inferior swapped. Numbers unaffected. Fixed by the Phase 2 orientation change |
 | M03 | Diagnostics mirrored the same way: cell 57 `polar_map_counts` (flip, no column reversal), cell 38 `theta_cw` colour scalar on the 3-D mesh |
 | `lv_geometry` | `compute_transform` keeps `R = I` when the axis is ~ -Z instead of a 180 deg turn |
 | `lv_geometry` | `rv_reference_pca`/`rv_reference_from_rv_mesh` measure the basal band from the apex, `project_points_to_polar` from `s_min` |
