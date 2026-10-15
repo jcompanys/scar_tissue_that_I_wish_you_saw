@@ -170,6 +170,9 @@ Refresh `README.md` (tree, notebooks, modules) and `auxiliary/memory`.
 - Septal reference: default is now C. Remove the no-RV `else` branches (F01, M03, M04)
   and the C lambdas (use the default). Delete M01's unused `_compute_transform`.
   `rv_reference_pca` stays only for the M03 A/B/C comparison.
+- Remove every `AHA_DISPLAY_DEG` (config constants, `roll_deg=AHA_DISPLAY_DEG` arguments,
+  the M05 scatter `+ np.deg2rad(AHA_DISPLAY_DEG)`): the RV-centroid angle is to live in `src`
+  (planned `lv_geometry` constant, 45 deg = 10:30), so the notebook roll becomes redundant.
 - M05 cell ~2182 adds `AHA_DISPLAY_DEG` to theta directly; `polar_mask` rolls columns.
   Same while the value is 0.
 - M06 has its own `_load_case` (fixed file names, needs flat VTK); compare with `scan`.
