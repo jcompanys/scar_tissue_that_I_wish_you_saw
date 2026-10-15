@@ -154,6 +154,8 @@ Refresh `README.md` (tree, notebooks, modules) and `auxiliary/memory`.
 | `data_loading` | which glob pattern matched is not recorded; unknown if fallbacks ever fired |
 | `lv_geometry` | `_hull_apex_candidate` picks the end farthest from the centroid; can return the base as apex (M03 noted an RV-proximity fix, never applied) |
 | `lv_geometry` | Thesis results of F01 `_build_pmap`, M05 and M06 used Method B (then the default `ref_fn`), not C, although the RV was loaded. Fixed by the level C change above; the presented results still reflect B |
+| M05 | `_scatter_cz_on_ax` (cell 22) draws the scar points mirrored top/bottom (only the first theta flip); thesis retrieval example figures using it (`pipe5_example_target`, `pipe6_example_retrieved`, `prob_retrieval_4d_*`, `retrieval_six_vectors`) show anterior and inferior swapped. Numbers unaffected. Fixed by the Phase 2 orientation change |
+| M03 | Diagnostics mirrored the same way: cell 57 `polar_map_counts` (flip, no column reversal), cell 38 `theta_cw` colour scalar on the 3-D mesh |
 | `lv_geometry` | `compute_transform` keeps `R = I` when the axis is ~ -Z instead of a 180 deg turn |
 | `lv_geometry` | `rv_reference_pca`/`rv_reference_from_rv_mesh` measure the basal band from the apex, `project_points_to_polar` from `s_min` |
 
@@ -170,6 +172,25 @@ Refresh `README.md` (tree, notebooks, modules) and `auxiliary/memory`.
 - Septal reference: default is now C. Remove the no-RV `else` branches (F01, M03, M04)
   and the C lambdas (use the default). Delete M01's unused `_compute_transform`.
   `rv_reference_pca` stays only for the M03 A/B/C comparison.
+- **Polar orientation: remove the double theta flip + rotate RV centroid to 10:30 (45 deg).**
+  Decided by the user 2026-10-15; `src` and notebooks change together in Phase 2 (changing
+  `src` alone would break the maps). Level C (rotation changes M04 segment/territory results).
+  - Why: `project_points_to_polar` theta drawn as is (`set_theta_zero_location('W')`,
+    `set_theta_direction(-1)`) is already the AHA apex-to-base view. Notebooks flip it
+    (`2*pi - theta`) and `polar_mask` flips it back (`[:, ::-1]`): maps correct, but any path
+    that does only the first flip is mirrored. Checked 2026-10-15 in M04 (RV projected: map has
+    the basal RV toward 10-11h = anterior, scatter toward 7-8h).
+  - `src`: `project_points_to_polar` returns the display theta with the RV centroid at 45 deg
+    (one constant, e.g. `RV_CENTROID_DEG = 45`); `polar_mask` drops `[:, ::-1]` and `roll_deg`;
+    `compute_transform` applies the same 45 deg for 3-D views. Blue dot = RV centroid, same constant.
+  - Notebooks, remove every `2*pi - theta` flip and the matching column reversals:
+    F01 cells 14, 20 (flip + `grid[:, ::-1]`), 22, 24; M03 cells 6, 38, 41, 42, 55, 57, 61
+    (flip + `grid[:, ::-1]`), 75, 76; M04 cells 14, 60 (flip + `grid[:, ::-1]`), 85 (flip x3 +
+    `ti = n_theta - 1 - ti`); M05 cells 8, 22; M06 cell 5 (3 flips; check the flat-map
+    flip test still works).
+  - Blue-dot helpers (`_mark_septal_point*` in F01, M03, M04, M05, M06): draw at the RV centroid
+    angle from `src` instead of the fixed 60 deg.
+  - Then re-run F01, M03, M04, M05, M06 and update `results-reference/`.
 - Remove every `AHA_DISPLAY_DEG` (config constants, `roll_deg=AHA_DISPLAY_DEG` arguments,
   the M05 scatter `+ np.deg2rad(AHA_DISPLAY_DEG)`): the RV-centroid angle is to live in `src`
   (planned `lv_geometry` constant, 45 deg = 10:30), so the notebook roll becomes redundant.

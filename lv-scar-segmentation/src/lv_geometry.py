@@ -27,6 +27,15 @@ Pipeline
 3b. 3-D alignment (apex at origin, axis on +Z, septum on +X):
     ``compute_transform`` -> ``apply_transform``.
 
+Where the septal reference ends up
+----------------------------------
+- Polar coordinates: theta = 0.
+- Bullseye plots (notebooks: theta zero at 'W', clockwise,
+  ``AHA_DISPLAY_DEG = 0``): 9 o'clock. The blue dot at 11 o'clock marks the
+  RV insertion point, 60 deg from the reference.
+- 3-D pose (``compute_transform`` with ``align_septum``): +X. M03 views add
+  a 180 deg turn, so the septum shows on -X (left).
+
 ``ref_fn`` chooses the septal method: any callable
 ``ref_fn(lv_mesh, axis, apex) -> vector``. ``rv_reference_pca`` already has
 that shape; ``rv_mesh_ref_fn(rv_mesh)`` gives Method C that shape.
@@ -363,7 +372,7 @@ def compute_transform(
 
     After ``apply_transform(mesh, R, apex)``: apex at the origin, long axis
     on +Z (apex -> base) and, if ``align_septum``, the septal reference on
-    +X.
+    +X (M03 views then turn it 180 deg, to -X).
 
     Parameters
     ----------
@@ -495,7 +504,8 @@ def project_points_to_polar(points, geom: dict) -> tuple[np.ndarray, np.ndarray]
     -------
     theta : (N,) ndarray
         Angle around the axis from the septal reference, rad in [0, 2*pi),
-        counter-clockwise in the (u, w) plane.
+        counter-clockwise in the (u, w) plane. Septal reference = 0; drawn
+        at 9 o'clock in the bullseye plots.
     s : (N,) ndarray
         Height along the axis, 0 at ``s_min`` (apex) to 1 at ``s_max``
         (base). Points outside are clipped to 0 or 1.
@@ -532,7 +542,8 @@ def polar_mask(theta, s, n_r: int, n_theta: int, roll_deg: float = 0.0) -> np.nd
     Returns
     -------
     (n_r, n_theta) bool ndarray
-        True where at least one point falls in the bin.
+        True where at least one point falls in the bin. Column 0 is the
+        septal reference, drawn at 9 o'clock in the bullseye plots.
 
     Notes
     -----
