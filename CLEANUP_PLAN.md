@@ -197,6 +197,11 @@ Refresh `README.md` (tree, notebooks, modules) and `auxiliary/memory`.
   - Blue-dot helpers (`_mark_septal_point*` in F01, M03, M04, M05, M06): draw at the RV centroid
     angle from `src` instead of the fixed 60 deg.
   - Then re-run F01, M03, M04, M05, M06 and update `results-reference/`.
+- AHA-17 grid lives in 5 notebook copies, all identical on 64x128 (checked 2026-10-15):
+  M04 c18 `_aha_segment_grid` (main), M05 c6 `_aha_segment_grid`, F01 c24 `_f5_aha_grid`,
+  F01 c28 `_f6_aha_grid`, M03 c69 `_aha_grid_s5`. Move to one `src` function (with
+  `SEG_LABELS`, `TERRITORY`, territory grid) and call it from all notebooks. Level B if the
+  grid stays identical.
 - Remove every `AHA_DISPLAY_DEG` (config constants, `roll_deg=AHA_DISPLAY_DEG` arguments,
   the M05 scatter `+ np.deg2rad(AHA_DISPLAY_DEG)`): the RV-centroid angle is to live in `src`
   (planned `lv_geometry` constant, 45 deg = 10:30), so the notebook roll becomes redundant.
